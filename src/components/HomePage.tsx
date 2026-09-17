@@ -30,8 +30,6 @@ function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[
 
   const tags = [
     dex.regional && 'Regionales',
-    dex.forms && 'Formas',
-    dex.gender && 'Género',
   ].filter(Boolean);
 
   return (

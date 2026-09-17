@@ -75,7 +75,7 @@ export function Info ({ dex, flavor, slot, state }: Props) {
         <div className="info-header">
           <div className="info-title">
             <h1>{entry.name}</h1>
-            {entry.form && <p className="info-form">{entry.form}</p>}
+            {entry.form && entry.category !== 'base' && <p className="info-form">{entry.form}</p>}
           </div>
           <h2>#{pad(entry.species)}</h2>
         </div>

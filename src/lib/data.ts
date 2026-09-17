@@ -69,8 +69,9 @@ export function includeEntry (dex: Pick<DexConfig, 'regional' | 'forms' | 'gende
   switch (e.category) {
     case 'base': return true;
     case 'regional': return dex.regional;
-    case 'forma': return dex.forms;
-    case 'genero': return dex.gender;
+    // Las formas alternativas y de género existen en los datos pero no se usan en las dex
+    case 'forma': return false;
+    case 'genero': return false;
     default: return false;
   }
 }
@@ -84,13 +85,25 @@ export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
     // estable: dentro de cada bloque se mantiene el orden nacional
     ordered = [...list].sort((a, b) => rank[a.category] - rank[b.category]);
   }
-  return ordered.map((entry, index) => ({
-    entry,
-    index,
-    box: Math.floor(index / BOX_SIZE) + 1,
-    row: Math.floor((index % BOX_SIZE) / BOX_COLUMNS) + 1,
-    col: (index % BOX_COLUMNS) + 1,
-  }));
+  let index = 0;
+  let prevBase = true;
+  return ordered.map((entry) => {
+    const isBase = entry.category === 'base';
+    // Con las formas al final, empiezan en una caja nueva
+    if (dex.layout === 'separado' && prevBase && !isBase && index % BOX_SIZE !== 0) {
+      index += BOX_SIZE - (index % BOX_SIZE);
+    }
+    prevBase = isBase;
+    const slot = {
+      entry,
+      index,
+      box: Math.floor(index / BOX_SIZE) + 1,
+      row: Math.floor((index % BOX_SIZE) / BOX_COLUMNS) + 1,
+      col: (index % BOX_COLUMNS) + 1,
+    };
+    index++;
+    return slot;
+  });
 }
 
 export function groupBoxes (slots: Slot[]) {

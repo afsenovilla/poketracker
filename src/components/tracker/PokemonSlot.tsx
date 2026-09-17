@@ -25,6 +25,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
   const { dispatch, readOnly } = useStore();
   const { setShowInfo } = useUI();
   const { entry } = slot;
+  const formLabel = entry.category === 'base' ? null : entry.form;
   const excluded = Boolean(state?.x);
   const pendingGame = !state?.c && state?.g ? GAME_BY_ID[state.g] : undefined;
 
@@ -72,7 +73,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
     if (!longPressed.current) openInfo();
   };
 
-  const label = entry.form ? `${entry.name} (${entry.form})` : entry.name;
+  const label = formLabel ? `${entry.name} (${formLabel})` : entry.name;
   const title = pendingGame ? `${label} · pendiente en ${pendingGame.name}` : label;
 
   return (
@@ -96,7 +97,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
       >
         <h4>
           {entry.name}
-          {entry.form && <span className="form-name">{entry.form}</span>}
+          {formLabel && <span className="form-name">{formLabel}</span>}
         </h4>
         <div className="icon-wrapper">
           <img alt={label} decoding="async" draggable={false} loading="lazy" src={spriteUrl(entry, shiny)} />

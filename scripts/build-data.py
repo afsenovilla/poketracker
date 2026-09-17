@@ -56,9 +56,9 @@ REGIONAL = ('alola', 'galar', 'hisui', 'paldea')
 MANUAL_FORM_ES = {
     'basculin-white-striped': 'Forma Raya Blanca',
     'gimmighoul-roaming': 'Forma Andante',
-    'tauros-paldea-combat-breed': 'Forma de Paldea (Raza Combativa)',
-    'tauros-paldea-blaze-breed': 'Forma de Paldea (Raza Ardiente)',
-    'tauros-paldea-aqua-breed': 'Forma de Paldea (Raza Acuática)',
+    'tauros-paldea-combat-breed': 'Paldea · Combativa',
+    'tauros-paldea-blaze-breed': 'Paldea · Ardiente',
+    'tauros-paldea-aqua-breed': 'Paldea · Acuática',
     'sinistea-phony': 'Forma Fraudulenta', 'sinistea-antique': 'Forma Genuina',
     'polteageist-phony': 'Forma Fraudulenta', 'polteageist-antique': 'Forma Genuina',
     'basculegion-male': 'Macho', 'basculegion-female': 'Hembra',
@@ -169,7 +169,7 @@ def main():
         ident = f['identifier']
         if ident in FEMALE_FORMS:
             return 'genero'
-        if any(f'-{r}' in ident for r in REGIONAL):
+        if any(f'-{r}' in ident for r in REGIONAL) and not ident.endswith('-cap'):
             return 'regional'
         return 'forma'
 

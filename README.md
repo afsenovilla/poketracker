@@ -13,8 +13,8 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 
 ## Qué hace
 
-- Varias dex a la vez (normal y shiny). En cada una eliges si incluir formas regionales, formas alternativas y diferencias de género.
-- Cajas de 30 en el mismo orden en que los guardas en HOME. Puedes poner las formas junto a su especie o todas en cajas al final.
+- Varias dex a la vez (normal y shiny): las 1025 especies y, si quieres, las 57 formas regionales.
+- Cajas de 30 en el mismo orden en que los guardas en HOME. Las formas regionales pueden ir junto a su especie o en cajas propias al final.
 - Cada Pokémon tiene tres estados: **no lo tengo**, **en otro juego** (pendiente de pasar a HOME, con un desplegable para indicar el juego) y **en HOME**.
   - Un clic lo marca como «en HOME», y «Marcar todos» marca la caja entera.
   - Los pendientes se ven en azul, con la abreviatura del juego, y tienen su propio filtro.
@@ -26,7 +26,7 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - **Móvil:** la dex se ve como una rejilla de iconos, 6 por fila como en HOME. Un toque marca el Pokémon y una pulsación larga abre su ficha.
 - Modo noche y copia de seguridad (exportar/importar JSON).
 
-Con todas las opciones activadas, la dex tiene 1361 casillas en 46 cajas.
+Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 de especies y 2 de formas.
 
 ## Publicarla en GitHub Pages
 
@@ -88,7 +88,10 @@ Para regenerar ambos ficheros (por ejemplo, cuando salgan Pokémon o formas nuev
 
 Si prefieres hacerlo en local: `npm run data` (necesita python3, git y curl).
 
-### Qué formas se incluyen
+### Qué formas hay en los datos
+
+Las dex solo usan las especies y las **formas regionales**. Los datos también incluyen formas alternativas y diferencias de género, pero la web no las muestra (ver `includeEntry` en `src/lib/data.ts`).
+
 
 Se incluyen las formas que HOME guarda como distintas y que no se pueden cambiar a voluntad:
 

@@ -28,7 +28,7 @@ function matches (slot: Slot, q: string) {
   if (/^\d+$/.test(digits)) {
     return String(e.species) === String(Number(digits)) || pad(e.species).startsWith(digits);
   }
-  const hay = normalize(`${e.name} ${e.form ?? ''}`);
+  const hay = normalize(`${e.name} ${e.category === 'base' ? '' : e.form ?? ''}`);
   return q.split(/\s+/).every((word) => hay.includes(word));
 }
 

@@ -4,7 +4,7 @@ import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
-import { countEntries } from '../lib/data';
+import { countEntries, TOTAL_SPECIES } from '../lib/data';
 import type { DexConfig, Entry, Layout } from '../lib/types';
 import { useUI } from '../lib/ui';
 
@@ -38,13 +38,14 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
   const [title, setTitle] = useState(initial?.title ?? '');
   const [shiny, setShiny] = useState(initial?.shiny ?? false);
   const [regional, setRegional] = useState(initial?.regional ?? true);
-  const [forms, setForms] = useState(initial?.forms ?? true);
-  const [gender, setGender] = useState(initial?.gender ?? true);
-  const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'junto');
+  const forms = false;
+  const gender = false;
+  const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'separado');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const total = useMemo(() => countEntries({ regional, forms, gender }, entries), [regional, forms, gender, entries]);
-  const boxes = Math.ceil(total / 30);
+  const species = Math.min(total, TOTAL_SPECIES);
+  const boxes = layout === 'separado' && total > species ? Math.ceil(species / 30) + Math.ceil((total - species) / 30) : Math.ceil(total / 30);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -111,8 +112,6 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
             <div className="form-group">
               <label>Incluir</label>
               {check('opt_regional', 'Formas regionales', regional, setRegional)}
-              {check('opt_forms', 'Formas alternativas', forms, setForms)}
-              {check('opt_gender', 'Diferencias de género', gender, setGender)}
             </div>
 
             <div className="form-group">

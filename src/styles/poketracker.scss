@@ -946,3 +946,80 @@ $pending-color: #cfe3ff;
     color: $brand-secondary;
   }
 }
+
+// ---------- Casilla con zonas fijas (evita solapes y desbordes) ----------
+
+@media (min-width: 751px) {
+  .pokemon .set-captured {
+    @include justify-content(flex-start);
+    min-width: 0;
+    overflow: hidden;
+    padding: 4px 4px 3px;
+
+    h4 {
+      @include flex-shrink(0);
+      width: 100%;
+      font-size: 14px;
+      line-height: 16px;
+    }
+
+    .form-name {
+      line-height: 12px;
+    }
+
+    .icon-wrapper {
+      @include flex(1 1 0);
+      @include justify-content(center);
+      width: 100%;
+      min-height: 0;
+      height: auto;
+      overflow: hidden;
+
+      img {
+        width: auto;
+        height: 100%;
+        max-height: 64px;
+        margin: 0;
+        object-fit: contain;
+      }
+    }
+
+    p {
+      @include flex-shrink(0);
+      line-height: 13px;
+    }
+  }
+}
+
+// Botón de ficha más discreto
+.pokemon .set-info {
+  padding: 3px;
+
+  .svg-inline--fa.fa-info {
+    box-sizing: content-box;
+    width: 7px;
+    height: 7px;
+    margin: 0;
+    padding: 3px;
+    border-width: 1.5px;
+    font-size: 7px;
+    background-color: #fff;
+  }
+}
+
+.pokemon:not(.empty):not(.disabled):hover .set-info:hover {
+  right: 0;
+  bottom: 0;
+
+  .fa-info {
+    width: 7px;
+    height: 7px;
+    margin: 0;
+    background-color: $brand-secondary-light;
+    color: #fff;
+  }
+}
+
+.night-mode .pokemon .set-info .svg-inline--fa.fa-info {
+  background-color: $night-mode-04dp;
+}
