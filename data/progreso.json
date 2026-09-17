@@ -1,6 +1,17 @@
 {
  "version": 1,
- "updatedAt": "2026-09-17T14:11:18.692Z",
- "dexes": [],
+ "updatedAt": "2026-09-17T14:12:15.452Z",
+ "dexes": [
+  {
+   "id": "9k6dhkzdhm",
+   "title": "Living Dex",
+   "shiny": false,
+   "regional": true,
+   "forms": true,
+   "gender": true,
+   "layout": "separado",
+   "createdAt": "2026-09-17T14:12:13.450Z"
+  }
+ ],
  "captures": {}
 }
