@@ -12,7 +12,7 @@ import { useStore } from '../lib/store';
 const DEFAULTS: GitHubSettings = { owner: 'afsenovilla', repo: 'poketracker', branch: 'main', path: 'data/progreso.json', token: '' };
 
 export function SettingsPage () {
-  const { doc, dispatch, github, setGithub, status, error, lastSync, syncNow, pendingCount } = useStore();
+  const { doc, dispatch, github, setGithub, status, error, lastSync, syncNow, pendingCount, readOnly } = useStore();
   const [form, setForm] = useState<GitHubSettings>(github || DEFAULTS);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
@@ -21,7 +21,7 @@ export function SettingsPage () {
 
   const set = (key: keyof GitHubSettings) => (e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: e.target.value.trim() });
 
-  const hasLocalData = doc.dexes.length > 0;
+  const hasLocalData = !readOnly && doc.dexes.length > 0;
 
   const handleConnect = async (e: FormEvent) => {
     e.preventDefault();
@@ -81,7 +81,12 @@ export function SettingsPage () {
         <h1>Ajustes</h1>
         <form onSubmit={handleConnect}>
           <div className="form-column">
-            <h2>Sincronizar con GitHub</h2>
+            <h2>{readOnly ? 'Conectar para editar' : 'Sincronizar con GitHub'}</h2>
+            {readOnly && (
+              <p className="settings-help">
+                Sin token, la web muestra tu progreso en <b>modo lectura</b>. Introduce el token en este dispositivo para poder hacer cambios.
+              </p>
+            )}
             <p className="settings-help">
               El progreso se guarda como un fichero JSON en tu repositorio (puede ser el mismo de la web). Crea un
               {' '}<a className="link" href="https://github.com/settings/personal-access-tokens/new" rel="noreferrer" target="_blank">token de acceso fine-grained</a>{' '}
@@ -142,7 +147,7 @@ export function SettingsPage () {
                   <button
                     className="btn btn-white btn-inline"
                     onClick={() => {
-                      if (window.confirm('Se desconectará GitHub. Tu progreso se quedará en este navegador. ¿Continuar?')) {
+                      if (window.confirm('Se borrará el token de este navegador y volverás al modo lectura. ¿Continuar?')) {
                         setGithub(null);
                         setForm(DEFAULTS);
                       }
@@ -160,9 +165,11 @@ export function SettingsPage () {
               <button className="btn btn-white btn-inline" onClick={handleExport} type="button">
                 <FontAwesomeIcon icon={faDownload} /> Exportar JSON
               </button>
-              <button className="btn btn-white btn-inline" onClick={() => fileRef.current?.click()} type="button">
-                <FontAwesomeIcon icon={faUpload} /> Importar JSON
-              </button>
+              {!readOnly && (
+                <button className="btn btn-white btn-inline" onClick={() => fileRef.current?.click()} type="button">
+                  <FontAwesomeIcon icon={faUpload} /> Importar JSON
+                </button>
+              )}
               <input accept="application/json,.json" hidden onChange={handleImport} ref={fileRef} type="file" />
             </div>
 

@@ -6,6 +6,7 @@ import { Box } from './Box';
 import { PokemonSlot } from './PokemonSlot';
 import { Progress } from '../Progress';
 import { groupBoxes, normalize, pad } from '../../lib/data';
+import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
 import type { Filters } from './SearchBar';
 
@@ -32,6 +33,7 @@ function matches (slot: Slot, q: string) {
 }
 
 export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onSelect, selected, showScrollButton, slots }: Props) {
+  const { readOnly } = useStore();
   const { caught, total, pending } = useMemo(() => {
     let c = 0;
     let t = 0;
@@ -78,7 +80,7 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
             {dex.layout === 'separado' ? ' · formas al final' : ''}
           </h2>
         </header>
-        <p className="mobile-hint">Toca para marcar · mantén pulsado para ver la ficha</p>
+        <p className="mobile-hint">{readOnly ? 'Modo lectura · toca un Pokémon para ver su ficha' : 'Toca para marcar · mantén pulsado para ver la ficha'}</p>
         <div className="percentage">
           <Progress caught={caught} pending={pending} total={total} />
         </div>

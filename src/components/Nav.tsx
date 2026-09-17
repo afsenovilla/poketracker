@@ -1,6 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCaretDown, faCheck, faCircleNotch, faCloud, faCog, faExclamationTriangle, faHome, faMoon, faStar, faSun, faTh,
+  faCaretDown, faCheck, faCircleNotch, faCloud, faCog, faExclamationTriangle, faEye, faHome, faMoon, faStar, faSun, faTh,
 } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import { useUI } from '../lib/ui';
 
 export const STATUS: Record<SyncStatus, { label: string; icon: typeof faCheck; spin?: boolean }> = {
   local: { label: 'Solo en este navegador', icon: faHome },
+  readonly: { label: 'Modo lectura · conecta tu token para editar', icon: faEye },
   loading: { label: 'Cargando de GitHub…', icon: faCircleNotch, spin: true },
   synced: { label: 'Guardado en GitHub', icon: faCheck },
   pending: { label: 'Cambios sin guardar', icon: faCloud },
@@ -20,7 +21,7 @@ export const STATUS: Record<SyncStatus, { label: string; icon: typeof faCheck; s
 
 export function Nav () {
   const { nightMode, setNightMode } = useUI();
-  const { doc, status, error } = useStore();
+  const { doc, status, error, readOnly } = useStore();
   const st = STATUS[status];
 
   return (
@@ -47,7 +48,7 @@ export function Nav () {
             ))}
           </div>
           <li><Link to="/"><FontAwesomeIcon icon={faHome} /> Inicio</Link></li>
-          <li><Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> Ajustes y sincronización</Link></li>
+          <li><Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> {readOnly ? 'Conectar para editar' : 'Ajustes y sincronización'}</Link></li>
         </ul>
       </div>
     </nav>

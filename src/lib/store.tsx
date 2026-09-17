@@ -2,7 +2,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { ReactNode } from 'react';
 
 import { applyOp, applyOps, emptyDoc, isProgressDoc } from './doc';
-import { GitHubError, readRemote, writeRemote } from './github';
+import { GitHubError, readPublic, readRemote, writeRemote } from './github';
+import { PUBLIC_PROGRESS } from '../config';
 import type { GitHubSettings } from './github';
 import type { Op, ProgressDoc } from './types';
 import { storage } from './storage';
@@ -13,7 +14,7 @@ const KEY_PENDING = 'pt:pending';
 const KEY_GITHUB = 'pt:github';
 const SAVE_DELAY = 2000;
 
-export type SyncStatus = 'local' | 'loading' | 'synced' | 'pending' | 'saving' | 'error' | 'offline';
+export type SyncStatus = 'local' | 'readonly' | 'loading' | 'synced' | 'pending' | 'saving' | 'error' | 'offline';
 
 interface StoreState {
   doc: ProgressDoc;
@@ -25,6 +26,8 @@ interface StoreState {
   setGithub: (s: GitHubSettings | null, opts?: { uploadLocal?: boolean }) => void;
   syncNow: () => Promise<void>;
   pendingCount: number;
+  /** sin token y con progreso público: solo lectura */
+  readOnly: boolean;
 }
 
 const StoreContext = createContext<StoreState | null>(null);
@@ -36,7 +39,8 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
   });
   const [pending, setPending] = useState<Op[]>(() => storage.getJSON<Op[]>(KEY_PENDING) || []);
   const [github, setGithubState] = useState<GitHubSettings | null>(() => storage.getJSON<GitHubSettings>(KEY_GITHUB));
-  const [status, setStatus] = useState<SyncStatus>(github ? 'loading' : 'local');
+  const readOnly = !github && Boolean(PUBLIC_PROGRESS);
+  const [status, setStatus] = useState<SyncStatus>(github || readOnly ? 'loading' : 'local');
   const [error, setError] = useState<string | null>(null);
   const [lastSync, setLastSync] = useState<Date | null>(null);
 
@@ -133,8 +137,30 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
     }, delay);
   }, [push]);
 
+  const loadPublic = useCallback(async () => {
+    if (!PUBLIC_PROGRESS) return;
+    setError(null);
+    try {
+      const remote = await readPublic(PUBLIC_PROGRESS);
+      if (githubRef.current) return; // se ha conectado mientras tanto
+      if (remote && !isProgressDoc(remote)) throw new Error('El fichero remoto no tiene el formato esperado');
+      const next = remote || emptyDoc();
+      setBase(next);
+      baseRef.current = next;
+      setLastSync(new Date());
+      setStatus('readonly');
+    } catch (e) {
+      setStatus(navigator.onLine ? 'error' : 'offline');
+      setError(`Modo lectura: ${(e as Error).message}`);
+    }
+  }, []);
+
   const syncNow = useCallback(async () => {
-    if (!githubRef.current || busyRef.current) return;
+    if (!githubRef.current) {
+      if (PUBLIC_PROGRESS) await loadPublic();
+      return;
+    }
+    if (busyRef.current) return;
     setStatus('loading');
     setError(null);
     try {
@@ -154,6 +180,12 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (github) {
       void syncNow();
+    } else if (PUBLIC_PROGRESS) {
+      pendingRef.current = [];
+      setPending([]);
+      setSha(null);
+      setStatus('loading');
+      void loadPublic();
     } else {
       commitLocally();
       setStatus('local');
@@ -162,9 +194,9 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
 
   // Reintentar al recuperar conexión y al volver a la pestaña
   useEffect(() => {
-    const onOnline = () => githubRef.current && void syncNow();
+    const onOnline = () => void syncNow();
     const onVisible = () => {
-      if (document.visibilityState === 'visible' && githubRef.current && !busyRef.current && !pendingRef.current.length) {
+      if (document.visibilityState === 'visible' && !busyRef.current && !pendingRef.current.length) {
         void syncNow();
       }
     };
@@ -185,6 +217,7 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
 
   const dispatch = useCallback((op: Op) => {
     if (!githubRef.current) {
+      if (PUBLIC_PROGRESS) return; // modo lectura
       setBase((b) => applyOp(b, op));
       return;
     }
@@ -224,7 +257,8 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
     setGithub,
     syncNow,
     pendingCount: pending.length,
-  }), [doc, dispatch, status, error, lastSync, github, setGithub, syncNow, pending.length]);
+    readOnly,
+  }), [doc, dispatch, status, error, lastSync, github, setGithub, syncNow, pending.length, readOnly]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

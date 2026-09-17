@@ -23,7 +23,7 @@ function boxTitle (slots: Slot[]) {
 }
 
 export const Box = memo(function Box ({ captures, dex, number, onSelect, selected, slots }: Props) {
-  const { dispatch } = useStore();
+  const { dispatch, readOnly } = useStore();
   const empties = BOX_SIZE - slots.length;
 
   const pendingIds = useMemo(
@@ -49,9 +49,13 @@ export const Box = memo(function Box ({ captures, dex, number, onSelect, selecte
           <span className="box-number">Caja {number}</span>
           <span className="box-range">{boxTitle(slots)}</span>
         </h1>
+        {readOnly ? (
+          <span className="box-count">{slots.length - pendingIds.length}/{slots.length}</span>
+        ) : (
         <button className="btn btn-yellow" onClick={handleMarkAll} type="button">
           {allDone ? 'Desmarcar todos' : `Marcar todos (${pendingIds.length})`}
         </button>
+        )}
       </div>
       <div className="box-container">
         {slots.map((s) => (

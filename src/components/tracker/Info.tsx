@@ -4,7 +4,7 @@ import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/fre
 import { useEffect, useState } from 'react';
 
 import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations } from '../../lib/data';
-import { GAMES } from '../../lib/games';
+import { GAME_BY_ID, GAMES } from '../../lib/games';
 import { useStore } from '../../lib/store';
 import { useUI } from '../../lib/ui';
 import type { DexConfig, SlotPatch, Slot, SlotState } from '../../lib/types';
@@ -54,7 +54,7 @@ function WhereToCatch ({ entryId, evo }: { entryId: string; evo: string | null }
 
 export function Info ({ dex, flavor, slot, state }: Props) {
   const { showInfo, setShowInfo } = useUI();
-  const { dispatch } = useStore();
+  const { dispatch, readOnly } = useStore();
   const { entry } = slot;
   const [showShiny, setShowShiny] = useState(dex.shiny);
 
@@ -96,6 +96,14 @@ export function Info ({ dex, flavor, slot, state }: Props) {
           </div>
           <p className="info-category">{CATEGORY_LABEL[entry.category]} · Generación {entry.gen}</p>
 
+          {readOnly ? (
+            <p className={`info-readonly status-${status}`}>
+              {state?.x ? 'Excluido de esta dex'
+                : status === 'home' ? '✓ En HOME'
+                  : status === 'game' ? `Pendiente en ${GAME_BY_ID[state!.g!]?.name ?? 'otro juego'}`
+                    : 'Aún no lo tienes'}
+            </p>
+          ) : (
           <div className="info-actions">
             <div className="info-status" role="radiogroup">
               <button
@@ -144,6 +152,7 @@ export function Info ({ dex, flavor, slot, state }: Props) {
               Excluir de esta dex (no disponible / no lo busco)
             </label>
           </div>
+          )}
 
           <h3 className="info-section">Dónde capturarlo</h3>
           <WhereToCatch entryId={entry.id} evo={entry.evo} />

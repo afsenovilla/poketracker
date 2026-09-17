@@ -56,7 +56,12 @@ Cómo funciona:
 - Sin conexión, los cambios quedan pendientes en el navegador y se suben al volver la conexión.
 - El icono de la barra superior muestra el estado: ✓ guardado, ☁ pendiente, ⚠ error.
 
-Puedes usarla sin GitHub: el progreso se queda en ese navegador y puedes exportarlo o importarlo como JSON.
+### Modo lectura
+
+Sin token, la web lee `data/progreso.json` del repositorio público y muestra el progreso **sin permitir cambios**: no se puede marcar, crear dex ni editar, y un clic en un Pokémon solo abre su ficha. El repositorio de lectura se configura en `src/config.ts`.
+
+- **Cómo lee el fichero:** usa primero la API de GitHub sin autenticar, que siempre está al día pero admite 60 peticiones por hora por IP. Si se agota ese límite, pasa a `raw.githubusercontent.com`, que puede ir unos minutos por detrás.
+- **Uso solo local:** si pones `PUBLIC_PROGRESS = null`, la web vuelve a funcionar sin GitHub, guardando el progreso en el navegador.
 
 ## Datos
 

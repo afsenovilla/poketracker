@@ -98,6 +98,25 @@ export async function writeRemote (s: GitHubSettings, doc: ProgressDoc, sha: str
   return body.content.sha;
 }
 
+export type PublicSource = Omit<GitHubSettings, 'token'>;
+
+/** Lee el progreso sin token (el repositorio tiene que ser público). */
+export async function readPublic (s: PublicSource): Promise<ProgressDoc | null> {
+  const path = s.path.split('/').map(encodeURIComponent).join('/');
+  // 1) API sin autenticar: siempre al día, pero con límite de 60 peticiones/hora por IP
+  let res = await fetch(
+    `${API}/repos/${encodeURIComponent(s.owner)}/${encodeURIComponent(s.repo)}/contents/${path}?ref=${encodeURIComponent(s.branch)}`,
+    { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' },
+  ).catch(() => null);
+  // 2) Si se agota el límite, raw.githubusercontent.com (puede ir unos minutos por detrás)
+  if (!res || res.status === 403 || res.status === 429) {
+    res = await fetch(`https://raw.githubusercontent.com/${s.owner}/${s.repo}/${s.branch}/${path}`, { cache: 'no-store' });
+  }
+  if (res.status === 404) return null;
+  if (!res.ok) throw new GitHubError(res.status, `No se pudo leer el progreso (${res.status})`);
+  return res.json();
+}
+
 export async function testConnection (s: GitHubSettings) {
   const res = await fetch(`${API}/repos/${encodeURIComponent(s.owner)}/${encodeURIComponent(s.repo)}`, {
     headers: headers(s.token),

@@ -22,7 +22,7 @@ interface Props {
 const LONG_PRESS_MS = 450;
 
 export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selected, shiny, slot, state }: Props) {
-  const { dispatch } = useStore();
+  const { dispatch, readOnly } = useStore();
   const { setShowInfo } = useUI();
   const { entry } = slot;
   const excluded = Boolean(state?.x);
@@ -43,7 +43,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
       return;
     }
     onSelect(entry.id);
-    if (excluded) {
+    if (excluded || readOnly) {
       setShowInfo(true);
       return;
     }

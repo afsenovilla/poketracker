@@ -10,7 +10,7 @@ import { includeEntry, usePokedex } from '../lib/data';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry } from '../lib/types';
 
-function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[]; onEdit: () => void }) {
+function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[]; onEdit?: () => void }) {
   const { doc } = useStore();
   const { caught, total, pending } = useMemo(() => {
     const caps = doc.captures[dex.id] || {};
@@ -39,7 +39,7 @@ function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[
       <div className="dex-preview-header">
         <h3><Link className="link" to={`/dex/${dex.id}`}>{dex.title}</Link></h3>
         <div className="dex-edit">
-          <a className="link" onClick={onEdit} title="Editar"><FontAwesomeIcon icon={faPencilAlt} /></a>
+          {onEdit && <a className="link" onClick={onEdit} title="Editar"><FontAwesomeIcon icon={faPencilAlt} /></a>}
         </div>
         <div className="dex-indicator">
           {dex.shiny && <span className="label"><FontAwesomeIcon icon={faStar} /> Shiny</span>}
@@ -55,7 +55,7 @@ function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[
 
 export function HomePage () {
   const { data, error } = usePokedex();
-  const { doc, dispatch, status } = useStore();
+  const { doc, dispatch, status, readOnly } = useStore();
   const navigate = useNavigate();
   const [editing, setEditing] = useState<DexConfig | 'new' | null>(null);
 
@@ -81,17 +81,28 @@ export function HomePage () {
             </div>
           )}
 
+          {readOnly && (
+            <div className="alert alert-muted home-sync-hint">
+              Estás en <b>modo lectura</b>.{' '}
+              <Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> Conecta tu token</Link> para hacer cambios.
+            </div>
+          )}
+
           {doc.dexes.length === 0 && status !== 'loading' && (
-            <p className="empty-dexes">Aún no tienes ninguna dex. Crea una normal y otra shiny para empezar.</p>
+            <p className="empty-dexes">
+              {readOnly ? 'Todavía no hay ninguna dex guardada.' : 'Aún no tienes ninguna dex. Crea una normal y otra shiny para empezar.'}
+            </p>
           )}
 
           {doc.dexes.map((dex) => (
-            <DexPreview dex={dex} entries={data.entries} key={dex.id} onEdit={() => setEditing(dex)} />
+            <DexPreview dex={dex} entries={data.entries} key={dex.id} onEdit={readOnly ? undefined : () => setEditing(dex)} />
           ))}
 
-          <div className="dex-create">
-            <button className="btn btn-blue" onClick={() => setEditing('new')} type="button">Nueva dex</button>
-          </div>
+          {!readOnly && (
+            <div className="dex-create">
+              <button className="btn btn-blue" onClick={() => setEditing('new')} type="button">Nueva dex</button>
+            </div>
+          )}
         </div>
       </div>
 
