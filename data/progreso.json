@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-17T14:12:15.452Z",
+ "updatedAt": "2026-09-17T14:12:29.521Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -11,6 +11,16 @@
    "gender": true,
    "layout": "separado",
    "createdAt": "2026-09-17T14:12:13.450Z"
+  },
+  {
+   "id": "i3zog3zocg",
+   "title": "Living Dex Shiny",
+   "shiny": true,
+   "regional": true,
+   "forms": true,
+   "gender": true,
+   "layout": "separado",
+   "createdAt": "2026-09-17T14:12:27.520Z"
   }
  ],
  "captures": {}
