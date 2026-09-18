@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faLongArrowAltRight, faQuestion } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 
 import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations } from '../../lib/data';
@@ -140,18 +140,37 @@ export function Info ({ dex, flavor, slot, state }: Props) {
             </div>
 
             {(status === 'game' || status === 'home') && (
-              <label className="info-game-select">
-                <span>
-                  {state?.g && GAME_BY_ID[state.g] && (
-                    <span className="game-chip"><GameMark game={GAME_BY_ID[state.g]} onDark /></span>
-                  )}
+              <div className="info-game-picker">
+                <span className="info-game-label">
                   {status === 'game' ? '¿En qué juego está?' : '¿De qué juego viene?'}
                 </span>
-                <select onChange={(e) => patch({ g: e.target.value })} value={state?.g ?? ''}>
-                  {status === 'home' && <option value="">Sin especificar</option>}
-                  {GAMES.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-                </select>
-              </label>
+                <div className="info-game-options">
+                  {GAMES.map((g) => (
+                    <button
+                      aria-pressed={state?.g === g.id}
+                      className={classNames('info-game-option', { active: state?.g === g.id })}
+                      key={g.id}
+                      onClick={() => patch({ g: g.id })}
+                      title={g.name}
+                      type="button"
+                    >
+                      <GameMark game={g} onDark />
+                      <span className="info-game-name">{g.name}</span>
+                    </button>
+                  ))}
+                  {status === 'home' && (
+                    <button
+                      aria-pressed={!state?.g}
+                      className={classNames('info-game-option', { active: !state?.g })}
+                      onClick={() => patch({ g: '' })}
+                      type="button"
+                    >
+                      <FontAwesomeIcon icon={faQuestion} />
+                      <span className="info-game-name">Sin especificar</span>
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
 
             <label className="info-exclude">

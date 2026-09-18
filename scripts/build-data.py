@@ -103,6 +103,7 @@ def main():
     ap.add_argument('--csv', required=True)
     ap.add_argument('--sprites', required=True)
     ap.add_argument('--home', required=True)
+    ap.add_argument('--pokesprite', default='src/styles/pokesprite.scss')
     ap.add_argument('--out', default='public/data/pokedex.json')
     a = ap.parse_args()
 
@@ -255,6 +256,30 @@ def main():
                     'formOrder': 0.5,  # justo después de la forma base
                 })
 
+    # Clases del sprite sheet de PokédexTracker (iconos de caja, estilo HOME)
+    rules = set()
+    if os.path.exists(a.pokesprite):
+        with open(a.pokesprite, encoding='utf-8') as f:
+            for m in re.finditer(r'^\.pkicon\.([a-z0-9.\-_]+)\s*\{', f.read(), re.M):
+                rules.add(frozenset(m.group(1).split('.')))
+
+    def icon_classes(e):
+        n = e['species']
+        base = [f'pkicon-{n:03d}' if n < 1000 else f'pkicon-{n}']
+        for r in REGIONAL:
+            if f'-{r}' in e['id']:
+                base.append(f'form-{r}')
+                break
+        shiny = base + ['color-shiny']
+        ok = frozenset(base) in rules
+        return (' '.join(base) if ok else None,
+                ' '.join(shiny) if frozenset(shiny) in rules else (' '.join(base) if ok else None))
+
+    for e in entries:
+        icon, icon_shiny = icon_classes(e)
+        e['icon'] = icon
+        e['iconShiny'] = icon_shiny
+
     entries.sort(key=lambda e: (e['species'], e['formOrder']))
     for e in entries:
         del e['formOrder']
@@ -268,6 +293,8 @@ def main():
     for e in entries:
         cats[e['category']] += 1
     print('Total entradas:', len(entries), dict(cats))
+    print('Sin icono de caja:', [e['id'] for e in entries if not e['icon'] and e['category'] in ('base', 'regional')])
+    print('Sin icono shiny:', [e['id'] for e in entries if e['icon'] and e['icon'] == e['iconShiny'] and e['category'] in ('base', 'regional')])
     print('Sin sprite:', [e['id'] for e in entries if not e['sprite']])
     print('Sin sprite shiny:', [e['id'] for e in entries if not e['spriteShiny']])
     print('Formas sin traducción ES:', sorted(set(MISSING_ES)))

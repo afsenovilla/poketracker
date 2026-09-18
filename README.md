@@ -74,6 +74,8 @@ Sin token, la web lee `data/progreso.json` del repositorio público y muestra el
 
 En las cajas se usan los **iconos de caja** (estilo HOME) del sprite sheet de PokédexTracker: `public/pokesprite-v12.png` y `src/styles/pokesprite.scss`, que cubren las 1025 especies y las formas regionales, en normal y variocolor. `build-data.py` lee ese SCSS y guarda en cada entrada las clases que le tocan (`icon` e `iconShiny`).
 
+Los iconos se muestran a su tamaño original, sin escalar, para que no se vean borrosos; las marcas de origen sí se escalan (no son pixel art) y están guardadas a 32 px.
+
 - Los doce Pokémon sin variocolor disponible (Kubfu, Urshifu, Okidogi, Munkidori, Fezandipiti, Ogerpon, Gouging Fire, Raging Bolt, Iron Boulder, Iron Crown, Terapagos y Pecharunt) usan su icono normal en la dex shiny.
 - Las tres razas de Tauros de Paldea comparten icono, porque el sprite sheet solo trae uno.
 

@@ -1084,8 +1084,8 @@ $pending-color: #cfe3ff;
 
 // La marca de origen del juego, en la casilla y en la ficha
 .game-mark {
-  @include crisp-rendering();
   display: block;
+  image-rendering: auto;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -1106,6 +1106,60 @@ $pending-color: #cfe3ff;
   font-size: 9px;
   text-shadow: none;
   filter: drop-shadow(0 0 1px rgba(255, 255, 255, .9));
+}
+
+.info .info-game-picker {
+  margin-top: 12px;
+
+  .info-game-label {
+    display: block;
+    margin-bottom: 6px;
+    font-family: $font-secondary;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: .75;
+  }
+
+  .info-game-options {
+    @include flexbox();
+    @include flex-wrap(wrap);
+    gap: 4px;
+  }
+
+  .info-game-option {
+    @include flexbox();
+    @include align-items(center);
+    @include justify-content(center);
+
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .25);
+    background-color: rgba(255, 255, 255, .06);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+
+    .game-mark {
+      width: 20px;
+      height: 20px;
+    }
+
+    .info-game-name {
+      display: none;
+    }
+
+    &:hover {
+      border-color: rgba(255, 255, 255, .6);
+    }
+
+    &.active {
+      border-color: $brand-primary;
+      background-color: rgba(255, 217, 36, .25);
+    }
+  }
 }
 
 .info .info-game-select .game-chip {
@@ -1147,6 +1201,60 @@ $pending-color: #cfe3ff;
   box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
 }
 
+.info .info-game-picker {
+  margin-top: 12px;
+
+  .info-game-label {
+    display: block;
+    margin-bottom: 6px;
+    font-family: $font-secondary;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: .75;
+  }
+
+  .info-game-options {
+    @include flexbox();
+    @include flex-wrap(wrap);
+    gap: 4px;
+  }
+
+  .info-game-option {
+    @include flexbox();
+    @include align-items(center);
+    @include justify-content(center);
+
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .25);
+    background-color: rgba(255, 255, 255, .06);
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+
+    .game-mark {
+      width: 20px;
+      height: 20px;
+    }
+
+    .info-game-name {
+      display: none;
+    }
+
+    &:hover {
+      border-color: rgba(255, 255, 255, .6);
+    }
+
+    &.active {
+      border-color: $brand-primary;
+      background-color: rgba(255, 217, 36, .25);
+    }
+  }
+}
+
 .info .info-game-select .game-chip {
   display: inline-flex;
   align-items: center;
@@ -1172,8 +1280,6 @@ $pending-color: #cfe3ff;
 
 .pokemon .icon-wrapper .pkicon {
   @include align-self(center);
-  transform: scale(1.35);
-  transform-origin: center;
 }
 
 @media (max-width: 750px) {
@@ -1183,7 +1289,7 @@ $pending-color: #cfe3ff;
     @include justify-content(center);
 
     .pkicon {
-      transform: scale(1.5);
+      @include flex-shrink(0);
     }
   }
 }
