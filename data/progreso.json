@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-17T14:49:14.667Z",
+ "updatedAt": "2026-09-18T09:55:01.303Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -26,8 +26,8 @@
  "captures": {
   "9k6dhkzdhm": {
    "bulbasaur": {
-    "t": 1789655095085,
-    "c": 1
+    "t": 1789725301303,
+    "g": "frlg"
    },
    "ivysaur": {
     "t": 1789655095085,
