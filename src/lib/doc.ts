@@ -49,12 +49,8 @@ export function applyOp (doc: ProgressDoc, op: Op, now = Date.now()): ProgressDo
           }
         }
         if (op.patch.g !== undefined) {
-          if (op.patch.g) {
-            next.g = op.patch.g;
-            delete next.c;
-          } else {
-            delete next.g;
-          }
+          // el juego es solo el origen: no cambia por sí mismo si está en HOME
+          if (op.patch.g) next.g = op.patch.g; else delete next.g;
         }
         if (op.patch.x !== undefined) {
           if (op.patch.x) next.x = 1; else delete next.x;

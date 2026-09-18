@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faLongArrowAltRight, faQuestion } from '@fortawesome/free-solid-svg-icons';
+import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 
 import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations } from '../../lib/data';
@@ -121,7 +121,7 @@ export function Info ({ dex, flavor, slot, state }: Props) {
                 aria-checked={status === 'game'}
                 className={classNames('game', { active: status === 'game' })}
                 disabled={Boolean(state?.x)}
-                onClick={() => patch({ g: state?.g || 'sv' })}
+                onClick={() => patch({ c: false, g: state?.g || 'sv' })}
                 role="radio"
                 type="button"
               >
@@ -145,30 +145,24 @@ export function Info ({ dex, flavor, slot, state }: Props) {
                   {status === 'game' ? '¿En qué juego está?' : '¿De qué juego viene?'}
                 </span>
                 <div className="info-game-options">
-                  {GAMES.map((g) => (
-                    <button
-                      aria-pressed={state?.g === g.id}
-                      className={classNames('info-game-option', { active: state?.g === g.id })}
-                      key={g.id}
-                      onClick={() => patch({ g: g.id })}
-                      title={g.name}
-                      type="button"
-                    >
-                      <GameMark game={g} onDark />
-                      <span className="info-game-name">{g.name}</span>
-                    </button>
-                  ))}
-                  {status === 'home' && (
-                    <button
-                      aria-pressed={!state?.g}
-                      className={classNames('info-game-option', { active: !state?.g })}
-                      onClick={() => patch({ g: '' })}
-                      type="button"
-                    >
-                      <FontAwesomeIcon icon={faQuestion} />
-                      <span className="info-game-name">Sin especificar</span>
-                    </button>
-                  )}
+                  {GAMES.map((g) => {
+                    const active = state?.g === g.id;
+                    // si ya está en HOME, volver a pulsar el juego marcado lo quita
+                    const onClick = () => patch({ c: status === 'home', g: active && status === 'home' ? '' : g.id });
+                    return (
+                      <button
+                        aria-pressed={active}
+                        className={classNames('info-game-option', { active })}
+                        key={g.id}
+                        onClick={onClick}
+                        title={active && status === 'home' ? `${g.name} (pulsa para quitarlo)` : g.name}
+                        type="button"
+                      >
+                        <GameMark game={g} onDark />
+                        <span className="info-game-name">{g.name}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -1,5 +1,5 @@
 import {
-  faBoxArchive, faCity, faGamepad, faGem, faGraduationCap, faLocationDot, faMountainSun, faQuestion, faShieldHalved,
+  faBoxArchive, faCity, faGamepad, faGem, faGraduationCap, faLocationDot, faMountainSun, faShieldHalved,
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -56,7 +56,6 @@ export const GAMES: Game[] = [
   // Compatibilidad prevista para octubre de 2026
   { id: 'frlg', name: 'Rojo Fuego / Verde Hoja (Switch)', short: 'FRVH', color: '#6b5bbd', icon: faGamepad, localMark: 'gba' },
   { id: 'bank', name: 'Pokémon Bank (juegos de 3DS)', short: '3DS', color: '#6d4c41', icon: faBoxArchive, mark: 'pentagon', localMark: 'xy' },
-  { id: 'otro', name: 'Otro', short: '?', color: '#78909c', icon: faQuestion },
 ];
 
 export const GAME_BY_ID: Record<string, Game> = Object.fromEntries(GAMES.map((g) => [g.id, g]));
