@@ -1,6 +1,5 @@
 import {
   faBoxArchive, faCity, faGamepad, faGem, faGraduationCap, faLocationDot, faMountainSun, faQuestion, faShieldHalved,
-  faTrophy,
 } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -25,17 +24,23 @@ const POKESPRITE = 'https://raw.githubusercontent.com/msikma/pokesprite/master/m
  * blanca (la de HOME) para el modo noche. Si falta alguna, se prueba la otra y
  * después la de PokéSprite; en último caso se usa el icono de reserva.
  */
-export function markUrls (game: Game, night = false) {
+export interface MarkSource {
+  url: string;
+  /** true si la imagen es de la variante contraria y hay que invertirla */
+  invert: boolean;
+}
+
+export function markUrls (game: Game, night = false): MarkSource[] {
   const base = import.meta.env.BASE_URL;
-  const urls: string[] = [];
+  const urls: MarkSource[] = [];
   if (game.localMark) {
-    const variants = night ? [`${game.localMark}-night`, game.localMark] : [game.localMark, `${game.localMark}-night`];
-    for (const v of variants) {
-      urls.push(`${base}origin-marks/${v}.png`);
-      urls.push(`${base}origin-marks/${v}.webp`);
-    }
+    const wanted = night ? `${game.localMark}-night` : game.localMark;
+    const other = night ? game.localMark : `${game.localMark}-night`;
+    for (const ext of ['png', 'webp']) urls.push({ url: `${base}origin-marks/${wanted}.${ext}`, invert: false });
+    for (const ext of ['png', 'webp']) urls.push({ url: `${base}origin-marks/${other}.${ext}`, invert: true });
   }
-  if (game.mark) urls.push(`${POKESPRITE}${game.mark}.png`);
+  // las de PokéSprite son blancas
+  if (game.mark) urls.push({ url: `${POKESPRITE}${game.mark}.png`, invert: !night });
   return urls;
 }
 
@@ -50,7 +55,6 @@ export const GAMES: Game[] = [
   { id: 'za', name: 'Leyendas: Z-A', short: 'ZA', color: '#1f8f8a', icon: faCity, localMark: 'plza' },
   // Compatibilidad prevista para octubre de 2026
   { id: 'frlg', name: 'Rojo Fuego / Verde Hoja (Switch)', short: 'FRVH', color: '#6b5bbd', icon: faGamepad, localMark: 'gba' },
-  { id: 'champions', name: 'Pokémon Champions', short: 'CH', color: '#455a64', icon: faTrophy },
   { id: 'bank', name: 'Pokémon Bank (juegos de 3DS)', short: '3DS', color: '#6d4c41', icon: faBoxArchive, mark: 'pentagon', localMark: 'xy' },
   { id: 'otro', name: 'Otro', short: '?', color: '#78909c', icon: faQuestion },
 ];

@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 
@@ -24,18 +25,18 @@ export function GameMark ({ game, onDark, title }: Props) {
 
   useEffect(() => setIndex(0), [game.id, night]);
 
-  const url = urls[index];
-  if (!url) {
+  const source = urls[index];
+  if (!source) {
     return <FontAwesomeIcon icon={game.icon} title={title} />;
   }
 
   return (
     <img
       alt=""
-      className="game-mark"
-      key={url}
+      className={classNames('game-mark', { inverted: source.invert })}
+      key={source.url}
       onError={() => setIndex((i) => i + 1)}
-      src={url}
+      src={source.url}
       title={title}
     />
   );

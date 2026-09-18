@@ -1293,3 +1293,35 @@ $pending-color: #cfe3ff;
     }
   }
 }
+
+// Si solo está la otra versión de la marca, se invierte para que contraste
+.game-mark.inverted {
+  filter: invert(1) brightness(1.8);
+}
+
+// ---------- Modo noche: casillas marcadas ----------
+// El dorado apagado del tema original deslavaba los iconos: mejor un fondo
+// oscuro con un borde dorado que se vea igual de claro de un vistazo.
+
+.night-mode .pokemon.captured {
+  background-color: #3a3520;
+  color: $gray-medium;
+
+  .set-captured,
+  .set-captured-mobile,
+  .set-info {
+    border-color: #5c522c;
+  }
+
+  .form-name {
+    color: $gray-dark;
+  }
+}
+
+.night-mode .pokemon.captured:not(.empty):not(.disabled):hover:not(.viewing) .set-captured {
+  border-color: $night-mode-primary;
+}
+
+.night-mode .box .box-container {
+  border-color: $night-mode-06dp;
+}

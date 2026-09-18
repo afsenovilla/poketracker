@@ -20,7 +20,8 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
   - En la ficha puedes indicar el juego: dónde está si aún no lo has pasado, o de dónde viene si ya está en HOME.
   - Abajo a la izquierda de la casilla aparece la **marca de origen** del juego, la misma que muestra HOME. Los pendientes, además, se ven en azul.
   - Las marcas están en `public/origin-marks/`, en dos versiones: la oscura de los juegos (`<juego>.png`) para el modo día y la blanca de HOME (`<juego>-night.png`) para el modo noche.
-  - Si falta alguna se prueba la otra versión, después la marca equivalente de [PokéSprite](https://github.com/msikma/pokesprite) y, en último caso, un icono genérico.
+  - Si falta alguna se usa la otra versión invertida, después la marca equivalente de [PokéSprite](https://github.com/msikma/pokesprite) y, en último caso, un icono genérico.
+  - Los juegos están en `src/lib/games.ts`; ahí se añaden o se quitan.
 - Puedes **excluir** un Pokémon que no esté disponible o que no busques: deja de contar para el total.
 - **Dónde capturarlo:** lugares por juego (Let's Go, Espada/Escudo, DBPR, Leyendas Arceus, Escarlata/Púrpura, Leyendas Z-A), en español, más si está en Pokémon GO y de qué Pokémon evoluciona.
 - Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por juego, por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME». El filtro de juegos solo muestra los que tienen Pokémon asignados, con su número.
