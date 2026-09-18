@@ -42,26 +42,35 @@ Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 d
 
 El progreso puede guardarse en el mismo repositorio (por defecto en `data/progreso.json`). El workflow ignora los cambios en `data/`, así que guardar progreso no vuelve a publicar la web. Si el repositorio es público, el progreso también lo es.
 
-### Conectar el guardado en GitHub
+### Entrar con correo y contraseña
 
-1. Crea un token *fine-grained* en <https://github.com/settings/personal-access-tokens/new>:
-   - **Repository access:** *Only select repositories* → el repositorio de la web (o el que uses para los datos).
-   - **Permissions → Repository → Contents:** *Read and write*.
-   - Pon una caducidad (por ejemplo, un año).
-2. En la web, abre **Mis dex → Ajustes y sincronización** y rellena el usuario, el repositorio, la rama, la ruta (`data/progreso.json`) y el token.
-3. Repite el paso 2 en cada dispositivo (PC, móvil…).
+La web no pide el token de GitHub ni enseña el usuario ni el repositorio: solo un correo y una contraseña que eliges tú. El token va cifrado en `public/acceso.json`, dentro del propio repositorio.
+
+Preparación, una sola vez:
+
+1. Crea un token *fine-grained* en <https://github.com/settings/personal-access-tokens/new> con acceso solo a este repositorio y **Contents: Read and write**.
+2. En la web, abre **Entrar → Crear o cambiar el acceso**, pega el token, pon tu correo y una contraseña larga y pulsa **Generar fichero de acceso**.
+3. Descarga `acceso.json` y súbelo a la carpeta `public/` del repositorio.
+4. Cuando la web se vuelva a publicar, entra con ese correo y esa contraseña.
 
 Cómo funciona:
 
-- El token solo se guarda en el `localStorage` de ese navegador y solo se envía a `api.github.com`. Si usas un ordenador compartido, desconéctalo al terminar.
+- El token se cifra en tu navegador con AES-GCM y una clave derivada de tu correo y tu contraseña (PBKDF2-SHA256, 600.000 iteraciones). El correo forma parte de la clave, así que hacen falta los dos.
+- Al entrar, el token descifrado se queda en el `localStorage` de ese navegador: no hay que volver a escribir nada hasta que cierres sesión.
 - Los cambios se agrupan y se guardan unos 2 segundos después del último clic. Cada guardado es un commit.
 - Si otro dispositivo ha guardado antes, la web descarga su versión y vuelve a aplicar tus cambios encima, así que no se pierde nada.
 - Sin conexión, los cambios quedan pendientes en el navegador y se suben al volver la conexión.
-- El icono de la barra superior muestra el estado: ✓ guardado, ☁ pendiente, ⚠ error.
+
+Qué tener en cuenta:
+
+- **El fichero cifrado es público**, como todo el repositorio. El cifrado es serio, pero cualquiera puede descargarlo e intentar adivinar la contraseña sin límite de intentos, así que usa una larga (mínimo 10 caracteres, cuantos más mejor).
+- Si sospechas que se ha filtrado, revoca el token en GitHub, crea otro y vuelve a generar el `acceso.json`.
+- Para cambiar la contraseña, genera otro `acceso.json` con el mismo token y súbelo encima.
+- Lo único que protege el token es esa contraseña. Si quieres que no haya ningún secreto publicado, la alternativa es un pequeño servidor propio (por ejemplo, un Worker de Cloudflare) que guarde el token y compruebe el usuario, pero eso ya no es una web estática.
 
 ### Modo lectura
 
-Sin token, la web lee `data/progreso.json` del repositorio público y muestra el progreso **sin permitir cambios**: no se puede marcar, crear dex ni editar, y un clic en un Pokémon solo abre su ficha. El repositorio de lectura se configura en `src/config.ts`.
+Sin iniciar sesión, la web lee `data/progreso.json` del repositorio público y muestra el progreso **sin permitir cambios**: no se puede marcar, crear dex ni editar, y un clic en un Pokémon solo abre su ficha. El repositorio de lectura se configura en `src/config.ts`.
 
 - **Cómo lee el fichero:** usa primero la API de GitHub sin autenticar, que siempre está al día pero admite 60 peticiones por hora por IP. Si se agota ese límite, pasa a `raw.githubusercontent.com`, que puede ir unos minutos por detrás.
 - **Uso solo local:** si pones `PUBLIC_PROGRESS = null`, la web vuelve a funcionar sin GitHub, guardando el progreso en el navegador.

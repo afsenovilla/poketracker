@@ -1325,3 +1325,55 @@ $pending-color: #cfe3ff;
 .night-mode .box .box-container {
   border-color: $night-mode-06dp;
 }
+
+// ---------- Acceso ----------
+
+.settings {
+  .settings-session {
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .settings-generator-link {
+    margin-top: 40px !important;
+    text-align: center;
+    font-size: 13px !important;
+  }
+}
+
+.access-generator {
+  top: 0;
+  animation: none;
+
+  .form-column {
+    width: min(420px, calc(100vw - 32px));
+  }
+
+  h2 {
+    margin-top: 20px !important;
+  }
+
+  .access-result {
+    margin-top: 20px;
+
+    p {
+      text-align: left;
+      font-size: 14px;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid $gray-medium;
+      font-family: monospace;
+      font-size: 11px;
+      word-break: break-all;
+    }
+  }
+}
+
+.night-mode .access-generator .access-result textarea {
+  background-color: $night-mode-04dp;
+  color: $gray-medium;
+  border-color: $night-mode-12dp;
+}

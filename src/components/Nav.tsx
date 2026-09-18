@@ -10,9 +10,9 @@ import { useUI } from '../lib/ui';
 
 export const STATUS: Record<SyncStatus, { label: string; icon: typeof faCheck; spin?: boolean }> = {
   local: { label: 'Solo en este navegador', icon: faHome },
-  readonly: { label: 'Modo lectura · conecta tu token para editar', icon: faEye },
-  loading: { label: 'Cargando de GitHub…', icon: faCircleNotch, spin: true },
-  synced: { label: 'Guardado en GitHub', icon: faCheck },
+  readonly: { label: 'Modo lectura · entra para editar', icon: faEye },
+  loading: { label: 'Cargando…', icon: faCircleNotch, spin: true },
+  synced: { label: 'Guardado', icon: faCheck },
   pending: { label: 'Cambios sin guardar', icon: faCloud },
   saving: { label: 'Guardando…', icon: faCircleNotch, spin: true },
   error: { label: 'Error al guardar', icon: faExclamationTriangle },
@@ -48,7 +48,7 @@ export function Nav () {
             ))}
           </div>
           <li><Link to="/"><FontAwesomeIcon icon={faHome} /> Inicio</Link></li>
-          <li><Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> {readOnly ? 'Conectar para editar' : 'Ajustes y sincronización'}</Link></li>
+          <li><Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> {readOnly ? 'Entrar' : 'Tu cuenta'}</Link></li>
         </ul>
       </div>
     </nav>

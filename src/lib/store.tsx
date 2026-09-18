@@ -12,6 +12,7 @@ const KEY_BASE = 'pt:base';
 const KEY_SHA = 'pt:sha';
 const KEY_PENDING = 'pt:pending';
 const KEY_GITHUB = 'pt:github';
+const KEY_EMAIL = 'pt:email';
 const SAVE_DELAY = 2000;
 
 export type SyncStatus = 'local' | 'readonly' | 'loading' | 'synced' | 'pending' | 'saving' | 'error' | 'offline';
@@ -23,7 +24,11 @@ interface StoreState {
   error: string | null;
   lastSync: Date | null;
   github: GitHubSettings | null;
-  setGithub: (s: GitHubSettings | null, opts?: { uploadLocal?: boolean }) => void;
+  /** correo con el que se entró (solo para mostrarlo) */
+  email: string | null;
+  /** entrar con el token descifrado */
+  login: (email: string, token: string) => void;
+  logout: () => void;
   syncNow: () => Promise<void>;
   pendingCount: number;
   /** sin token y con progreso público: solo lectura */
@@ -39,6 +44,7 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
   });
   const [pending, setPending] = useState<Op[]>(() => storage.getJSON<Op[]>(KEY_PENDING) || []);
   const [github, setGithubState] = useState<GitHubSettings | null>(() => storage.getJSON<GitHubSettings>(KEY_GITHUB));
+  const [email, setEmail] = useState<string | null>(() => storage.get(KEY_EMAIL));
   const readOnly = !github && Boolean(PUBLIC_PROGRESS);
   const [status, setStatus] = useState<SyncStatus>(github || readOnly ? 'loading' : 'local');
   const [error, setError] = useState<string | null>(null);
@@ -247,6 +253,19 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
     setGithubState(s);
   }, []);
 
+  const login = useCallback((userEmail: string, token: string) => {
+    if (!PUBLIC_PROGRESS) return;
+    storage.set(KEY_EMAIL, userEmail);
+    setEmail(userEmail);
+    setGithub({ ...PUBLIC_PROGRESS, token });
+  }, [setGithub]);
+
+  const logout = useCallback(() => {
+    storage.remove(KEY_EMAIL);
+    setEmail(null);
+    setGithub(null);
+  }, [setGithub]);
+
   const value = useMemo<StoreState>(() => ({
     doc,
     dispatch,
@@ -254,11 +273,13 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
     error,
     lastSync,
     github,
-    setGithub,
+    email,
+    login,
+    logout,
     syncNow,
     pendingCount: pending.length,
     readOnly,
-  }), [doc, dispatch, status, error, lastSync, github, setGithub, syncNow, pending.length, readOnly]);
+  }), [doc, dispatch, status, error, lastSync, github, email, login, logout, syncNow, pending.length, readOnly]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

@@ -72,17 +72,10 @@ export function HomePage () {
             <h2>Seguimiento de tus cajas de Pokémon HOME</h2>
           </header>
 
-          {status === 'local' && (
-            <div className="alert alert-muted home-sync-hint">
-              Tu progreso solo se guarda en este navegador.{' '}
-              <Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> Conecta GitHub</Link> para tenerlo en todos tus dispositivos.
-            </div>
-          )}
-
           {readOnly && (
             <div className="alert alert-muted home-sync-hint">
               Estás en <b>modo lectura</b>.{' '}
-              <Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> Conecta tu token</Link> para hacer cambios.
+              <Link to="/ajustes"><FontAwesomeIcon icon={faCog} /> Entra con tu cuenta</Link> para hacer cambios.
             </div>
           )}
 
