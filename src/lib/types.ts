@@ -13,6 +13,9 @@ export interface Entry {
   category: Category;
   gen: number;
   types: string[];
+  /** clases del sprite sheet (icono de caja) */
+  icon: string | null;
+  iconShiny: string | null;
   sprite: string;
   spriteShiny: string;
   home: string;
@@ -47,7 +50,7 @@ export interface SlotState {
   c?: 1;
   /** excluido / no disponible (no cuenta para el total) */
   x?: 1;
-  /** lo tengo en otro juego, pendiente de pasar a HOME (id de juego, ver games.ts) */
+  /** juego del que viene: si no está marcado en HOME, es que sigue ahí pendiente */
   g?: string;
   /** nota libre (versiones antiguas) */
   n?: string;

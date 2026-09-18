@@ -6,6 +6,7 @@ import { Info } from './Info';
 import { Nav } from '../Nav';
 import { NotFound } from '../NotFound';
 import { SearchBar } from './SearchBar';
+import { GAMES } from '../../lib/games';
 import { buildSlots, usePokedex } from '../../lib/data';
 import { useStore } from '../../lib/store';
 import type { Filters } from './SearchBar';
@@ -21,11 +22,21 @@ export function Tracker () {
   const captures = (dex && doc.captures[dex.id]) || {};
 
   const columnRef = useRef<HTMLDivElement>(null);
-  const [filters, setFilters] = useState<Filters>({ query: '', hideCaught: false, gen: 0, onlyPending: false });
+  const [filters, setFilters] = useState<Filters>({ query: '', hideCaught: false, gen: 0, onlyPending: false, game: '' });
   const [selected, setSelected] = useState<string | null>(null);
   const [showScroll, setShowScroll] = useState(false);
 
   const slots = useMemo(() => (dex && data ? buildSlots(dex, data.entries) : []), [dex, data]);
+
+  // Solo se ofrecen los juegos que tienen algún Pokémon asignado en esta dex
+  const gameCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const s of slots) {
+      const g = captures[s.entry.id]?.g;
+      if (g) counts.set(g, (counts.get(g) || 0) + 1);
+    }
+    return GAMES.filter((g) => counts.has(g.id)).map((g) => ({ id: g.id, name: g.name, count: counts.get(g.id)! }));
+  }, [slots, captures]);
 
   useEffect(() => {
     document.title = dex ? `${dex.title} | Poketracker` : 'Poketracker';
@@ -37,7 +48,7 @@ export function Tracker () {
 
   useEffect(() => {
     if (columnRef.current) columnRef.current.scrollTop = 0;
-  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending]);
+  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game]);
 
 
   const handleScroll = useCallback(() => {
@@ -57,7 +68,7 @@ export function Tracker () {
       <Nav />
       <div className="tracker">
         <div className="dex-wrapper">
-          <SearchBar filters={filters} setFilters={setFilters} />
+          <SearchBar filters={filters} gameCounts={gameCounts} setFilters={setFilters} />
           <div className="dex-column" onScroll={handleScroll} ref={columnRef}>
             <Dex
               captures={captures}

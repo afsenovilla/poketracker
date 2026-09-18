@@ -1,0 +1,25 @@
+Marcas de origen (las que muestra Pokémon HOME), en dos versiones:
+
+  <juego>.png        versión oscura, la de los juegos -> modo día
+  <juego>-night.png  versión blanca, la de HOME       -> modo noche
+
+Si falta una de las dos, se usa la otra; si no hay ninguna, se prueba la marca
+equivalente de PokéSprite y, en último caso, un icono genérico.
+También vale .webp en vez de .png.
+
+Ficheros:
+
+  go         Pokémon GO
+  lgpe       Let's Go, Pikachu! / Eevee!
+  swsh       Espada / Escudo (símbolo de Galar)
+  bdsp       Diamante Brillante / Perla Reluciente (símbolo de Sinnoh)
+  pla        Leyendas: Arceus (símbolo de Hisui)
+  sv         Escarlata / Púrpura (símbolo de Paldea)
+  plza       Leyendas: Z-A (símbolo de Luminalia)
+  xy         Pokémon Bank, juegos de 3DS (pentágono azul)
+  gba        Rojo Fuego / Verde Hoja de Switch (a partir de octubre de 2026)
+
+Sin usar de momento, por si se añaden más juegos:
+
+  sm         símbolo de Alola (Sol/Luna y Ultrasol/Ultraluna)
+  vc         símbolo de Game Boy (Consola Virtual de 1.ª y 2.ª generación)

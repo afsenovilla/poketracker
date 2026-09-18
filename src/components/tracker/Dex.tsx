@@ -50,7 +50,7 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
 
   const boxes = useMemo(() => groupBoxes(slots), [slots]);
 
-  const filtering = filters.query.trim() !== '' || filters.hideCaught || filters.gen > 0 || filters.onlyPending;
+  const filtering = filters.query.trim() !== '' || filters.hideCaught || filters.gen > 0 || filters.onlyPending || filters.game !== '';
 
   const results = useMemo(() => {
     if (!filtering) return [];
@@ -60,6 +60,7 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
       if (filters.hideCaught && (st?.c || st?.x)) return false;
       if (filters.gen && s.entry.gen !== filters.gen) return false;
       if (filters.onlyPending && (st?.c || !st?.g)) return false;
+      if (filters.game && st?.g !== filters.game) return false;
       return matches(s, q);
     });
   }, [filtering, filters, slots, captures]);

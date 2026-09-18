@@ -8,16 +8,20 @@ export interface Filters {
   hideCaught: boolean;
   gen: number;
   onlyPending: boolean;
+  /** id de juego, o '' para todos */
+  game: string;
 }
 
 interface Props {
   filters: Filters;
   setFilters: Dispatch<SetStateAction<Filters>>;
+  /** juegos con Pokémon asignados en esta dex, con su número */
+  gameCounts: { id: string; name: string; count: number }[];
 }
 
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-export function SearchBar ({ filters, setFilters }: Props) {
+export function SearchBar ({ filters, gameCounts, setFilters }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -72,6 +76,17 @@ export function SearchBar ({ filters, setFilters }: Props) {
                 <span className="checkbox-custom"><span /></span>Pendientes de pasar a HOME
               </label>
             </div>
+            {gameCounts.length > 0 && (
+              <select
+                aria-label="Juego"
+                className="game-select"
+                onChange={(e) => update({ game: e.target.value })}
+                value={filters.game}
+              >
+                <option value="">Todos los juegos</option>
+                {gameCounts.map((g) => <option key={g.id} value={g.id}>{g.name} ({g.count})</option>)}
+              </select>
+            )}
             <select
               aria-label="Generación"
               className="gen-select"

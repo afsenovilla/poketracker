@@ -15,13 +15,15 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 
 - Varias dex a la vez (normal y shiny): las 1025 especies y, si quieres, las 57 formas regionales.
 - Cajas de 30 en el mismo orden en que los guardas en HOME. Las formas regionales pueden ir junto a su especie o en cajas propias al final.
-- Cada Pokémon tiene tres estados: **no lo tengo**, **en otro juego** (pendiente de pasar a HOME, con un desplegable para indicar el juego) y **en HOME**.
+- Cada Pokémon tiene tres estados: **no lo tengo**, **en otro juego** (pendiente de pasar a HOME) y **en HOME**.
   - Un clic lo marca como «en HOME», y «Marcar todos» marca la caja entera.
-  - Los pendientes se ven en azul, con la abreviatura del juego, y tienen su propio filtro.
-  - Al marcar uno como «en HOME» deja de estar pendiente.
+  - En la ficha puedes indicar el juego: dónde está si aún no lo has pasado, o de dónde viene si ya está en HOME.
+  - Abajo a la izquierda de la casilla aparece la **marca de origen** del juego, la misma que muestra HOME. Los pendientes, además, se ven en azul.
+  - Las marcas están en `public/origin-marks/`, en dos versiones: la oscura de los juegos (`<juego>.png`) para el modo día y la blanca de HOME (`<juego>-night.png`) para el modo noche.
+  - Si falta alguna se prueba la otra versión, después la marca equivalente de [PokéSprite](https://github.com/msikma/pokesprite) y, en último caso, un icono genérico.
 - Puedes **excluir** un Pokémon que no esté disponible o que no busques: deja de contar para el total.
 - **Dónde capturarlo:** lugares por juego (Let's Go, Espada/Escudo, DBPR, Leyendas Arceus, Escarlata/Púrpura, Leyendas Z-A), en español, más si está en Pokémon GO y de qué Pokémon evoluciona.
-- Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME».
+- Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por juego, por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME». El filtro de juegos solo muestra los que tienen Pokémon asignados, con su número.
 - Ficha con el render de HOME (normal o shiny), tipos y entrada de la Pokédex, con enlaces a WikiDex.
 - **Móvil:** la dex se ve como una rejilla de iconos, 6 por fila como en HOME. Un toque marca el Pokémon y una pulsación larga abre su ficha.
 - Modo noche y copia de seguridad (exportar/importar JSON).
@@ -68,7 +70,12 @@ Sin token, la web lee `data/progreso.json` del repositorio público y muestra el
 `public/data/pokedex.json` se genera con `scripts/build-data.py` a partir de:
 
 - los CSV de [PokéAPI](https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv): nombres en español, formas, tipos y entradas de la Pokédex;
-- el listado de [PokeAPI/sprites](https://github.com/PokeAPI/sprites). Los sprites se cargan desde `raw.githubusercontent.com` y no se copian al repositorio.
+- el listado de [PokeAPI/sprites](https://github.com/PokeAPI/sprites), para los renders de HOME de la ficha, que se cargan desde `raw.githubusercontent.com`.
+
+En las cajas se usan los **iconos de caja** (estilo HOME) del sprite sheet de PokédexTracker: `public/pokesprite-v12.png` y `src/styles/pokesprite.scss`, que cubren las 1025 especies y las formas regionales, en normal y variocolor. `build-data.py` lee ese SCSS y guarda en cada entrada las clases que le tocan (`icon` e `iconShiny`).
+
+- Los doce Pokémon sin variocolor disponible (Kubfu, Urshifu, Okidogi, Munkidori, Fezandipiti, Ogerpon, Gouging Fire, Raging Bolt, Iron Boulder, Iron Crown, Terapagos y Pecharunt) usan su icono normal en la dex shiny.
+- Las tres razas de Tauros de Paldea comparten icono, porque el sprite sheet solo trae uno.
 
 `public/data/locations.json` («Dónde capturarlo») se genera con `scripts/build-locations.py` a partir de las tablas de encuentros de [PKHeX](https://github.com/kwsch/PKHeX) (GPL-3.0). Incluye:
 
@@ -142,11 +149,12 @@ Formato del fichero de progreso:
 }
 ```
 
-`c` = en HOME, `g` = en otro juego (su id), `x` = excluido y `t` = fecha de la última modificación.
+`c` = en HOME, `g` = juego de origen (donde está si no tiene `c`), `x` = excluido y `t` = fecha de la última modificación.
 
 ## Créditos
 
-- [PokédexTracker](https://github.com/pokedextracker) (MIT) © Robin Joseph y colaboradores.
+- [PokédexTracker](https://github.com/pokedextracker) (MIT) © Robin Joseph y colaboradores: diseño, estilos y sprite sheet de iconos de caja.
+- Marcas de origen: [PokéSprite](https://github.com/msikma/pokesprite).
 - Datos y sprites: [PokéAPI](https://pokeapi.co).
 - Tablas de encuentros y nombres de lugares: [PKHeX](https://github.com/kwsch/PKHeX) (GPL-3.0).
 - Pokémon y los nombres de Pokémon son marcas de Nintendo, Game Freak y The Pokémon Company. Este es un proyecto personal sin ánimo de lucro.

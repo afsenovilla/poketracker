@@ -4,6 +4,7 @@ import { faBan, faInfo } from '@fortawesome/free-solid-svg-icons';
 import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
+import { GameMark } from '../GameMark';
 import { pad, spriteUrl } from '../../lib/data';
 import { GAME_BY_ID } from '../../lib/games';
 import { useStore } from '../../lib/store';
@@ -27,7 +28,8 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
   const { entry } = slot;
   const formLabel = entry.category === 'base' ? null : entry.form;
   const excluded = Boolean(state?.x);
-  const pendingGame = !state?.c && state?.g ? GAME_BY_ID[state.g] : undefined;
+  const game = state?.g ? GAME_BY_ID[state.g] : undefined;
+  const pending = Boolean(game) && !state?.c;
 
   const timer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
@@ -73,14 +75,15 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
     if (!longPressed.current) openInfo();
   };
 
+  const iconClass = (shiny ? entry.iconShiny : entry.icon) || entry.icon;
   const label = formLabel ? `${entry.name} (${formLabel})` : entry.name;
-  const title = pendingGame ? `${label} · pendiente en ${pendingGame.name}` : label;
+  const title = game ? `${label} · ${state?.c ? `desde ${game.name}` : `pendiente en ${game.name}`}` : label;
 
   return (
     <div
       className={classNames('pokemon', {
         captured: state?.c && !excluded,
-        'pending-game': pendingGame && !excluded,
+        'pending-game': pending && !excluded,
         excluded,
         selected,
       })}
@@ -100,11 +103,17 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
           {formLabel && <span className="form-name">{formLabel}</span>}
         </h4>
         <div className="icon-wrapper">
-          <img alt={label} decoding="async" draggable={false} loading="lazy" src={spriteUrl(entry, shiny)} />
+          {iconClass
+            ? <i className={`pkicon ${iconClass}`} role="img" />
+            : <img alt={label} decoding="async" draggable={false} loading="lazy" src={spriteUrl(entry, shiny)} />}
         </div>
         <p>#{pad(entry.species)}</p>
       </div>
-      {pendingGame && !excluded && <div className="slot-flag game" title={`Pendiente en ${pendingGame.name}`}>{pendingGame.short}</div>}
+      {game && !excluded && (
+        <div className="slot-flag game">
+          <GameMark game={game} title={state?.c ? `Desde ${game.name}` : `Pendiente en ${game.name}`} />
+        </div>
+      )}
       {excluded && <div className="slot-flag ban" title="Excluido"><FontAwesomeIcon icon={faBan} /></div>}
       <div className="set-info" onClick={openInfo} role="button" title="Ver ficha">
         <FontAwesomeIcon icon={faInfo} />

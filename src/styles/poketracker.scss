@@ -1023,3 +1023,167 @@ $pending-color: #cfe3ff;
 .night-mode .pokemon .set-info .svg-inline--fa.fa-info {
   background-color: $night-mode-04dp;
 }
+
+// ---------- Insignia del juego ----------
+
+.pokemon .slot-flag.game {
+  top: auto;
+  bottom: 3px;
+  left: 3px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: #fff;
+  font-family: $font-secondary;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  line-height: 11px;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+}
+
+.dex-search-bar .dex-search-bar-filters .form-group .game-select {
+  width: auto;
+  height: 30px;
+  margin-left: auto;
+  padding: 0 8px;
+  font-size: 13px;
+  border-width: 1px;
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+.dex-search-bar .dex-search-bar-filters .form-group .gen-select {
+  margin-left: 8px;
+}
+
+.night-mode .dex-search-bar .game-select {
+  background-color: $night-mode-04dp;
+  color: $gray-medium;
+  border-color: $night-mode-12dp;
+}
+
+@media (max-width: 750px) {
+  .dex-search-bar .dex-search-bar-filters .form-group {
+    .game-select,
+    .gen-select {
+      width: calc(50% - 4px);
+      height: 36px;
+      margin: 4px 0 0;
+    }
+
+    .gen-select {
+      margin-left: 8px;
+    }
+  }
+
+  .pokemon .slot-flag.game {
+    bottom: 2px;
+    left: 2px;
+  }
+}
+
+// La marca de origen del juego, en la casilla y en la ficha
+.game-mark {
+  @include crisp-rendering();
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pokemon .slot-flag.game {
+  @include flexbox();
+  @include align-items(center);
+  @include justify-content(center);
+
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  background: none !important;
+  border-radius: 0;
+  box-shadow: none;
+  color: #4a4a4a;
+  font-size: 9px;
+  text-shadow: none;
+  filter: drop-shadow(0 0 1px rgba(255, 255, 255, .9));
+}
+
+.info .info-game-select .game-chip {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  color: #fff;
+  vertical-align: -3px;
+
+}
+
+// En modo noche se usa la versión blanca de la marca, así que no hay que invertir nada
+.night-mode .pokemon .slot-flag.game {
+  color: #d8d8d8;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, .75));
+}
+
+@media (max-width: 750px) {
+  .pokemon .slot-flag.game {
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
+  }
+}
+
+// (estilos antiguos, ahora sin uso para la insignia de texto)
+.pokemon .slot-flag.game-legacy {
+  @include flexbox();
+  @include align-items(center);
+  @include justify-content(center);
+
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 8px;
+  text-shadow: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+}
+
+.info .info-game-select .game-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 9px;
+  vertical-align: -3px;
+}
+
+@media (max-width: 750px) {
+  .pokemon .slot-flag.game {
+    width: 13px;
+    height: 13px;
+    font-size: 7px;
+  }
+}
+
+// ---------- Iconos de caja (sprite sheet de PokédexTracker) ----------
+
+.pokemon .icon-wrapper .pkicon {
+  @include align-self(center);
+  transform: scale(1.35);
+  transform-origin: center;
+}
+
+@media (max-width: 750px) {
+  .pokemon .icon-wrapper {
+    @include flexbox();
+    @include align-items(center);
+    @include justify-content(center);
+
+    .pkicon {
+      transform: scale(1.5);
+    }
+  }
+}

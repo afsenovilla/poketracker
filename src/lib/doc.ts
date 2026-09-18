@@ -43,8 +43,7 @@ export function applyOp (doc: ProgressDoc, op: Op, now = Date.now()): ProgressDo
         const next: SlotState = { ...prev, t: now };
         if (op.patch.c !== undefined) {
           if (op.patch.c) {
-            next.c = 1;
-            delete next.g; // ya está en HOME
+            next.c = 1; // el juego (g) se conserva: es de dónde viene
           } else {
             delete next.c;
           }

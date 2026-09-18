@@ -4,6 +4,7 @@ import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/fre
 import { useEffect, useState } from 'react';
 
 import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations } from '../../lib/data';
+import { GameMark } from '../GameMark';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
 import { useStore } from '../../lib/store';
 import { useUI } from '../../lib/ui';
@@ -99,7 +100,7 @@ export function Info ({ dex, flavor, slot, state }: Props) {
           {readOnly ? (
             <p className={`info-readonly status-${status}`}>
               {state?.x ? 'Excluido de esta dex'
-                : status === 'home' ? '✓ En HOME'
+                : status === 'home' ? `✓ En HOME${state?.g ? ` · desde ${GAME_BY_ID[state.g]?.name}` : ''}`
                   : status === 'game' ? `Pendiente en ${GAME_BY_ID[state!.g!]?.name ?? 'otro juego'}`
                     : 'Aún no lo tienes'}
             </p>
@@ -138,10 +139,16 @@ export function Info ({ dex, flavor, slot, state }: Props) {
               </button>
             </div>
 
-            {status === 'game' && (
+            {(status === 'game' || status === 'home') && (
               <label className="info-game-select">
-                <span>¿En qué juego está?</span>
-                <select onChange={(e) => patch({ g: e.target.value })} value={state?.g}>
+                <span>
+                  {state?.g && GAME_BY_ID[state.g] && (
+                    <span className="game-chip"><GameMark game={GAME_BY_ID[state.g]} onDark /></span>
+                  )}
+                  {status === 'game' ? '¿En qué juego está?' : '¿De qué juego viene?'}
+                </span>
+                <select onChange={(e) => patch({ g: e.target.value })} value={state?.g ?? ''}>
+                  {status === 'home' && <option value="">Sin especificar</option>}
                   {GAMES.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
                 </select>
               </label>
