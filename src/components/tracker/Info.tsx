@@ -43,7 +43,9 @@ function WhereToCatch ({ entryId, evo }: { entryId: string; evo: string | null }
               <span className="count">{places.length}</span>
             </summary>
             <ul>
-              {places.map((p) => <li key={p}>{p}</li>)}
+              {places.map((p) => (
+                <li className={/^(Evolución de|Crianza con) /.test(p) ? 'derived' : undefined} key={p}>{p}</li>
+              ))}
             </ul>
           </details>
         )

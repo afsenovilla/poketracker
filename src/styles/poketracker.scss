@@ -796,6 +796,11 @@ $pending-color: #cfe3ff;
       transform: rotate(90deg);
     }
 
+    li.derived {
+      font-style: italic;
+      opacity: .8;
+    }
+
     ul {
       margin: 0 0 10px;
       padding-left: 28px;

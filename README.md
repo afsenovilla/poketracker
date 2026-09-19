@@ -95,6 +95,8 @@ Los iconos se muestran a su tamaño original, sin escalar, para que no se vean b
 - Grutas del Subsuelo, en DBPR;
 - encuentros fijos y regalos;
 - Teraincursiones, con sus estrellas;
+- Incursiones Dinamax y Aventuras Dinamax, en Espada/Escudo;
+- «Evolución de X» y «Crianza con Y» cuando un Pokémon no se captura directamente en un juego, pero sí su preevolución o su evolución (por ejemplo, Ledyba en DBPR solo se consigue criando a Ledian);
 - disponibilidad en Pokémon GO.
 
 Los nombres de los lugares salen en español, tal como aparecen en los juegos. Limitaciones:

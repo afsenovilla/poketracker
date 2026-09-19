@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p .data/csv
-FILES="pokemon_species pokemon_species_names pokemon pokemon_forms pokemon_form_names pokemon_types type_names pokemon_species_flavor_text"
+FILES="pokemon_dex_numbers pokemon_egg_groups pokemon_species pokemon_species_names pokemon pokemon_forms pokemon_form_names pokemon_types type_names pokemon_species_flavor_text"
 for f in $FILES; do
   echo "↓ $f.csv"
   curl -sfL -o ".data/csv/$f.csv" "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/$f.csv"

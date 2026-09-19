@@ -128,6 +128,18 @@ def read_tera9(blob):
         yield sp, form, stars
 
 
+def read_nest8(blob):  # Incursiones Dinamax (Área Silvestre)
+    for o in range(0, len(blob) - 9, 10):
+        sp, form = struct.unpack_from('<HB', blob, o)
+        yield sp, form
+
+
+def read_dynadv8(blob):  # Aventuras Dinamax (Nido Dinamax)
+    for o in range(0, len(blob) - 13, 14):
+        sp, form = struct.unpack_from('<HB', blob, o)
+        yield sp, form
+
+
 def read_go(blob):
     for area in binlinker(blob):
         sp, form = struct.unpack_from('<HB', area, 0)
@@ -166,6 +178,123 @@ def read_static(path, section_filter=None):
             continue
         out.append((version, species, form, [int(loc.group(1))]))
     return out
+
+
+# ------------------------------------------- evolución y crianza derivadas
+
+REGIONS = ('alola', 'galar', 'hisui', 'paldea')
+
+# Evoluciones que dependen de una forma regional concreta (o de un juego concreto).
+# entrada -> (entrada previa, juegos donde aplica; None = todos)
+SPECIAL_PARENT = {
+    'perrserker': ('meowth-galar', None),
+    'sirfetchd': ('farfetchd-galar', None),
+    'mr-rime': ('mr-mime-galar', None),
+    'cursola': ('corsola-galar', None),
+    'obstagoon': ('linoone-galar', None),
+    'runerigus': ('yamask-galar', None),
+    'overqwil': ('qwilfish-hisui', None),
+    'sneasler': ('sneasel-hisui', None),
+    'clodsire': ('wooper-paldea', None),
+    'weezing-galar': ('koffing', {'swsh'}),
+    'mr-mime-galar': ('mime-jr', {'swsh'}),
+    'typhlosion-hisui': ('quilava', {'pla'}),
+    'samurott-hisui': ('dewott', {'pla'}),
+    'decidueye-hisui': ('dartrix', {'pla'}),
+    'lilligant-hisui': ('petilil', {'pla'}),
+    'braviary-hisui': ('rufflet', {'pla'}),
+    'sliggoo-hisui': ('goomy', {'pla'}),
+    'avalugg-hisui': ('bergmite', {'pla'}),
+}
+
+# Pokédex de cada juego (ids de pokedexes.csv de PokéAPI); None = por rango nacional
+GAME_DEXES = {
+    'lgpe': {26}, 'swsh': {27, 28, 29}, 'pla': {30}, 'sv': {31, 32, 33}, 'za': {34, 35},
+}
+BREEDING_GAMES = ('swsh', 'bdsp', 'sv')
+
+
+def derive(csv_dir, entries, result):
+    """Añade «Evolución de X» y «Crianza con Y» cuando no se puede capturar directamente."""
+    def rows(name):
+        with open(os.path.join(csv_dir, f'{name}.csv'), encoding='utf-8') as f:
+            return list(csv.DictReader(f))
+
+    species = {int(r['id']): r for r in rows('pokemon_species')}
+    no_eggs = {int(r['species_id']) for r in rows('pokemon_egg_groups') if r['egg_group_id'] == '15'}
+    in_dex = defaultdict(set)
+    for r in rows('pokemon_dex_numbers'):
+        for g, dexes in GAME_DEXES.items():
+            if int(r['pokedex_id']) in dexes:
+                in_dex[g].add(int(r['species_id']))
+    in_dex['lgpe'].update({808, 809})
+    in_dex['bdsp'] = set(range(1, 494))
+
+    by_id = {e['id']: e for e in entries}
+    by_species = defaultdict(list)
+    for e in entries:
+        if e['category'] in ('base', 'regional'):
+            by_species[e['species']].append(e)
+
+    def region(e):
+        return next((r for r in REGIONS if f'-{r}' in e['id']), None) if e['category'] == 'regional' else None
+
+    def parent(e, game):
+        if e['id'] in SPECIAL_PARENT:
+            pid, games = SPECIAL_PARENT[e['id']]
+            return by_id.get(pid) if games is None or game in games else None
+        prev = species[e['species']]['evolves_from_species_id']
+        if not prev:
+            return None
+        reg = region(e)
+        # en ese juego la evolución da la forma regional, no la normal
+        if reg is None and any(by_id[k]['species'] == e['species'] and gs and game in gs
+                               for k, (_, gs) in SPECIAL_PARENT.items() if k in by_id):
+            return None
+        cands = by_species.get(int(prev), [])
+        for c in cands:
+            if region(c) == reg:
+                return c
+        return None
+
+    def direct(e, game):
+        places = result.get(e['id'], {}).get(game)
+        return bool(places) and not all(p.startswith(('Evolución de ', 'Crianza con ')) for p in places)
+
+    games = ['lgpe', 'swsh', 'bdsp', 'pla', 'sv', 'za']
+    added = 0
+    for game in games:
+        pool = [e for e in entries if e['category'] in ('base', 'regional') and e['species'] in in_dex[game]]
+        children = defaultdict(list)
+        for e in pool:
+            p = parent(e, game)
+            if p:
+                children[p['id']].append(e)
+        caught = {e['id'] for e in pool if direct(e, game)}
+        for e in pool:
+            if e['id'] in caught:
+                continue
+            note = None
+            # evolución: el antepasado capturable más cercano
+            p = parent(e, game)
+            while p and not note:
+                if p['id'] in caught and p['species'] in in_dex[game]:
+                    note = f'Evolución de {p["name"]}'
+                p = parent(p, game)
+            # crianza: solo para la primera fase, a partir de una evolución capturable
+            if not note and game in BREEDING_GAMES and parent(e, game) is None:
+                sp = species[e['species']]
+                if sp['is_legendary'] == '0' and sp['is_mythical'] == '0':
+                    stack = list(children[e['id']])
+                    while stack and not note:
+                        c = stack.pop(0)
+                        if c['id'] in caught and c['species'] not in no_eggs:
+                            note = f'Crianza con {c["name"]}'
+                        stack.extend(children[c['id']])
+            if note:
+                result[e['id']].setdefault(game, OrderedDict())[note] = set()
+                added += 1
+    print(f'Evolución/crianza añadidas: {added}')
 
 
 # ----------------------------------------------------------------- main
@@ -244,6 +373,13 @@ def main():
     add_locs('za', '', read_area9a(pkl('Gen9', 'encounter_za.pkl')))
     add_locs('za', '', ((s, f, l) for s, f, l in read_area9a(pkl('Gen9', 'encounter_hyperspace_za.pkl'))))
 
+    # Incursiones y Aventuras Dinamax
+    for v, f in (('SW', 'sw'), ('SH', 'sh')):
+        for sp, form in read_nest8(pkl('Gen8', f'encounter_{f}_nest.pkl')):
+            add('swsh', v, sp, form, ['Incursiones Dinamax (Área Silvestre)'])
+    for sp, form in read_dynadv8(pkl('Gen8', 'encounter_swsh_underground.pkl')):
+        add('swsh', '', sp, form, ['Aventuras Dinamax (Nido Dinamax)'])
+
     # Teraincursiones
     tera = defaultdict(set)
     for file, region in (('gem_paldea', 'Paldea'), ('gem_kitakami', 'Noroteo'), ('gem_blueberry', 'Instituto Arándano')):
@@ -317,6 +453,8 @@ def main():
         eid = entry_for(sp, form)
         if eid:
             result[eid].setdefault('go', OrderedDict())
+
+    derive(a.csv, entries, result)
 
     # Las diferencias de género comparten lugares con su forma base
     for e in entries:
