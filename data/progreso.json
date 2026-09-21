@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-19T21:09:01.292Z",
+ "updatedAt": "2026-09-21T22:15:24.329Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -7507,6 +7507,10 @@
    },
    "miraidon-ultimate-mode": {
     "t": 1789852141292,
+    "c": 1
+   },
+   "sunkern": {
+    "t": 1790028924329,
     "c": 1
    }
   }
