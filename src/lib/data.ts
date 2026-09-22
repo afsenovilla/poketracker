@@ -134,6 +134,12 @@ export function countEntries (dex: Pick<DexConfig, 'regional' | 'forms' | 'gende
 /** En una dex shiny, los Pokémon que no existen variocolor no cuentan. */
 export const isUnavailable = (dex: Pick<DexConfig, 'shiny'>, e: Entry) => Boolean(dex.shiny && e.noShiny);
 
+/** Página de WikiDex del Pokémon (opcionalmente, una sección como «Localización»). */
+export function wikidexUrl (entry: Pick<Entry, 'name'>, section?: string) {
+  const page = entry.name.replace(/[’‘]/g, "'").replace(/ /g, '_');
+  return `https://www.wikidex.net/wiki/${encodeURIComponent(page)}${section ? `#${encodeURIComponent(section)}` : ''}`;
+}
+
 export const pad = (n: number, digits = 4) => String(n).padStart(digits, '0');
 
 export const normalize = (s: string) => s

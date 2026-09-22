@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
+import { faExternalLinkAlt, faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 
-import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations } from '../../lib/data';
+import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations, wikidexUrl } from '../../lib/data';
 import { GameMark } from '../GameMark';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
 import { useStore } from '../../lib/store';
@@ -65,7 +65,6 @@ export function Info ({ dex, flavor, slot, state }: Props) {
 
   const patch = (p: SlotPatch) => dispatch({ type: 'slot', dex: dex.id, entries: [entry.id], patch: p });
 
-  const wikidexName = entry.name.replace(/ /g, '_');
   const status = state?.c ? 'home' : state?.g ? 'game' : 'none';
 
   return (
@@ -77,7 +76,12 @@ export function Info ({ dex, flavor, slot, state }: Props) {
       <div className="info-main">
         <div className="info-header">
           <div className="info-title">
-            <h1>{entry.name}</h1>
+            <h1>
+              <a className="info-wikidex" href={wikidexUrl(entry)} rel="noopener noreferrer" target="_blank" title={`${entry.name} en WikiDex`}>
+                {entry.name}
+                <FontAwesomeIcon className="info-wikidex-icon" icon={faExternalLinkAlt} />
+              </a>
+            </h1>
             {entry.form && entry.category !== 'base' && <p className="info-form">{entry.form}</p>}
           </div>
           <h2>#{pad(entry.species)}</h2>
@@ -181,14 +185,19 @@ export function Info ({ dex, flavor, slot, state }: Props) {
           </div>
           )}
 
-          <h3 className="info-section">Dónde capturarlo</h3>
+          <h3 className="info-section info-section-link">
+            Dónde capturarlo
+            <a href={wikidexUrl(entry, 'Localización')} rel="noopener noreferrer" target="_blank">
+              Ver en WikiDex <FontAwesomeIcon icon={faExternalLinkAlt} />
+            </a>
+          </h3>
           <WhereToCatch entryId={entry.id} evo={entry.evo} />
 
           {flavor && <blockquote className="info-flavor">{flavor}</blockquote>}
         </div>
 
         <div className="info-footer">
-          <a href={`https://www.wikidex.net/wiki/${encodeURIComponent(wikidexName)}`} rel="noopener noreferrer" target="_blank">
+          <a href={wikidexUrl(entry)} rel="noopener noreferrer" target="_blank">
             WikiDex <FontAwesomeIcon icon={faLongArrowAltRight} />
           </a>
           <a href={`https://pokemondb.net/pokedex/${entry.slug}`} rel="noopener noreferrer" target="_blank">
