@@ -8,9 +8,11 @@ import { Progress } from '../Progress';
 import { groupBoxes, normalize, pad } from '../../lib/data';
 import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
+import { isFiltering } from './SearchBar';
 import type { Filters } from './SearchBar';
 
 interface Props {
+  availability: Map<string, Set<string>>;
   captures: Record<string, SlotState>;
   dex: DexConfig;
   filters: Filters;
@@ -32,7 +34,7 @@ function matches (slot: Slot, q: string) {
   return q.split(/\s+/).every((word) => hay.includes(word));
 }
 
-export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onSelect, selected, showScrollButton, slots }: Props) {
+export const Dex = memo(function Dex ({ availability, captures, dex, filters, onScrollTop, onSelect, selected, showScrollButton, slots }: Props) {
   const { readOnly } = useStore();
   const { caught, total, pending } = useMemo(() => {
     let c = 0;
@@ -50,7 +52,7 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
 
   const boxes = useMemo(() => groupBoxes(slots), [slots]);
 
-  const filtering = filters.query.trim() !== '' || filters.hideCaught || filters.gen > 0 || filters.onlyPending || filters.game !== '';
+  const filtering = isFiltering(filters);
 
   const results = useMemo(() => {
     if (!filtering) return [];
@@ -62,9 +64,10 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
       if (filters.gen && s.entry.gen !== filters.gen) return false;
       if (filters.onlyPending && (st?.c || !st?.g)) return false;
       if (filters.game && st?.g !== filters.game) return false;
+      if (filters.available && (s.unavailable || st?.x || !availability.get(filters.available)?.has(s.entry.id))) return false;
       return matches(s, q);
     });
-  }, [filtering, filters, slots, captures]);
+  }, [filtering, filters, slots, captures, availability]);
 
   return (
     <div className="dex">

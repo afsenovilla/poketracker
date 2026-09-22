@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 
 import { Dex } from './Dex';
 import { Info } from './Info';
 import { Nav } from '../Nav';
 import { NotFound } from '../NotFound';
-import { SearchBar } from './SearchBar';
+import { EMPTY_FILTERS, isFiltering, SearchBar } from './SearchBar';
 import { GAMES } from '../../lib/games';
-import { BOX_COLUMNS, buildSlots, usePokedex } from '../../lib/data';
+import { availabilityByGame, BOX_COLUMNS, buildSlots, useLocations, usePokedex } from '../../lib/data';
 import { useStore } from '../../lib/store';
 import type { Filters } from './SearchBar';
 
@@ -22,7 +22,17 @@ export function Tracker () {
   const captures = (dex && doc.captures[dex.id]) || {};
 
   const columnRef = useRef<HTMLDivElement>(null);
-  const [filters, setFilters] = useState<Filters>({ query: '', hideCaught: false, gen: 0, onlyPending: false, game: '' });
+  const [params] = useSearchParams();
+  // Filtros de partida desde el enlace (p. ej. desde las estadísticas: ?faltan=swsh)
+  const [filters, setFilters] = useState<Filters>(() => ({
+    ...EMPTY_FILTERS,
+    hideCaught: params.has('faltan'),
+    available: params.get('faltan') || params.get('disponible') || '',
+    game: params.get('origen') || '',
+    gen: Number(params.get('gen')) || 0,
+  }));
+  const locations = useLocations();
+  const availability = useMemo(() => availabilityByGame(locations), [locations]);
   const [selected, setSelected] = useState<string | null>(null);
   const [showScroll, setShowScroll] = useState(false);
 
@@ -38,6 +48,22 @@ export function Tracker () {
     return GAMES.filter((g) => counts.has(g.id)).map((g) => ({ id: g.id, name: g.name, count: counts.get(g.id)! }));
   }, [slots, captures]);
 
+  // Juegos donde se consiguen (solo cuentan los que puntúan: ni excluidos ni sin shiny)
+  const availableCounts = useMemo(() => {
+    if (!locations) return [];
+    return Object.entries(locations.games).map(([id, name]) => {
+      const set = availability.get(id);
+      let count = 0;
+      for (const s of slots) {
+        const st = captures[s.entry.id];
+        if (s.unavailable || st?.x || !set?.has(s.entry.id)) continue;
+        if (filters.hideCaught && st?.c) continue;
+        count++;
+      }
+      return { id, name, count };
+    }).filter((g) => g.count > 0 || g.id === filters.available);
+  }, [locations, availability, slots, captures, filters.hideCaught, filters.available]);
+
   useEffect(() => {
     document.title = dex ? `${dex.title} | Poketracker` : 'Poketracker';
   }, [dex?.title]);
@@ -48,10 +74,10 @@ export function Tracker () {
 
   useEffect(() => {
     if (columnRef.current) columnRef.current.scrollTop = 0;
-  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game]);
+  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game, filters.available]);
 
 
-  const filtering = filters.query.trim() !== '' || filters.hideCaught || filters.gen > 0 || filters.onlyPending || filters.game !== '';
+  const filtering = isFiltering(filters);
 
   // Navegación con las flechas del teclado por la casilla seleccionada
   useEffect(() => {
@@ -113,9 +139,10 @@ export function Tracker () {
       <Nav />
       <div className="tracker">
         <div className="dex-wrapper">
-          <SearchBar filters={filters} gameCounts={gameCounts} setFilters={setFilters} />
+          <SearchBar availableCounts={availableCounts} filters={filters} gameCounts={gameCounts} setFilters={setFilters} />
           <div className="dex-column" onScroll={handleScroll} ref={columnRef}>
             <Dex
+              availability={availability}
               captures={captures}
               dex={dex}
               filters={filters}

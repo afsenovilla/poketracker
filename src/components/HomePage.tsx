@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { DexForm } from './DexForm';
 import { Nav } from './Nav';
 import { Progress } from './Progress';
+import { Stats } from './Stats';
 import { includeEntry, isUnavailable, usePokedex } from '../lib/data';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry } from '../lib/types';
@@ -94,6 +95,8 @@ export function HomePage () {
               <button className="btn btn-blue" onClick={() => setEditing('new')} type="button">Nueva dex</button>
             </div>
           )}
+
+          {doc.dexes.length > 0 && <Stats dexes={doc.dexes} entries={data.entries} />}
         </div>
       </div>
 

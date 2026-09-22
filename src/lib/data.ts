@@ -43,6 +43,19 @@ export function useLocations () {
   return data;
 }
 
+/** juego -> ids de las entradas que se pueden conseguir ahí (incluye evolución y crianza) */
+export function availabilityByGame (data: LocationsData | null) {
+  const map = new Map<string, Set<string>>();
+  if (!data) return map;
+  for (const [id, list] of Object.entries(data.locations)) {
+    for (const [game] of list) {
+      if (!map.has(game)) map.set(game, new Set());
+      map.get(game)!.add(id);
+    }
+  }
+  return map;
+}
+
 export function loadPokedex () {
   if (!cache) {
     const base = import.meta.env.BASE_URL;
