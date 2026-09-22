@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-22T12:49:37.930Z",
+ "updatedAt": "2026-09-22T12:49:48.355Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -8310,6 +8310,11 @@
    },
    "slowbro-galar": {
     "t": 1790081377930,
+    "c": 1,
+    "g": "swsh"
+   },
+   "mr-mime-galar": {
+    "t": 1790081388355,
     "c": 1,
     "g": "swsh"
    }
