@@ -46,18 +46,19 @@ export function markUrls (game: Game, night = false): MarkSource[] {
 
 /** Juegos desde los que se puede mandar Pokémon a HOME */
 export const GAMES: Game[] = [
-  { id: 'go', name: 'Pokémon GO', short: 'GO', color: '#2e7d32', icon: faLocationDot, mark: 'go', localMark: 'go' },
-  { id: 'lgpe', name: "Let's Go, Pikachu! / Eevee!", short: 'LG', color: '#e0a800', icon: faGamepad, mark: 'lets-go', localMark: 'lgpe' },
-  { id: 'swsh', name: 'Espada / Escudo', short: 'EE', color: '#0d7ab5', icon: faShieldHalved, mark: 'galar', localMark: 'swsh' },
-  { id: 'bdsp', name: 'Diamante Brillante / Perla Reluciente', short: 'DB', color: '#8e5bd0', icon: faGem, mark: 'sinnoh-gen8', localMark: 'bdsp' },
-  { id: 'pla', name: 'Leyendas: Arceus', short: 'LA', color: '#b06d1f', icon: faMountainSun, mark: 'hisui', localMark: 'pla' },
-  { id: 'sv', name: 'Escarlata / Púrpura', short: 'EP', color: '#c0392b', icon: faGraduationCap, localMark: 'sv' },
+  // Del más reciente al más antiguo
   { id: 'za', name: 'Leyendas: Z-A', short: 'ZA', color: '#1f8f8a', icon: faCity, localMark: 'plza' },
-  // Compatibilidad prevista para octubre de 2026
-  { id: 'frlg', name: 'Rojo Fuego / Verde Hoja (Switch)', short: 'FRVH', color: '#6b5bbd', icon: faGamepad, localMark: 'gba' },
+  { id: 'sv', name: 'Escarlata / Púrpura', short: 'EP', color: '#c0392b', icon: faGraduationCap, localMark: 'sv' },
+  { id: 'pla', name: 'Leyendas: Arceus', short: 'LA', color: '#b06d1f', icon: faMountainSun, mark: 'hisui', localMark: 'pla' },
+  { id: 'bdsp', name: 'Diamante Brillante / Perla Reluciente', short: 'DB', color: '#8e5bd0', icon: faGem, mark: 'sinnoh-gen8', localMark: 'bdsp' },
+  { id: 'swsh', name: 'Espada / Escudo', short: 'EE', color: '#0d7ab5', icon: faShieldHalved, mark: 'galar', localMark: 'swsh' },
+  { id: 'lgpe', name: "Let's Go, Pikachu! / Eevee!", short: 'LG', color: '#e0a800', icon: faGamepad, mark: 'lets-go', localMark: 'lgpe' },
+  { id: 'sm', name: 'Sol / Luna · Ultrasol / Ultraluna (Bank)', short: 'SL', color: '#e67e22', icon: faBoxArchive, mark: 'clover', localMark: 'sm' },
+  { id: 'go', name: 'Pokémon GO', short: 'GO', color: '#2e7d32', icon: faLocationDot, mark: 'go', localMark: 'go' },
   // Juegos de 3DS a través de Pokémon Bank (el id «bank» se mantiene por compatibilidad con el progreso guardado)
   { id: 'bank', name: 'X / Y · Rubí Omega / Zafiro Alfa (Bank)', short: 'XY', color: '#6d4c41', icon: faBoxArchive, mark: 'pentagon', localMark: 'xy' },
-  { id: 'sm', name: 'Sol / Luna · Ultrasol / Ultraluna (Bank)', short: 'SL', color: '#e67e22', icon: faBoxArchive, mark: 'clover', localMark: 'sm' },
+  // Rojo Fuego / Verde Hoja: la marca es la de GBA. Compatibilidad prevista para octubre de 2026
+  { id: 'frlg', name: 'Rojo Fuego / Verde Hoja (Switch)', short: 'FRVH', color: '#6b5bbd', icon: faGamepad, localMark: 'gba' },
 ];
 
 export const GAME_BY_ID: Record<string, Game> = Object.fromEntries(GAMES.map((g) => [g.id, g]));
