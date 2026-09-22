@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations, wikidexUrl } from '../../lib/data';
 import { GameMark } from '../GameMark';
+import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
 import { useStore } from '../../lib/store';
 import { useUI } from '../../lib/ui';
@@ -184,6 +185,8 @@ export function Info ({ dex, flavor, slot, state }: Props) {
             </label>
           </div>
           )}
+
+          <Notes dex={dex} entryId={entry.id} note={state?.n ?? ''} patch={patch} />
 
           <h3 className="info-section info-section-link">
             Dónde capturarlo

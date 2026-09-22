@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faInfo, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faInfo, faLock, faPen } from '@fortawesome/free-solid-svg-icons';
 import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
@@ -117,6 +117,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
           <GameMark game={game} title={state?.c ? `Desde ${game.name}` : `Pendiente en ${game.name}`} />
         </div>
       )}
+      {state?.n && <div className="slot-flag note" title={state.n}><FontAwesomeIcon icon={faPen} /></div>}
       {excluded && <div className="slot-flag ban" title="Excluido"><FontAwesomeIcon icon={faBan} /></div>}
       {unavailable && <div className="slot-flag lock" title="No disponible: nunca ha salido variocolor"><FontAwesomeIcon icon={faLock} /></div>}
       <div className="set-info" onClick={openInfo} role="button" title="Ver ficha">

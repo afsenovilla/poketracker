@@ -138,7 +138,9 @@ nav {
     }
 
     &.note {
-      left: 5px;
+      top: 7px;
+      left: 8px;
+      font-size: 9px;
       color: $brand-secondary-light;
     }
 
@@ -767,6 +769,103 @@ $pending-color: #cfe3ff;
     }
   }
 
+  // ---- Notas ----
+  .info-notes {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, .15);
+    border-bottom: 1px solid rgba(255, 255, 255, .15);
+
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 96px;
+      margin: 0 0 6px;
+      padding: 9px 10px;
+      border: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 3px;
+      background-color: rgba(0, 0, 0, .18);
+      color: #fff;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.4;
+      resize: none;
+      overflow: hidden;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, .5);
+      }
+
+      &:focus {
+        border-color: $brand-primary;
+        outline: 1px solid $brand-primary;
+      }
+    }
+  }
+
+  .info-notes-summary {
+    @include flexbox();
+    @include align-items(center);
+    gap: 8px;
+    width: 100%;
+    padding: 10px 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-family: $font-secondary;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: left;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &.static {
+      padding-left: 0;
+      cursor: default;
+    }
+
+    .caret {
+      width: 10px;
+      opacity: .8;
+    }
+
+    .add {
+      margin-left: auto;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      opacity: .7;
+    }
+  }
+
+  .info-notes-preview {
+    margin: -4px 0 10px 18px;
+    font-size: 13px;
+    font-style: italic;
+    opacity: .85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .info-notes-readonly {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .info-notes-footer {
+    @include flexbox();
+    @include justify-content(space-between);
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    opacity: .7;
+  }
+
   .info-section-link {
     @include flexbox();
     @include align-items(baseline);
@@ -976,6 +1075,12 @@ $pending-color: #cfe3ff;
       &.lock {
         top: 5px;
         right: 6px;
+      }
+
+      &.note {
+        top: 5px;
+        left: 6px;
+        font-size: 8px;
       }
     }
   }

@@ -227,7 +227,13 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
       setBase((b) => applyOp(b, op));
       return;
     }
-    const next = [...pendingRef.current, op];
+    // Las notas se guardan mientras se escribe: la última sustituye a la anterior de la misma casilla
+    const last = pendingRef.current[pendingRef.current.length - 1];
+    const onlyNote = (o: Op | undefined): o is Extract<Op, { type: 'slot' }> => o?.type === 'slot'
+      && o.entries.length === 1 && Object.keys(o.patch).length === 1 && o.patch.n !== undefined;
+    // (no se fusiona si ese cambio ya se está enviando)
+    const merge = !busyRef.current && onlyNote(op) && onlyNote(last) && last.dex === op.dex && last.entries[0] === op.entries[0];
+    const next = merge ? [...pendingRef.current.slice(0, -1), op] : [...pendingRef.current, op];
     pendingRef.current = next;
     setPending(next);
     setStatus((s) => (s === 'saving' ? s : 'pending'));

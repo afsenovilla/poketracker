@@ -29,6 +29,7 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - Ficha con el render de HOME (normal o shiny), tipos y entrada de la Pokédex, con enlaces a WikiDex.
 - **Móvil:** la dex se ve como una rejilla de iconos, 6 por fila como en HOME. Un toque marca el Pokémon y una pulsación larga abre su ficha.
 - **Teclado:** con un Pokémon seleccionado, las flechas mueven la selección al de arriba, abajo o a los lados (también de una caja a la siguiente).
+- **Notas:** cada ficha tiene un desplegable de notas libres (por dex: la normal y la shiny llevan las suyas). Se guardan solas y en la caja sale un lápiz en los Pokémon con nota. Ojo: se ven también en modo lectura, porque van en el mismo `progreso.json`.
 - Modo noche y copia de seguridad (exportar/importar JSON).
 
 Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 de especies y 2 de formas.

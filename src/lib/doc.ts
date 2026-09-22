@@ -55,6 +55,9 @@ export function applyOp (doc: ProgressDoc, op: Op, now = Date.now()): ProgressDo
         if (op.patch.x !== undefined) {
           if (op.patch.x) next.x = 1; else delete next.x;
         }
+        if (op.patch.n !== undefined) {
+          if (op.patch.n.trim()) next.n = op.patch.n.slice(0, 1000); else delete next.n;
+        }
         if (!next.c && !next.x && !next.g && !next.n) {
           delete dexCaptures[id];
         } else {

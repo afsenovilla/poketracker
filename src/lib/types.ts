@@ -72,6 +72,8 @@ export interface SlotPatch {
   x?: boolean;
   /** juego donde está pendiente; cadena vacía para quitarlo */
   g?: string;
+  /** nota libre; cadena vacía para borrarla */
+  n?: string;
 }
 
 export type Op =
