@@ -184,7 +184,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
 
   return (
     <div className="stats-grid">
-      <section className="stats-card gen">
+      <section className="stats-card gen stacked">
         <h3>
           Progreso por generación
           {doneCount > 0 && (
@@ -211,7 +211,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
         )}
       </section>
 
-      <section className="stats-card wide">
+      <section className="stats-card wide stacked">
         <h3>Dónde conseguir lo que te falta</h3>
         <p className="stats-sub">
           Te faltan <b>{missing.length}</b>
