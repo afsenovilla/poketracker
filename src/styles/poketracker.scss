@@ -1205,10 +1205,11 @@ $pending-color: #cfe3ff;
     opacity: .75;
   }
 
+  // 10 marcas: rejilla fija de 5 + 5 para que no se recoloquen
   .info-game-options {
-    @include flexbox();
-    @include flex-wrap(wrap);
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .info-game-option {
@@ -1216,8 +1217,8 @@ $pending-color: #cfe3ff;
     @include align-items(center);
     @include justify-content(center);
 
-    width: 34px;
-    height: 34px;
+    width: 100%;
+    height: 38px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, .25);
     background-color: rgba(255, 255, 255, .06);
@@ -1298,10 +1299,11 @@ $pending-color: #cfe3ff;
     opacity: .75;
   }
 
+  // 10 marcas: rejilla fija de 5 + 5 para que no se recoloquen
   .info-game-options {
-    @include flexbox();
-    @include flex-wrap(wrap);
-    gap: 4px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
   }
 
   .info-game-option {
@@ -1309,8 +1311,8 @@ $pending-color: #cfe3ff;
     @include align-items(center);
     @include justify-content(center);
 
-    width: 34px;
-    height: 34px;
+    width: 100%;
+    height: 38px;
     padding: 0;
     border: 1px solid rgba(255, 255, 255, .25);
     background-color: rgba(255, 255, 255, .06);
