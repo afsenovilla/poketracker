@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { DexForm } from './DexForm';
 import { Nav } from './Nav';
 import { Progress } from './Progress';
-import { includeEntry, usePokedex } from '../lib/data';
+import { includeEntry, isUnavailable, usePokedex } from '../lib/data';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry } from '../lib/types';
 
@@ -18,7 +18,7 @@ function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[
     let t = 0;
     let p = 0;
     for (const e of entries) {
-      if (!includeEntry(dex, e)) continue;
+      if (!includeEntry(dex, e) || isUnavailable(dex, e)) continue;
       const s = caps[e.id];
       if (s?.x) continue;
       t++;

@@ -34,3 +34,6 @@ git -C .data/pkhex sparse-checkout set \
 
 python3 scripts/build-locations.py --pkhex .data/pkhex/PKHeX.Core --csv .data/csv \
   --pokedex public/data/pokedex.json --out public/data/locations.json
+
+echo "↓ shinies no disponibles (Serebii)"
+python3 scripts/build-shiny-unavailable.py --pokedex public/data/pokedex.json --out public/data/shiny-unavailable.json

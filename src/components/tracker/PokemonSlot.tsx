@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faInfo } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faInfo, faLock } from '@fortawesome/free-solid-svg-icons';
 import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
@@ -27,8 +27,9 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
   const { setShowInfo } = useUI();
   const { entry } = slot;
   const formLabel = entry.category === 'base' ? null : entry.form;
-  const excluded = Boolean(state?.x);
-  const game = state?.g ? GAME_BY_ID[state.g] : undefined;
+  const unavailable = Boolean(slot.unavailable);
+  const excluded = Boolean(state?.x) && !unavailable;
+  const game = state?.g && !unavailable ? GAME_BY_ID[state.g] : undefined;
   const pending = Boolean(game) && !state?.c;
 
   const timer = useRef<number | undefined>(undefined);
@@ -46,7 +47,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
       return;
     }
     onSelect(entry.id);
-    if (excluded || readOnly) {
+    if (excluded || unavailable || readOnly) {
       setShowInfo(true);
       return;
     }
@@ -77,14 +78,15 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
 
   const iconClass = (shiny ? entry.iconShiny : entry.icon) || entry.icon;
   const label = formLabel ? `${entry.name} (${formLabel})` : entry.name;
-  const title = game ? `${label} · ${state?.c ? `desde ${game.name}` : `pendiente en ${game.name}`}` : label;
+  const title = unavailable ? `${label} · no existe shiny` : game ? `${label} · ${state?.c ? `desde ${game.name}` : `pendiente en ${game.name}`}` : label;
 
   return (
     <div
       className={classNames('pokemon', {
-        captured: state?.c && !excluded,
+        captured: state?.c && !excluded && !unavailable,
         'pending-game': pending && !excluded,
         excluded,
+        unavailable,
         selected,
       })}
     >
@@ -115,6 +117,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
         </div>
       )}
       {excluded && <div className="slot-flag ban" title="Excluido"><FontAwesomeIcon icon={faBan} /></div>}
+      {unavailable && <div className="slot-flag lock" title="No disponible: nunca ha salido variocolor"><FontAwesomeIcon icon={faLock} /></div>}
       <div className="set-info" onClick={openInfo} role="button" title="Ver ficha">
         <FontAwesomeIcon icon={faInfo} />
       </div>

@@ -23,6 +23,7 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
   - Si falta alguna se usa la otra versión invertida, después la marca equivalente de [PokéSprite](https://github.com/msikma/pokesprite) y, en último caso, un icono genérico.
   - Los juegos están en `src/lib/games.ts`; ahí se añaden o se quitan.
 - Puedes **excluir** un Pokémon que no esté disponible o que no busques: deja de contar para el total.
+- **Shinies no disponibles:** en las dex shiny, los Pokémon que nunca han salido variocolor (lista de [Serebii](https://www.serebii.net/games/shiny.shtml)) salen con marco rojo y un candado, no se pueden marcar y no cuentan para el total. La lista está en `public/data/shiny-unavailable.json` y se actualiza sola cada mes con `scripts/build-shiny-unavailable.py`.
 - **Dónde capturarlo:** lugares por juego (Let's Go, Espada/Escudo, DBPR, Leyendas Arceus, Escarlata/Púrpura, Leyendas Z-A), en español, más si está en Pokémon GO y de qué Pokémon evoluciona.
 - Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por juego, por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME». El filtro de juegos solo muestra los que tienen Pokémon asignados, con su número.
 - Ficha con el render de HOME (normal o shiny), tipos y entrada de la Pokédex, con enlaces a WikiDex.

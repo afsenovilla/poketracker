@@ -40,7 +40,7 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
     let p = 0;
     for (const s of slots) {
       const st = captures[s.entry.id];
-      if (st?.x) continue;
+      if (st?.x || s.unavailable) continue;
       t++;
       if (st?.c) c++;
       else if (st?.g) p++;
@@ -57,7 +57,8 @@ export const Dex = memo(function Dex ({ captures, dex, filters, onScrollTop, onS
     const q = normalize(filters.query);
     return slots.filter((s) => {
       const st = captures[s.entry.id];
-      if (filters.hideCaught && (st?.c || st?.x)) return false;
+      if (filters.hideCaught && (st?.c || st?.x || s.unavailable)) return false;
+      if (filters.onlyPending && s.unavailable) return false;
       if (filters.gen && s.entry.gen !== filters.gen) return false;
       if (filters.onlyPending && (st?.c || !st?.g)) return false;
       if (filters.game && st?.g !== filters.game) return false;

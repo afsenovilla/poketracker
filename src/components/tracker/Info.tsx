@@ -99,7 +99,12 @@ export function Info ({ dex, flavor, slot, state }: Props) {
           </div>
           <p className="info-category">{CATEGORY_LABEL[entry.category]} · Generación {entry.gen}</p>
 
-          {readOnly ? (
+          {slot.unavailable ? (
+            <div className="info-unavailable">
+              <b>No disponible</b>
+              Nunca se ha distribuido variocolor, así que no cuenta para completar la dex shiny.
+            </div>
+          ) : readOnly ? (
             <p className={`info-readonly status-${status}`}>
               {state?.x ? 'Excluido de esta dex'
                 : status === 'home' ? `✓ En HOME${state?.g ? ` · desde ${GAME_BY_ID[state.g]?.name}` : ''}`

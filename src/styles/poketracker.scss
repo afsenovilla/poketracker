@@ -100,11 +100,41 @@ nav {
     }
   }
 
+  // Shiny que no existe: marco rojo y no se puede marcar
+  &.unavailable {
+    background-color: #fdeeee;
+
+    .set-captured {
+      box-shadow: inset 0 0 0 2px #d9534f;
+      cursor: help;
+    }
+
+    &.selected .set-captured {
+      box-shadow: inset 0 0 0 2px #d9534f, inset 0 0 0 4px $brand-secondary-light;
+    }
+
+    .pkicon,
+    .icon-wrapper img {
+      opacity: .45;
+      filter: grayscale(.6);
+    }
+
+    h4,
+    p {
+      opacity: .6;
+    }
+  }
+
   .slot-flag {
     position: absolute;
     top: 4px;
     font-size: 10px;
     pointer-events: auto;
+
+    &.lock {
+      right: 5px;
+      color: #d9534f;
+    }
 
     &.note {
       left: 5px;
@@ -895,7 +925,8 @@ $pending-color: #cfe3ff;
         padding: 0 3px;
       }
 
-      &.ban {
+      &.ban,
+      &.lock {
         right: 3px;
         font-size: 9px;
       }
@@ -1381,4 +1412,31 @@ $pending-color: #cfe3ff;
   background-color: $night-mode-04dp;
   color: $gray-medium;
   border-color: $night-mode-12dp;
+}
+
+.night-mode .pokemon.unavailable {
+  background-color: #3a2224;
+
+  .set-captured {
+    box-shadow: inset 0 0 0 2px #e0605b;
+  }
+
+  .slot-flag.lock {
+    color: #ff7b75;
+  }
+}
+
+.info .info-unavailable {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-left: 3px solid #e0605b;
+  border-radius: 4px;
+  background-color: rgba(217, 83, 79, .18);
+  font-size: 14px;
+  line-height: 1.4;
+
+  b {
+    display: block;
+    margin-bottom: 2px;
+  }
 }

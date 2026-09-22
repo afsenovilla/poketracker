@@ -45,9 +45,21 @@ export function useLocations () {
 
 export function loadPokedex () {
   if (!cache) {
-    cache = fetch(`${import.meta.env.BASE_URL}data/pokedex.json`).then((r) => {
+    const base = import.meta.env.BASE_URL;
+    const dex = fetch(`${base}data/pokedex.json`).then((r) => {
       if (!r.ok) throw new Error(`No se pudo cargar la Pokédex (${r.status})`);
-      return r.json();
+      return r.json() as Promise<PokedexData>;
+    });
+    // lista de shinies imposibles; si falla, simplemente no se marca ninguno
+    const noShiny = fetch(`${base}data/shiny-unavailable.json`)
+      .then((r) => (r.ok ? r.json() : { entries: [] }))
+      .then((d: { entries?: { id: string }[] }) => new Set((d.entries || []).map((x) => x.id)))
+      .catch(() => new Set<string>());
+    cache = Promise.all([dex, noShiny]).then(([d, ids]) => {
+      for (const e of d.entries) {
+        if (ids.has(e.id)) e.noShiny = true;
+      }
+      return d;
     });
     cache.catch(() => { cache = null; });
   }
@@ -94,8 +106,9 @@ export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
       index += BOX_SIZE - (index % BOX_SIZE);
     }
     prevBase = isBase;
-    const slot = {
+    const slot: Slot = {
       entry,
+      unavailable: Boolean(dex.shiny && entry.noShiny),
       index,
       box: Math.floor(index / BOX_SIZE) + 1,
       row: Math.floor((index % BOX_SIZE) / BOX_COLUMNS) + 1,
@@ -117,6 +130,9 @@ export function groupBoxes (slots: Slot[]) {
 export function countEntries (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender'>, entries: Entry[]) {
   return entries.reduce((n, e) => n + (includeEntry(dex, e) ? 1 : 0), 0);
 }
+
+/** En una dex shiny, los Pokémon que no existen variocolor no cuentan. */
+export const isUnavailable = (dex: Pick<DexConfig, 'shiny'>, e: Entry) => Boolean(dex.shiny && e.noShiny);
 
 export const pad = (n: number, digits = 4) => String(n).padStart(digits, '0');
 

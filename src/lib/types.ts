@@ -12,6 +12,8 @@ export interface Entry {
   form: string | null;
   category: Category;
   gen: number;
+  /** nunca se ha podido conseguir variocolor (lista de Serebii) */
+  noShiny?: boolean;
   types: string[];
   /** clases del sprite sheet (icono de caja) */
   icon: string | null;
@@ -84,4 +86,6 @@ export interface Slot {
   box: number;
   row: number;
   col: number;
+  /** en una dex shiny: no se puede conseguir variocolor */
+  unavailable?: boolean;
 }

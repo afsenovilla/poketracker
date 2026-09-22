@@ -26,11 +26,12 @@ export const Box = memo(function Box ({ captures, dex, number, onSelect, selecte
   const { dispatch, readOnly } = useStore();
   const empties = BOX_SIZE - slots.length;
 
+  const countable = useMemo(() => slots.filter((s) => !s.unavailable), [slots]);
   const pendingIds = useMemo(
-    () => slots.filter((s) => !captures[s.entry.id]?.c && !captures[s.entry.id]?.x).map((s) => s.entry.id),
-    [slots, captures],
+    () => countable.filter((s) => !captures[s.entry.id]?.c && !captures[s.entry.id]?.x).map((s) => s.entry.id),
+    [countable, captures],
   );
-  const caughtIds = useMemo(() => slots.filter((s) => captures[s.entry.id]?.c).map((s) => s.entry.id), [slots, captures]);
+  const caughtIds = useMemo(() => countable.filter((s) => captures[s.entry.id]?.c).map((s) => s.entry.id), [countable, captures]);
   const allDone = pendingIds.length === 0;
 
   const handleMarkAll = () => {
@@ -50,7 +51,7 @@ export const Box = memo(function Box ({ captures, dex, number, onSelect, selecte
           <span className="box-range">{boxTitle(slots)}</span>
         </h1>
         {readOnly ? (
-          <span className="box-count">{slots.length - pendingIds.length}/{slots.length}</span>
+          <span className="box-count">{countable.length - pendingIds.length}/{countable.length}</span>
         ) : (
         <button className="btn btn-yellow" onClick={handleMarkAll} type="button">
           {allDone ? 'Desmarcar todos' : `Marcar todos (${pendingIds.length})`}
