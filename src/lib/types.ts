@@ -4,7 +4,7 @@ export type Category = 'base' | 'regional' | 'forma' | 'genero';
 export interface Entry {
   id: string;
   species: number;
-  /** identificador inglés de la especie (pokemondb, etc.) */
+  /** identificador inglés de la especie */
   slug: string;
   /** nombre de la preevolución, si la tiene */
   evo: string | null;

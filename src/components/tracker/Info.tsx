@@ -200,9 +200,6 @@ export function Info ({ dex, flavor, slot, state }: Props) {
           <a href={wikidexUrl(entry)} rel="noopener noreferrer" target="_blank">
             WikiDex <FontAwesomeIcon icon={faLongArrowAltRight} />
           </a>
-          <a href={`https://pokemondb.net/pokedex/${entry.slug}`} rel="noopener noreferrer" target="_blank">
-            Pokémon DB <FontAwesomeIcon icon={faLongArrowAltRight} />
-          </a>
         </div>
       </div>
     </div>

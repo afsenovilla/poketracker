@@ -208,7 +208,7 @@
     a {
       @include transition(all .1s ease-out);
 
-      width: 50%;
+      flex: 1;
       padding: 20px;
       background-color: $brand-secondary-dark;
       color: #fff;
@@ -220,12 +220,8 @@
       text-decoration: none;
       text-align: center;
 
-      &:first-child {
-        border-right: 1px solid darken($brand-secondary-dark, 3%);
-      }
-
-      &:last-child {
-        border-left: 1px solid darken($brand-secondary-dark, 3%);
+      & + a {
+        border-left: 2px solid darken($brand-secondary-dark, 3%);
       }
 
       .svg-inline--fa {
