@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-22T12:49:48.355Z",
+ "updatedAt": "2026-09-22T12:50:21.632Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -8315,6 +8315,26 @@
    },
    "mr-mime-galar": {
     "t": 1790081388355,
+    "c": 1,
+    "g": "swsh"
+   },
+   "corsola-galar": {
+    "t": 1790081421632,
+    "c": 1,
+    "g": "swsh"
+   },
+   "moltres-galar": {
+    "t": 1790081421632,
+    "c": 1,
+    "g": "swsh"
+   },
+   "zapdos-galar": {
+    "t": 1790081421632,
+    "c": 1,
+    "g": "swsh"
+   },
+   "articuno-galar": {
+    "t": 1790081421632,
     "c": 1,
     "g": "swsh"
    }
