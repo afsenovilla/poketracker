@@ -28,6 +28,7 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por juego, por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME». El filtro de juegos solo muestra los que tienen Pokémon asignados, con su número.
 - Ficha con el render de HOME (normal o shiny), tipos y entrada de la Pokédex, con enlaces a WikiDex.
 - **Móvil:** la dex se ve como una rejilla de iconos, 6 por fila como en HOME. Un toque marca el Pokémon y una pulsación larga abre su ficha.
+- **Teclado:** con un Pokémon seleccionado, las flechas mueven la selección al de arriba, abajo o a los lados (también de una caja a la siguiente).
 - Modo noche y copia de seguridad (exportar/importar JSON).
 
 Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 de especies y 2 de formas.

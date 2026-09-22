@@ -89,6 +89,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
         unavailable,
         selected,
       })}
+      data-entry={entry.id}
     >
       <div
         className="set-captured"

@@ -7,7 +7,7 @@ import { Nav } from '../Nav';
 import { NotFound } from '../NotFound';
 import { SearchBar } from './SearchBar';
 import { GAMES } from '../../lib/games';
-import { buildSlots, usePokedex } from '../../lib/data';
+import { BOX_COLUMNS, buildSlots, usePokedex } from '../../lib/data';
 import { useStore } from '../../lib/store';
 import type { Filters } from './SearchBar';
 
@@ -50,6 +50,51 @@ export function Tracker () {
     if (columnRef.current) columnRef.current.scrollTop = 0;
   }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game]);
 
+
+  const filtering = filters.query.trim() !== '' || filters.hideCaught || filters.gen > 0 || filters.onlyPending || filters.game !== '';
+
+  // Navegación con las flechas del teclado por la casilla seleccionada
+  useEffect(() => {
+    const byIndex = new Map(slots.map((s) => [s.index, s]));
+    const maxIndex = slots.length ? slots[slots.length - 1].index : 0;
+
+    const onKey = (e: KeyboardEvent) => {
+      const dir = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' }[e.key];
+      if (!dir || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || !selected) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+
+      let next: string | undefined;
+      if (filtering) {
+        // en los resultados de búsqueda: según la rejilla que se ve en pantalla
+        const cells = Array.from(document.querySelectorAll<HTMLElement>('.search-results .pokemon[data-entry]'));
+        const pos = cells.findIndex((c) => c.dataset.entry === selected);
+        if (pos < 0) return;
+        const top = cells[0].offsetTop;
+        const cols = Math.max(1, cells.filter((c) => c.offsetTop === top).length);
+        const step = { up: -cols, down: cols, left: -1, right: 1 }[dir]!;
+        next = cells[pos + step]?.dataset.entry;
+      } else {
+        // en las cajas: 6 columnas y las cajas van seguidas, así que arriba/abajo = ±6
+        const current = slots.find((s) => s.entry.id === selected);
+        if (!current) return;
+        const step = { up: -BOX_COLUMNS, down: BOX_COLUMNS, left: -1, right: 1 }[dir]!;
+        for (let i = current.index + step; i >= 0 && i <= maxIndex; i += step) {
+          const s = byIndex.get(i);
+          if (s) { next = s.entry.id; break; }
+        }
+      }
+      e.preventDefault();
+      if (!next) return;
+      setSelected(next);
+      requestAnimationFrame(() => {
+        const scope = filtering ? '.search-results ' : '.box ';
+        document.querySelector(`${scope}.pokemon[data-entry="${next}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [slots, selected, filtering]);
 
   const handleScroll = useCallback(() => {
     const top = columnRef.current?.scrollTop ?? 0;

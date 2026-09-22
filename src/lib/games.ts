@@ -55,7 +55,9 @@ export const GAMES: Game[] = [
   { id: 'za', name: 'Leyendas: Z-A', short: 'ZA', color: '#1f8f8a', icon: faCity, localMark: 'plza' },
   // Compatibilidad prevista para octubre de 2026
   { id: 'frlg', name: 'Rojo Fuego / Verde Hoja (Switch)', short: 'FRVH', color: '#6b5bbd', icon: faGamepad, localMark: 'gba' },
-  { id: 'bank', name: 'Pokémon Bank (juegos de 3DS)', short: '3DS', color: '#6d4c41', icon: faBoxArchive, mark: 'pentagon', localMark: 'xy' },
+  // Juegos de 3DS a través de Pokémon Bank (el id «bank» se mantiene por compatibilidad con el progreso guardado)
+  { id: 'bank', name: 'X / Y · Rubí Omega / Zafiro Alfa (Bank)', short: 'XY', color: '#6d4c41', icon: faBoxArchive, mark: 'pentagon', localMark: 'xy' },
+  { id: 'sm', name: 'Sol / Luna · Ultrasol / Ultraluna (Bank)', short: 'SL', color: '#e67e22', icon: faBoxArchive, mark: 'clover', localMark: 'sm' },
 ];
 
 export const GAME_BY_ID: Record<string, Game> = Object.fromEntries(GAMES.map((g) => [g.id, g]));
