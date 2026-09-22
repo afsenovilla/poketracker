@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
 import { availabilityByGame, includeEntry, isUnavailable, useLocations } from '../lib/data';
-import { GAME_BY_ID, GAMES } from '../lib/games';
+import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry, SlotState } from '../lib/types';
 
@@ -143,7 +143,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
         const p = pending.get(g.id) || 0;
         return {
           key: g.id,
-          label: <><GameMark game={g} /> <span>{g.name}</span></>,
+          label: <><GameMark game={g} /> <span>{shortName(g)}</span></>,
           home: h,
           pending: p,
           link: `${base}?origen=${g.id}`,
@@ -167,7 +167,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
       const g = GAME_BY_ID[id];
       return {
         key: id,
-        label: <>{g && <GameMark game={g} />} <span>{name}</span></>,
+        label: <>{g && <GameMark game={g} />} <span>{shortName({ id, name })}</span></>,
         home: 0,
         pending: n,
         link: `${base}?faltan=${id}`,
@@ -197,7 +197,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
         <Bars rows={byGen} valueText={(r) => (r.done ? <b>¡Completa!</b> : <><b>{r.home}</b>/{r.total}</>)} />
       </section>
 
-      <section className="stats-card">
+      <section className="stats-card stacked">
         <h3>De dónde vienen</h3>
         <Legend />
         {byOrigin.length ? (

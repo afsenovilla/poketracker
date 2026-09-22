@@ -16,6 +16,17 @@ export interface Game {
   localMark?: string;
 }
 
+/** Nombres cortos para sitios con poco espacio (estadísticas) */
+const SHORT_NAME: Record<string, string> = {
+  bdsp: 'DBPR',
+  lgpe: "Let's Go",
+  sm: 'Sol / Luna · USUL',
+  bank: 'X / Y · ROZA',
+  frlg: 'Rojo Fuego / Verde Hoja',
+};
+
+export const shortName = (g: Pick<Game, 'id' | 'name'>) => SHORT_NAME[g.id] || g.name;
+
 const POKESPRITE = 'https://raw.githubusercontent.com/msikma/pokesprite/master/misc/origin-marks/home/';
 
 /**
