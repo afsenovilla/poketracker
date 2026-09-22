@@ -1,4 +1,6 @@
 import classNames from 'classnames';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -22,6 +24,8 @@ interface Row {
   total?: number;
   link: string;
   tip: string;
+  /** grupo completo al 100 % */
+  done?: boolean;
 }
 
 const pct = (n: number, d: number) => (d ? `${(100 * n) / d}%` : '0%');
@@ -41,8 +45,11 @@ function Bars ({ missing, rows, scale, valueText }: {
         const d = scale ?? r.total ?? 1;
         return (
         <li key={r.key}>
-          <Link className="stats-row" title={r.tip} to={r.link}>
-            <span className="stats-label">{r.label}</span>
+          <Link className={classNames('stats-row', { done: r.done })} title={r.tip} to={r.link}>
+            <span className="stats-label">
+              {r.label}
+              {r.done && <FontAwesomeIcon className="stats-done-icon" icon={faCircleCheck} />}
+            </span>
             <span className="stats-track">
               {r.home > 0 && <span className="stats-seg home" style={{ width: pct(r.home, d) }} />}
               {r.pending > 0 && <span className={`stats-seg ${missing ? 'missing' : 'pending'}`} style={{ width: pct(r.pending, d) }} />}
@@ -110,7 +117,10 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
         pending,
         total,
         link: g.link,
-        tip: `${g.name}: ${home} en HOME${pending ? `, ${pending} por pasar` : ''}, faltan ${total - home - pending} de ${total}`,
+        done: home === total,
+        tip: home === total
+          ? `${g.name}: ¡completa! (${total} de ${total})`
+          : `${g.name}: ${home} en HOME${pending ? `, ${pending} por pasar` : ''}, faltan ${total - home - pending} de ${total}`,
       });
     }
     return rows;
@@ -168,15 +178,23 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
     return { rows, nowhere };
   }, [locations, availability, missing, base]);
 
+  const doneCount = byGen.filter((r) => r.done).length;
   const maxOrigin = Math.max(1, ...byOrigin.map((r) => r.home + r.pending));
   const pendingTotal = missing.filter((e) => captures[e.id]?.g).length;
 
   return (
     <div className="stats-grid">
       <section className="stats-card gen">
-        <h3>Progreso por generación</h3>
+        <h3>
+          Progreso por generación
+          {doneCount > 0 && (
+            <span className="stats-done-count">
+              <FontAwesomeIcon icon={faCircleCheck} /> {doneCount === byGen.length ? '¡Todas completas!' : `${doneCount} completa${doneCount === 1 ? '' : 's'}`}
+            </span>
+          )}
+        </h3>
         <Legend />
-        <Bars rows={byGen} valueText={(r) => <><b>{r.home}</b>/{r.total}</>} />
+        <Bars rows={byGen} valueText={(r) => (r.done ? <b>¡Completa!</b> : <><b>{r.home}</b>/{r.total}</>)} />
       </section>
 
       <section className="stats-card">
