@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T11:02:00.991Z",
+ "updatedAt": "2026-09-23T11:04:48.616Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5381,6 +5381,11 @@
    },
    "ponyta-galar": {
     "t": 1790161320991,
+    "c": 1,
+    "g": "swsh"
+   },
+   "yamask-galar": {
+    "t": 1790161488616,
     "c": 1,
     "g": "swsh"
    }
