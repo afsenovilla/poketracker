@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T11:01:51.225Z",
+ "updatedAt": "2026-09-23T11:02:00.991Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5376,6 +5376,11 @@
    },
    "exeggutor-alola": {
     "t": 1790161311225,
+    "c": 1,
+    "g": "swsh"
+   },
+   "ponyta-galar": {
+    "t": 1790161320991,
     "c": 1,
     "g": "swsh"
    }
