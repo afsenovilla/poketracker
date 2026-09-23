@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:20:27.195Z",
+ "updatedAt": "2026-09-23T12:20:33.538Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5447,7 +5447,12 @@
     "g": "swsh"
    },
    "pikachu-kalos-cap": {
-    "t": 1790166027195,
+    "t": 1790166033537,
+    "c": 1,
+    "g": "swsh"
+   },
+   "pikachu-alola-cap": {
+    "t": 1790166033538,
     "c": 1
    }
   },
