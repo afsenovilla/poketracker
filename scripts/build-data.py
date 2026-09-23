@@ -107,6 +107,9 @@ SPECIAL_EVO = {
 
 REGIONS = ('alola', 'galar', 'hisui', 'paldea')
 
+# Generación en la que apareció cada forma regional
+REGION_GEN = {'alola': 7, 'galar': 8, 'hisui': 8, 'paldea': 9}
+
 
 def region_of(entry):
     if entry['category'] != 'regional':
@@ -122,6 +125,14 @@ def display_name(entry):
     if entry['category'] == 'forma' and entry.get('form'):
         return f"{entry['name']} ({entry['form']})"
     return entry['name']
+
+
+def fix_regional_gen(entries):
+    """Las formas regionales son de la generación en la que salieron, no la de su especie."""
+    for e in entries:
+        r = region_of(e)
+        if r:
+            e['gen'] = REGION_GEN[r]
 
 
 def link_evolutions(entries, species):
@@ -323,6 +334,7 @@ def main():
                     'formOrder': 0.5,  # justo después de la forma base
                 })
 
+    fix_regional_gen(entries)
     link_evolutions(entries, species)
 
     # Clases del sprite sheet de PokédexTracker (iconos de caja, estilo HOME)
