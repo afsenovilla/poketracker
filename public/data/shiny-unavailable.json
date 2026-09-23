@@ -1,5 +1,5 @@
 {
- "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá y Ursaluna Luna Carmesí)",
+ "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá, Ursaluna Luna Carmesí y Urshifu Estilo Fluido)",
  "updated": "2026-09-24",
  "entries": [
   {
@@ -133,6 +133,10 @@
   {
    "id": "ursaluna-bloodmoon",
    "name": "Ursaluna (Luna Carmesí)"
+  },
+  {
+   "id": "urshifu-rapid-strike",
+   "name": "Urshifu (Estilo Fluido)"
   }
  ]
 }
