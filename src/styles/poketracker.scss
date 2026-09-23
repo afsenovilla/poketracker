@@ -2167,14 +2167,14 @@ $stats-track: #eeeeee;
         color: #555;
       }
 
-      input { width: 78px; }
+      input { width: 120px; }
     }
 
     .go-calc-time {
       @include flexbox();
       gap: 6px;
 
-      input { width: 56px; }
+      input { width: 88px; }
     }
 
     .go-manual {
