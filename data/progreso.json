@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:38:25.567Z",
+ "updatedAt": "2026-09-23T08:38:32.279Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5179,6 +5179,21 @@
    },
    "zorua-hisui": {
     "t": 1790152705567,
+    "c": 1,
+    "g": "pla"
+   },
+   "decidueye-hisui": {
+    "t": 1790152712277,
+    "c": 1,
+    "g": "pla"
+   },
+   "avalugg-hisui": {
+    "t": 1790152712278,
+    "c": 1,
+    "g": "pla"
+   },
+   "goodra-hisui": {
+    "t": 1790152712279,
     "c": 1,
     "g": "pla"
    }
