@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:24:09.660Z",
+ "updatedAt": "2026-09-23T12:24:29.622Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5477,8 +5477,9 @@
     "g": "swsh"
    },
    "magearna-original": {
-    "t": 1790166239121,
-    "c": 1
+    "t": 1790166269622,
+    "c": 1,
+    "g": "swsh"
    }
   },
   "i3zog3zocg": {
