@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T11:49:37.894Z",
+ "updatedAt": "2026-09-23T12:01:22.720Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -8,7 +8,7 @@
    "shiny": false,
    "regional": true,
    "unown": true,
-   "otherForms": false,
+   "otherForms": true,
    "vivillon": false,
    "alcremie": false,
    "gender": false,
