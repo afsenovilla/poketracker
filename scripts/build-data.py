@@ -27,7 +27,7 @@ EN = '9'
 # cambiables a voluntad, solo de combate, fusiones, totem, cosplay, etc.
 EXCLUDE = {
     'giratina-origin', 'shaymin-sky', 'kyurem-black', 'kyurem-white', 'keldeo-resolute',
-    'hoopa-unbound', 'dialga-origin', 'palkia-origin', 'necrozma-dusk', 'necrozma-dawn',
+    'dialga-origin', 'palkia-origin', 'necrozma-dusk', 'necrozma-dawn',
     'calyrex-ice', 'calyrex-shadow', 'eternatus-eternamax',
     'tornadus-therian', 'thundurus-therian', 'landorus-therian', 'enamorus-therian',
     'pichu-spiky-eared', 'pikachu-starter', 'eevee-starter', 'greninja-battle-bond',

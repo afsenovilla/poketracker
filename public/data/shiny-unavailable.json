@@ -1,6 +1,6 @@
 {
- "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá, Ursaluna Luna Carmesí, Urshifu Estilo Fluido, Floette Flor Eterna, Magearna Color Vetusto y Vivillon Motivo Poké Ball)",
- "updated": "2026-09-26",
+ "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá, Ursaluna Luna Carmesí, Urshifu Estilo Fluido, Floette Flor Eterna, Magearna Color Vetusto, Vivillon Motivo Poké Ball y Hoopa Desatado, que hereda el bloqueo de Hoopa)",
+ "updated": "2026-09-27",
  "entries": [
   {
    "id": "victini",
@@ -149,6 +149,10 @@
   {
    "id": "vivillon-poke-ball",
    "name": "Vivillon (Motivo Poké Ball)"
+  },
+  {
+   "id": "hoopa-unbound",
+   "name": "Hoopa (Desatado)"
   }
  ]
 }
