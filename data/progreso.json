@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:37:56.941Z",
+ "updatedAt": "2026-09-23T08:38:11.867Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5149,6 +5149,16 @@
    },
    "typhlosion-hisui": {
     "t": 1790152676941,
+    "c": 1,
+    "g": "pla"
+   },
+   "sneasel-hisui": {
+    "t": 1790152691867,
+    "c": 1,
+    "g": "pla"
+   },
+   "qwilfish-hisui": {
+    "t": 1790152691867,
     "c": 1,
     "g": "pla"
    }
