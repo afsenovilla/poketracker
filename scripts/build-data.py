@@ -351,6 +351,10 @@ def main():
             if f'-{r}' in e['id']:
                 base.append(f'form-{r}')
                 break
+        else:
+            # Unown: cada letra tiene su icono («unown-b» -> form-b)
+            if n == 201 and e['id'] != 'unown-a':
+                base.append(f"form-{e['id'].split('-', 1)[1]}")
         shiny = base + ['color-shiny']
         ok = frozenset(base) in rules
         return (' '.join(base) if ok else None,

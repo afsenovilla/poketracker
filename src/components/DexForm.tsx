@@ -4,7 +4,7 @@ import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
-import { countEntries, TOTAL_SPECIES } from '../lib/data';
+import { buildSlots, countEntries, groupBoxes } from '../lib/data';
 import type { DexConfig, Entry, Layout } from '../lib/types';
 import { useUI } from '../lib/ui';
 
@@ -38,14 +38,17 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
   const [title, setTitle] = useState(initial?.title ?? '');
   const [shiny, setShiny] = useState(initial?.shiny ?? false);
   const [regional, setRegional] = useState(initial?.regional ?? true);
+  const [unown, setUnown] = useState(initial?.unown ?? false);
   const forms = false;
   const gender = false;
   const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'separado');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const total = useMemo(() => countEntries({ regional, forms, gender }, entries), [regional, forms, gender, entries]);
-  const species = Math.min(total, TOTAL_SPECIES);
-  const boxes = layout === 'separado' && total > species ? Math.ceil(species / 30) + Math.ceil((total - species) / 30) : Math.ceil(total / 30);
+  const total = useMemo(() => countEntries({ regional, forms, gender, unown }, entries), [regional, forms, gender, unown, entries]);
+  const boxes = useMemo(
+    () => groupBoxes(buildSlots({ id: '', title: '', shiny, regional, forms, gender, unown, layout, createdAt: '' }, entries)).length,
+    [shiny, regional, forms, gender, unown, layout, entries],
+  );
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -54,6 +57,7 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
       title: title.trim() || (shiny ? 'Living Dex Shiny' : 'Living Dex'),
       shiny,
       regional,
+      unown,
       forms,
       gender,
       layout,
@@ -112,6 +116,7 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
             <div className="form-group">
               <label>Incluir</label>
               {check('opt_regional', 'Formas regionales', regional, setRegional)}
+              {check('opt_unown', 'Caja de Unown (las 28 letras)', unown, setUnown)}
             </div>
 
             <div className="form-group">

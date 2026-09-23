@@ -4,6 +4,10 @@ import type { DexConfig, Entry, PokedexData, Slot } from './types';
 
 const SPRITES = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
 
+// Los datos se actualizan solos cada mes: se revalidan con el servidor
+// para que el navegador no se quede con una copia vieja en caché.
+const FRESH: RequestInit = { cache: 'no-cache' };
+
 export const BOX_SIZE = 30;
 export const BOX_COLUMNS = 6;
 export const TOTAL_SPECIES = 1025;
@@ -31,7 +35,7 @@ export function useLocations () {
   useEffect(() => {
     let alive = true;
     if (!locCache) {
-      locCache = fetch(`${import.meta.env.BASE_URL}data/locations.json`).then((r) => {
+      locCache = fetch(`${import.meta.env.BASE_URL}data/locations.json`, FRESH).then((r) => {
         if (!r.ok) throw new Error(String(r.status));
         return r.json();
       });
@@ -59,12 +63,12 @@ export function availabilityByGame (data: LocationsData | null) {
 export function loadPokedex () {
   if (!cache) {
     const base = import.meta.env.BASE_URL;
-    const dex = fetch(`${base}data/pokedex.json`).then((r) => {
+    const dex = fetch(`${base}data/pokedex.json`, FRESH).then((r) => {
       if (!r.ok) throw new Error(`No se pudo cargar la Pokédex (${r.status})`);
       return r.json() as Promise<PokedexData>;
     });
     // lista de shinies imposibles; si falla, simplemente no se marca ninguno
-    const noShiny = fetch(`${base}data/shiny-unavailable.json`)
+    const noShiny = fetch(`${base}data/shiny-unavailable.json`, FRESH)
       .then((r) => (r.ok ? r.json() : { entries: [] }))
       .then((d: { entries?: { id: string }[] }) => new Set((d.entries || []).map((x) => x.id)))
       .catch(() => new Set<string>());
@@ -107,35 +111,40 @@ export function labelIndex (entries: Entry[]) {
   return map;
 }
 
-export function includeEntry (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender'>, e: Entry) {
+export const UNOWN = 201;
+export const isUnown = (e: Pick<Entry, 'species'>) => e.species === UNOWN;
+
+export function includeEntry (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender' | 'unown'>, e: Entry) {
   switch (e.category) {
     case 'base': return true;
     case 'regional': return dex.regional;
-    // Las formas alternativas y de género existen en los datos pero no se usan en las dex
-    case 'forma': return false;
+    // De las formas alternativas solo se usan las de Unown, y solo si la dex las pide
+    case 'forma': return Boolean(dex.unown) && isUnown(e);
     case 'genero': return false;
     default: return false;
   }
 }
+
+/** Grupo de cajas: 0 especies, 1 formas regionales, 2 Unown (solo si la dex tiene su caja) */
+const groupOf = (e: Entry, unown: boolean) => (unown && isUnown(e) ? 2 : e.category === 'base' ? 0 : 1);
 
 /** Devuelve las casillas de la dex en el orden de las cajas de HOME. */
 export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
   const list = entries.filter((e) => includeEntry(dex, e));
   let ordered = list;
   if (dex.layout === 'separado') {
-    const rank: Record<string, number> = { base: 0, regional: 1, forma: 2, genero: 3 };
     // estable: dentro de cada bloque se mantiene el orden nacional
-    ordered = [...list].sort((a, b) => rank[a.category] - rank[b.category]);
+    ordered = [...list].sort((a, b) => groupOf(a, Boolean(dex.unown)) - groupOf(b, Boolean(dex.unown)));
   }
   let index = 0;
-  let prevBase = true;
+  let prevGroup = 0;
   return ordered.map((entry) => {
-    const isBase = entry.category === 'base';
-    // Con las formas al final, empiezan en una caja nueva
-    if (dex.layout === 'separado' && prevBase && !isBase && index % BOX_SIZE !== 0) {
+    const group = dex.layout === 'separado' ? groupOf(entry, Boolean(dex.unown)) : 0;
+    // Cada bloque (regionales, Unown) empieza en una caja nueva
+    if (group !== prevGroup && index % BOX_SIZE !== 0) {
       index += BOX_SIZE - (index % BOX_SIZE);
     }
-    prevBase = isBase;
+    prevGroup = group;
     const slot: Slot = {
       entry,
       unavailable: Boolean(dex.shiny && entry.noShiny),
@@ -157,7 +166,7 @@ export function groupBoxes (slots: Slot[]) {
   return boxes;
 }
 
-export function countEntries (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender'>, entries: Entry[]) {
+export function countEntries (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender' | 'unown'>, entries: Entry[]) {
   return entries.reduce((n, e) => n + (includeEntry(dex, e) ? 1 : 0), 0);
 }
 

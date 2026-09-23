@@ -5,7 +5,7 @@ import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
 import { GameMark } from '../GameMark';
-import { pad, spriteUrl } from '../../lib/data';
+import { isUnown, pad, spriteUrl } from '../../lib/data';
 import { GAME_BY_ID } from '../../lib/games';
 import { useStore } from '../../lib/store';
 import { useUI } from '../../lib/ui';
@@ -26,7 +26,8 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
   const { dispatch, readOnly } = useStore();
   const { setShowInfo } = useUI();
   const { entry } = slot;
-  const formLabel = entry.category === 'base' ? null : entry.form;
+  // Unown enseña su letra aunque sea la forma «base»
+  const formLabel = entry.category !== 'base' || isUnown(entry) ? entry.form : null;
   const unavailable = Boolean(slot.unavailable);
   const excluded = Boolean(state?.x) && !unavailable;
   const game = state?.g && !unavailable ? GAME_BY_ID[state.g] : undefined;

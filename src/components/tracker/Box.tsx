@@ -18,6 +18,7 @@ function boxTitle (slots: Slot[]) {
   const first = slots[0].entry;
   const last = slots[slots.length - 1].entry;
   const range = first.species === last.species ? pad(first.species) : `${pad(first.species)} – ${pad(last.species)}`;
+  if (slots.every((s) => s.entry.species === first.species)) return `${first.name} · ${first.form} – ${last.form}`;
   const nonBase = slots.every((s) => s.entry.category !== 'base');
   return nonBase ? `Formas · ${range}` : range;
 }

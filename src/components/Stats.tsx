@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
-import { availabilityByGame, includeEntry, isUnavailable, useLocations } from '../lib/data';
+import { availabilityByGame, includeEntry, isUnavailable, isUnown, useLocations } from '../lib/data';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry, SlotState } from '../lib/types';
@@ -95,11 +95,13 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
       key: `g${i + 1}`,
       label: `Gen. ${r}`,
       name: `Generación ${i + 1}`,
-      list: counted.filter((e) => e.gen === i + 1 && e.category === 'base'),
+      list: counted.filter((e) => e.gen === i + 1 && e.category === 'base' && !(dex.unown && isUnown(e))),
       link: `${base}?gen=${i + 1}`,
     }));
     const regional = counted.filter((e) => e.category === 'regional');
     if (regional.length) groups.push({ key: 'reg', label: 'Regionales', name: 'Formas regionales', list: regional, link: base });
+    const unown = dex.unown ? counted.filter((e) => isUnown(e)) : [];
+    if (unown.length) groups.push({ key: 'unown', label: 'Unown', name: 'Unown', list: unown, link: `${base}?q=unown` });
     for (const g of groups) {
       if (!g.list.length) continue;
       let home = 0;
@@ -124,7 +126,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
       });
     }
     return rows;
-  }, [counted, captures, base]);
+  }, [counted, captures, base, dex.unown]);
 
   const byOrigin = useMemo(() => {
     const home = new Map<string, number>();

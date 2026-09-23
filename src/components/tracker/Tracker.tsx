@@ -30,6 +30,7 @@ export function Tracker () {
     available: params.get('faltan') || params.get('disponible') || '',
     game: params.get('origen') || '',
     gen: Number(params.get('gen')) || 0,
+    query: params.get('q') || '',
   }));
   const locations = useLocations();
   const availability = useMemo(() => availabilityByGame(locations), [locations]);

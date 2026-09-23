@@ -43,6 +43,8 @@ export interface DexConfig {
   forms: boolean;
   /** Diferencias de género */
   gender: boolean;
+  /** Caja con las 28 formas de Unown */
+  unown?: boolean;
   /** 'junto': cada forma va tras su especie; 'separado': primero las 1025 especies y luego las formas */
   layout: Layout;
   createdAt: string;
