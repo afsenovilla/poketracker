@@ -1,6 +1,6 @@
 {
- "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá, Ursaluna Luna Carmesí y Urshifu Estilo Fluido)",
- "updated": "2026-09-24",
+ "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá, Ursaluna Luna Carmesí, Urshifu Estilo Fluido y Floette Flor Eterna)",
+ "updated": "2026-09-25",
  "entries": [
   {
    "id": "victini",
@@ -137,6 +137,10 @@
   {
    "id": "urshifu-rapid-strike",
    "name": "Urshifu (Estilo Fluido)"
+  },
+  {
+   "id": "floette-eternal",
+   "name": "Floette (Flor Eterna)"
   }
  ]
 }

@@ -32,14 +32,14 @@ EXCLUDE = {
     'tornadus-therian', 'thundurus-therian', 'landorus-therian', 'enamorus-therian',
     'pichu-spiky-eared', 'pikachu-starter', 'eevee-starter', 'greninja-battle-bond',
     'zygarde-10-power-construct', 'zygarde-50-power-construct', 'rockruff-own-tempo',
-    'floette-eternal', 'pikachu-cosplay', 'pikachu-rock-star', 'pikachu-belle',
+    'pikachu-cosplay', 'pikachu-rock-star', 'pikachu-belle',
     'pikachu-pop-star', 'pikachu-phd', 'pikachu-libre',
     'mothim-sandy', 'mothim-trash',
     'minior-red-meteor', 'minior-orange-meteor', 'minior-yellow-meteor', 'minior-green-meteor',
     'minior-blue-meteor', 'minior-indigo-meteor', 'minior-violet-meteor',
 }
 EXCLUDE_PREFIX = (
-    'deoxys-attack', 'deoxys-defense', 'deoxys-speed', 'arceus-', 'genesect-',
+    'arceus-', 'genesect-',
     'silvally-', 'furfrou-', 'ogerpon-', 'koraidon-', 'miraidon-',
     'scatterbug-', 'spewpa-',
 )
