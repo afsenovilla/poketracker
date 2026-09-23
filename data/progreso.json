@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:28:06.162Z",
+ "updatedAt": "2026-09-23T08:28:10.364Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5123,8 +5123,14 @@
     "g": "swsh"
    },
    "tauros-paldea-blaze-breed": {
-    "t": 1790152086162,
-    "c": 1
+    "t": 1790152090363,
+    "c": 1,
+    "g": "sv"
+   },
+   "tauros-paldea-aqua-breed": {
+    "t": 1790152090364,
+    "c": 1,
+    "g": "sv"
    }
   },
   "i3zog3zocg": {
