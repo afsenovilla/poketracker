@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:20:06.350Z",
+ "updatedAt": "2026-09-23T12:20:12.229Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5432,7 +5432,12 @@
     "g": "swsh"
    },
    "pikachu-hoenn-cap": {
-    "t": 1790166006350,
+    "t": 1790166012228,
+    "c": 1,
+    "g": "swsh"
+   },
+   "pikachu-sinnoh-cap": {
+    "t": 1790166012229,
     "c": 1
    }
   },
