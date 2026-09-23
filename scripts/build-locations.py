@@ -461,6 +461,14 @@ def main():
 
     derive(a.csv, entries, result)
 
+    # Las casillas sin datos propios heredan los de otra forma de su especie (p. ej. Unown)
+    for e in entries:
+        if e['id'] in result:
+            continue
+        sib = next((b['id'] for b in by_species.get(e['species'], []) if b['id'] in result), None)
+        if sib:
+            result[e['id']] = result[sib]
+
     # Las diferencias de género comparten lugares con su forma base
     for e in entries:
         if e['category'] == 'genero' and e['id'] not in result:

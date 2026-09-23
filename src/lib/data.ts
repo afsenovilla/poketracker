@@ -125,8 +125,11 @@ export function includeEntry (dex: Pick<DexConfig, 'regional' | 'forms' | 'gende
   }
 }
 
-/** Grupo de cajas: 0 especies, 1 formas regionales, 2 Unown (solo si la dex tiene su caja) */
-const groupOf = (e: Entry, unown: boolean) => (unown && isUnown(e) ? 2 : e.category === 'base' ? 0 : 1);
+/**
+ * Grupo de cajas: 0 especies, 1 formas regionales, 2 las otras letras de Unown.
+ * El Unown «A» es la especie: se queda en su sitio del orden nacional.
+ */
+const groupOf = (e: Entry) => (isUnown(e) && e.category === 'forma' ? 2 : e.category === 'base' ? 0 : 1);
 
 /** Devuelve las casillas de la dex en el orden de las cajas de HOME. */
 export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
@@ -134,12 +137,12 @@ export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
   let ordered = list;
   if (dex.layout === 'separado') {
     // estable: dentro de cada bloque se mantiene el orden nacional
-    ordered = [...list].sort((a, b) => groupOf(a, Boolean(dex.unown)) - groupOf(b, Boolean(dex.unown)));
+    ordered = [...list].sort((a, b) => groupOf(a) - groupOf(b));
   }
   let index = 0;
   let prevGroup = 0;
   return ordered.map((entry) => {
-    const group = dex.layout === 'separado' ? groupOf(entry, Boolean(dex.unown)) : 0;
+    const group = dex.layout === 'separado' ? groupOf(entry) : 0;
     // Cada bloque (regionales, Unown) empieza en una caja nueva
     if (group !== prevGroup && index % BOX_SIZE !== 0) {
       index += BOX_SIZE - (index % BOX_SIZE);

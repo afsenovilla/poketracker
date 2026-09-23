@@ -127,6 +127,18 @@ def display_name(entry):
     return entry['name']
 
 
+def split_unown(entries):
+    """La casilla de Unown del orden nacional no lleva letra; las 28 letras van aparte."""
+    forms = [e for e in entries if e['species'] == 201]
+    if not forms or any(e['id'] == 'unown' for e in entries):
+        return
+    base = next(e for e in forms if e['category'] == 'base')
+    plain = dict(base, id='unown', form=None, category='base', formOrder=-1)
+    for e in forms:
+        e['category'] = 'forma'
+    entries.append(plain)
+
+
 def fix_regional_gen(entries):
     """Las formas regionales son de la generación en la que salieron, no la de su especie."""
     for e in entries:
@@ -334,6 +346,7 @@ def main():
                     'formOrder': 0.5,  # justo después de la forma base
                 })
 
+    split_unown(entries)
     fix_regional_gen(entries)
     link_evolutions(entries, species)
 
@@ -353,7 +366,7 @@ def main():
                 break
         else:
             # Unown: cada letra tiene su icono («unown-b» -> form-b)
-            if n == 201 and e['id'] != 'unown-a':
+            if n == 201 and e['id'].startswith('unown-') and e['id'] != 'unown-a':
                 base.append(f"form-{e['id'].split('-', 1)[1]}")
         shiny = base + ['color-shiny']
         ok = frozenset(base) in rules

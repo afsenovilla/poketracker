@@ -95,12 +95,13 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
       key: `g${i + 1}`,
       label: `Gen. ${r}`,
       name: `Generación ${i + 1}`,
-      list: counted.filter((e) => e.gen === i + 1 && e.category === 'base' && !(dex.unown && isUnown(e))),
+      list: counted.filter((e) => e.gen === i + 1 && e.category === 'base'),
       link: `${base}?gen=${i + 1}`,
     }));
     const regional = counted.filter((e) => e.category === 'regional');
     if (regional.length) groups.push({ key: 'reg', label: 'Regionales', name: 'Formas regionales', list: regional, link: base });
-    const unown = dex.unown ? counted.filter((e) => isUnown(e)) : [];
+    // El Unown «A» cuenta en su generación; aquí van las otras letras
+    const unown = counted.filter((e) => isUnown(e) && e.category === 'forma');
     if (unown.length) groups.push({ key: 'unown', label: 'Unown', name: 'Unown', list: unown, link: `${base}?q=unown` });
     for (const g of groups) {
       if (!g.list.length) continue;
@@ -126,7 +127,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
       });
     }
     return rows;
-  }, [counted, captures, base, dex.unown]);
+  }, [counted, captures, base]);
 
   const byOrigin = useMemo(() => {
     const home = new Map<string, number>();

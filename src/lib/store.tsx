@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
-import { applyOp, applyOps, emptyDoc, isProgressDoc } from './doc';
+import { applyOp, applyOps, emptyDoc, isProgressDoc, migrateDoc } from './doc';
 import { GitHubError, readPublic, readRemote, writeRemote } from './github';
 import { PUBLIC_PROGRESS } from '../config';
 import type { GitHubSettings } from './github';
@@ -40,7 +40,7 @@ const StoreContext = createContext<StoreState | null>(null);
 export function StoreProvider ({ children }: { children: ReactNode }) {
   const [base, setBase] = useState<ProgressDoc>(() => {
     const v = storage.getJSON<ProgressDoc>(KEY_BASE);
-    return isProgressDoc(v) ? v : emptyDoc();
+    return isProgressDoc(v) ? migrateDoc(v) : emptyDoc();
   });
   const [pending, setPending] = useState<Op[]>(() => storage.getJSON<Op[]>(KEY_PENDING) || []);
   const [github, setGithubState] = useState<GitHubSettings | null>(() => storage.getJSON<GitHubSettings>(KEY_GITHUB));
@@ -85,6 +85,7 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
     const remote = await readRemote(gh);
     if (remote) {
       if (!isProgressDoc(remote.doc)) throw new Error('El fichero remoto no tiene el formato esperado');
+      remote.doc = migrateDoc(remote.doc);
       setBase(remote.doc);
       baseRef.current = remote.doc;
       setSha(remote.sha);
@@ -150,7 +151,7 @@ export function StoreProvider ({ children }: { children: ReactNode }) {
       const remote = await readPublic(PUBLIC_PROGRESS);
       if (githubRef.current) return; // se ha conectado mientras tanto
       if (remote && !isProgressDoc(remote)) throw new Error('El fichero remoto no tiene el formato esperado');
-      const next = remote || emptyDoc();
+      const next = remote ? migrateDoc(remote) : emptyDoc();
       setBase(next);
       baseRef.current = next;
       setLastSync(new Date());

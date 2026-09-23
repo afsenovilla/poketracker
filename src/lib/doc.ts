@@ -12,6 +12,25 @@ export function isProgressDoc (value: unknown): value is ProgressDoc {
   return Boolean(v) && v.version === 1 && Array.isArray(v.dexes) && typeof v.captures === 'object';
 }
 
+/**
+ * Arreglos al cargar un progreso guardado antes de algún cambio de datos.
+ * Ahora mismo: la casilla de Unown del orden nacional pasó de «unown-a» a «unown»
+ * (la letra A vive en la caja de Unown).
+ */
+export function migrateDoc (doc: ProgressDoc): ProgressDoc {
+  let changed = false;
+  const captures: ProgressDoc['captures'] = {};
+  for (const [dexId, slots] of Object.entries(doc.captures)) {
+    if (slots['unown-a'] && !slots.unown) {
+      captures[dexId] = { ...slots, unown: slots['unown-a'] };
+      changed = true;
+    } else {
+      captures[dexId] = slots;
+    }
+  }
+  return changed ? { ...doc, captures } : doc;
+}
+
 /** Aplica una operación de forma inmutable. */
 export function applyOp (doc: ProgressDoc, op: Op, now = Date.now()): ProgressDoc {
   switch (op.type) {
