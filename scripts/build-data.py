@@ -39,7 +39,7 @@ EXCLUDE = {
     'minior-blue-meteor', 'minior-indigo-meteor', 'minior-violet-meteor',
 }
 EXCLUDE_PREFIX = (
-    'deoxys-attack', 'deoxys-defense', 'deoxys-speed', 'rotom-', 'arceus-', 'genesect-',
+    'deoxys-attack', 'deoxys-defense', 'deoxys-speed', 'arceus-', 'genesect-',
     'silvally-', 'furfrou-', 'ogerpon-', 'koraidon-', 'miraidon-',
     'scatterbug-', 'spewpa-',
 )
@@ -368,6 +368,12 @@ def main():
             # Unown: cada letra tiene su icono («unown-b» -> form-b)
             if n == 201 and e['id'].startswith('unown-') and e['id'] != 'unown-a':
                 base.append(f"form-{e['id'].split('-', 1)[1]}")
+            elif e['category'] == 'forma' and e['id'].startswith(e['slug'] + '-'):
+                # Otras formas sueltas (Rotom, Vivillon, Alcremie…): el icono suele
+                # llevar el sufijo del identificador («rotom-heat» -> form-heat)
+                suffix = e['id'][len(e['slug']) + 1:]
+                if frozenset(base + [f'form-{suffix}']) in rules:
+                    base.append(f'form-{suffix}')
         shiny = base + ['color-shiny']
         ok = frozenset(base) in rules
         return (' '.join(base) if ok else None,
