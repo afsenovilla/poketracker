@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:21:22.765Z",
+ "updatedAt": "2026-09-23T12:21:33.448Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5468,6 +5468,11 @@
    },
    "lycanroc-midnight": {
     "t": 1790166082765,
+    "c": 1,
+    "g": "swsh"
+   },
+   "zarude-dada": {
+    "t": 1790166093448,
     "c": 1,
     "g": "swsh"
    }
