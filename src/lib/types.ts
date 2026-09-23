@@ -39,12 +39,16 @@ export interface DexConfig {
   shiny: boolean;
   /** Formas regionales (Alola, Galar, Hisui, Paldea) */
   regional: boolean;
-  /** Formas alternativas (Unown, Vivillon, Alcremie, gorras de Pikachu…) */
-  forms: boolean;
   /** Diferencias de género */
   gender: boolean;
   /** Caja con las 28 formas de Unown */
   unown?: boolean;
+  /** Formas «sueltas»: ni regionales ni Unown ni Vivillon/Alcremie (Lycanroc, Oricorio, Zygarde 10%, gorras de Pikachu…) */
+  otherForms?: boolean;
+  /** Los 18 patrones de Vivillon */
+  vivillon?: boolean;
+  /** Las combinaciones de sabor de Alcremie */
+  alcremie?: boolean;
   /** 'junto': cada forma va tras su especie; 'separado': primero las 1025 especies y luego las formas */
   layout: Layout;
   createdAt: string;

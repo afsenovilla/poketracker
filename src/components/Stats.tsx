@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
-import { availabilityByGame, includeEntry, isUnavailable, isUnown, useLocations } from '../lib/data';
+import { availabilityByGame, formaGroup, includeEntry, isUnavailable, isUnown, useLocations } from '../lib/data';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
 import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyFromCoins, goEnergyFromTime, goEnergyNow } from '../lib/doc';
 import { useStore } from '../lib/store';
@@ -338,6 +338,13 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
     }));
     const regional = counted.filter((e) => e.category === 'regional');
     if (regional.length) groups.push({ key: 'reg', label: 'Regionales', name: 'Formas regionales', list: regional, link: `${base}?cat=regional` });
+    // Las especies «ancla» (Zygarde 50%, el patrón Pradera de Vivillon…) cuentan en su generación; aquí van las demás formas
+    const otherForms = counted.filter((e) => e.category === 'forma' && formaGroup(e)?.value === 'other');
+    if (otherForms.length) groups.push({ key: 'other', label: 'Otras formas', name: 'Otras formas sueltas', list: otherForms, link: `${base}?cat=other` });
+    const vivillon = counted.filter((e) => e.category === 'forma' && formaGroup(e)?.value === 'vivillon');
+    if (vivillon.length) groups.push({ key: 'vivillon', label: 'Vivillon', name: 'Vivillon', list: vivillon, link: `${base}?cat=vivillon` });
+    const alcremie = counted.filter((e) => e.category === 'forma' && formaGroup(e)?.value === 'alcremie');
+    if (alcremie.length) groups.push({ key: 'alcremie', label: 'Alcremie', name: 'Alcremie', list: alcremie, link: `${base}?cat=alcremie` });
     // El Unown «A» cuenta en su generación; aquí van las otras letras
     const unown = counted.filter((e) => isUnown(e) && e.category === 'forma');
     if (unown.length) groups.push({ key: 'unown', label: 'Unown', name: 'Unown', list: unown, link: `${base}?cat=unown` });

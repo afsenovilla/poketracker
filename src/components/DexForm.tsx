@@ -39,15 +39,22 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
   const [shiny, setShiny] = useState(initial?.shiny ?? false);
   const [regional, setRegional] = useState(initial?.regional ?? true);
   const [unown, setUnown] = useState(initial?.unown ?? false);
-  const forms = false;
+  const [otherForms, setOtherForms] = useState(initial?.otherForms ?? false);
+  const [vivillon, setVivillon] = useState(initial?.vivillon ?? false);
+  const [alcremie, setAlcremie] = useState(initial?.alcremie ?? false);
   const gender = false;
   const [layout, setLayout] = useState<Layout>(initial?.layout ?? 'separado');
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const total = useMemo(() => countEntries({ regional, forms, gender, unown }, entries), [regional, forms, gender, unown, entries]);
+  const total = useMemo(
+    () => countEntries({ regional, unown, otherForms, vivillon, alcremie }, entries),
+    [regional, unown, otherForms, vivillon, alcremie, entries],
+  );
   const boxes = useMemo(
-    () => groupBoxes(buildSlots({ id: '', title: '', shiny, regional, forms, gender, unown, layout, createdAt: '' }, entries)).length,
-    [shiny, regional, forms, gender, unown, layout, entries],
+    () => groupBoxes(buildSlots(
+      { id: '', title: '', shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, createdAt: '' }, entries,
+    )).length,
+    [shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, entries],
   );
 
   const handleSubmit = (e: FormEvent) => {
@@ -58,7 +65,9 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
       shiny,
       regional,
       unown,
-      forms,
+      otherForms,
+      vivillon,
+      alcremie,
       gender,
       layout,
       createdAt: initial?.createdAt ?? new Date().toISOString(),
@@ -116,6 +125,9 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
             <div className="form-group">
               <label>Incluir</label>
               {check('opt_regional', 'Formas regionales', regional, setRegional)}
+              {check('opt_other_forms', 'Otras formas sueltas (Lycanroc, Oricorio, Zygarde 10%…)', otherForms, setOtherForms)}
+              {check('opt_vivillon', 'Patrones de Vivillon (19)', vivillon, setVivillon)}
+              {check('opt_alcremie', 'Combinaciones de Alcremie (62)', alcremie, setAlcremie)}
               {check('opt_unown', 'Caja de Unown (las 28 letras)', unown, setUnown)}
             </div>
 

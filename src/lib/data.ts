@@ -112,24 +112,60 @@ export function labelIndex (entries: Entry[]) {
 }
 
 export const UNOWN = 201;
+export const VIVILLON = 666;
+export const ALCREMIE = 869;
 export const isUnown = (e: Pick<Entry, 'species'>) => e.species === UNOWN;
 
-export function includeEntry (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender' | 'unown'>, e: Entry) {
+export type FormaGroup = { value: 'unown' | 'vivillon' | 'alcremie' | 'other'; label: string };
+
+/**
+ * Subgrupo de una forma alternativa (no regional, no de género), para el filtro de
+ * «tipo de casilla» y el enlace de la ficha. Unown, Vivillon y Alcremie van aparte
+ * porque son cajas propias; el resto de formas de categoría «forma» (Lycanroc,
+ * Oricorio, Zygarde 10%, gorras de Pikachu…) cae en «otras formas». Unown, Vivillon
+ * y Alcremie se detectan por especie aunque sea la forma «base» (como con Unown:
+ * la letra A cuenta igual aunque sea la especie), así que `null` solo significa
+ * «ni es una de esas tres especies, ni es una forma alternativa cualquiera».
+ */
+export function formaGroup (e: Pick<Entry, 'category' | 'species'>): FormaGroup | null {
+  if (isUnown(e)) return { value: 'unown', label: 'Unown' };
+  if (e.species === VIVILLON) return { value: 'vivillon', label: 'Vivillon' };
+  if (e.species === ALCREMIE) return { value: 'alcremie', label: 'Alcremie' };
+  if (e.category === 'forma') return { value: 'other', label: 'Otra forma' };
+  return null;
+}
+
+export function includeEntry (dex: Pick<DexConfig, 'regional' | 'unown' | 'otherForms' | 'vivillon' | 'alcremie'>, e: Entry) {
   switch (e.category) {
     case 'base': return true;
     case 'regional': return dex.regional;
-    // De las formas alternativas solo se usan las de Unown, y solo si la dex las pide
-    case 'forma': return Boolean(dex.unown) && isUnown(e);
+    case 'forma':
+      switch (formaGroup(e)?.value) {
+        case 'unown': return Boolean(dex.unown);
+        case 'vivillon': return Boolean(dex.vivillon);
+        case 'alcremie': return Boolean(dex.alcremie);
+        default: return Boolean(dex.otherForms);
+      }
     case 'genero': return false;
     default: return false;
   }
 }
 
 /**
- * Grupo de cajas: 0 especies, 1 formas regionales, 2 las otras letras de Unown.
- * El Unown «A» es la especie: se queda en su sitio del orden nacional.
+ * Grupo de cajas: 0 especies, 1 formas regionales, 2 otras formas sueltas,
+ * 3 Vivillon, 4 Alcremie, 5 las otras letras de Unown (el Unown «A» es la
+ * especie: se queda en su sitio del orden nacional, grupo 0).
  */
-const groupOf = (e: Entry) => (isUnown(e) && e.category === 'forma' ? 2 : e.category === 'base' ? 0 : 1);
+const groupOf = (e: Entry) => {
+  if (e.category === 'base') return 0;
+  if (e.category === 'regional') return 1;
+  switch (formaGroup(e)?.value) {
+    case 'vivillon': return 3;
+    case 'alcremie': return 4;
+    case 'unown': return 5;
+    default: return 2;
+  }
+};
 
 /** Devuelve las casillas de la dex en el orden de las cajas de HOME. */
 export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
@@ -169,7 +205,7 @@ export function groupBoxes (slots: Slot[]) {
   return boxes;
 }
 
-export function countEntries (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender' | 'unown'>, entries: Entry[]) {
+export function countEntries (dex: Pick<DexConfig, 'regional' | 'unown' | 'otherForms' | 'vivillon' | 'alcremie'>, entries: Entry[]) {
   return entries.reduce((n, e) => n + (includeEntry(dex, e) ? 1 : 0), 0);
 }
 

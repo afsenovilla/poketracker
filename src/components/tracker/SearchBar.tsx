@@ -12,7 +12,10 @@ export interface Filters {
   game: string;
   /** juego donde se puede conseguir (incluye evolución y crianza); '' para todos */
   available: string;
-  /** tipo de casilla: '' todas, 'base' especies, 'regional' formas regionales, 'unown' letras de Unown */
+  /**
+   * tipo de casilla: '' todas, 'base' especies, 'regional' formas regionales,
+   * 'other' otras formas sueltas, 'vivillon', 'alcremie', 'unown' letras de Unown
+   */
   category: string;
 }
 
@@ -30,11 +33,19 @@ interface Props {
   availableCounts: { id: string; name: string; count: number }[];
   /** la dex incluye la caja de Unown */
   hasUnown: boolean;
+  /** la dex incluye otras formas sueltas */
+  hasOtherForms: boolean;
+  /** la dex incluye los patrones de Vivillon */
+  hasVivillon: boolean;
+  /** la dex incluye las combinaciones de Alcremie */
+  hasAlcremie: boolean;
 }
 
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-export function SearchBar ({ availableCounts, filters, gameCounts, hasUnown, setFilters }: Props) {
+export function SearchBar ({
+  availableCounts, filters, gameCounts, hasAlcremie, hasOtherForms, hasUnown, hasVivillon, setFilters,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -125,6 +136,9 @@ export function SearchBar ({ availableCounts, filters, gameCounts, hasUnown, set
               <option value="">Especies y formas</option>
               <option value="base">Solo especies</option>
               <option value="regional">Solo formas regionales</option>
+              {hasOtherForms && <option value="other">Solo otras formas</option>}
+              {hasVivillon && <option value="vivillon">Solo Vivillon</option>}
+              {hasAlcremie && <option value="alcremie">Solo Alcremie</option>}
               {hasUnown && <option value="unown">Solo Unown</option>}
             </select>
             <select

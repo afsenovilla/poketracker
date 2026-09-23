@@ -4,7 +4,7 @@ import { faExternalLinkAlt, faCaretLeft, faCaretRight } from '@fortawesome/free-
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CATEGORY_LABEL, homeUrl, includeEntry, isUnown, labelIndex, pad, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
+import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -139,8 +139,8 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
             ))}
           </div>
           <p className="info-category">
-            <Link to={`/dex/${dex.id}?cat=${isUnown(entry) && entry.category === 'forma' ? 'unown' : entry.category}`}>
-              {isUnown(entry) && entry.category === 'forma' ? 'Unown' : CATEGORY_LABEL[entry.category]}
+            <Link to={`/dex/${dex.id}?cat=${formaGroup(entry)?.value ?? entry.category}`}>
+              {formaGroup(entry)?.label ?? CATEGORY_LABEL[entry.category]}
             </Link>
             {' · '}
             <Link to={`/dex/${dex.id}?gen=${entry.gen}`}>Generación {entry.gen}</Link>

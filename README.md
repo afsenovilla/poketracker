@@ -13,7 +13,7 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 
 ## Qué hace
 
-- Varias dex a la vez (normal y shiny): las 1025 especies y, si quieres, las 57 formas regionales.
+- Varias dex a la vez (normal y shiny): las 1025 especies y, si quieres, las 57 formas regionales, la caja de Unown, otras formas sueltas (Lycanroc, Oricorio, Zygarde 10 %…) y los patrones de Vivillon o las combinaciones de Alcremie por separado.
 - Cajas de 30 en el mismo orden en que los guardas en HOME. Las formas regionales pueden ir junto a su especie o en cajas propias al final.
 - Cada Pokémon tiene tres estados: **no lo tengo**, **en otro juego** (pendiente de pasar a HOME) y **en HOME**.
   - Un clic lo marca como «en HOME», y «Marcar todos» marca la caja entera.
@@ -28,9 +28,10 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por juego, por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME». El filtro de juegos solo muestra los que tienen Pokémon asignados, con su número.
 - Ficha con el render de HOME (normal o shiny), tipos y entrada de la Pokédex, con enlaces a WikiDex.
 - **Móvil:** la dex se ve como una rejilla de iconos, 6 por fila como en HOME. Un toque marca el Pokémon y una pulsación larga abre su ficha.
-- **Filtros de la dex:** por juego de origen, por juego donde se consigue, por tipo de casilla (especies, formas regionales o Unown) y por generación.
+- **Filtros de la dex:** por juego de origen, por juego donde se consigue, por tipo de casilla (especies, formas regionales, otras formas sueltas, Vivillon, Alcremie o Unown) y por generación.
 - **Transferencias desde Pokémon GO:** tarjeta en el inicio con cuántos te quedan por pasar desde GO y la energía del Transportador (máx. 10 000, +60 por hora). Se apunta a mano y se va sumando sola.
 - **Caja de Unown:** opción al crear o editar una dex; la casilla de Unown del orden nacional se queda sin letra y las 28 letras (A-Z, ! y ?) van en su propia caja al final, cada una con su icono.
+- **Otras formas, Vivillon y Alcremie:** tres opciones más, independientes entre sí, al crear o editar una dex. «Otras formas sueltas» añade las formas que no son regionales ni Unown (Lycanroc, Oricorio, Zygarde 10 %, gorras de Pikachu…) en cajas al final; Vivillon (19 patrones además del que ya cuenta como especie) y Alcremie (62 combinaciones más, de las 63 en total) van cada uno en las suyas, por si no los quieres todos.
 - **Teclado:** con un Pokémon seleccionado, las flechas mueven la selección al de arriba, abajo o a los lados (también de una caja a la siguiente).
 - **Notas:** cada ficha tiene un desplegable de notas libres (por dex: la normal y la shiny llevan las suyas). Se guardan solas y en la caja sale un lápiz en los Pokémon con nota. Ojo: se ven también en modo lectura, porque van en el mismo `progreso.json`.
 - **Filtro «Se consigue en»:** en la dex, junto a «Solo los que me faltan», elige un juego y verás solo los que se pueden conseguir ahí (también evolucionando o criando), con el número en el propio desplegable.
@@ -119,13 +120,12 @@ Si prefieres hacerlo en local: `npm run data` (necesita python3, git y curl).
 
 ### Qué formas hay en los datos
 
-Las dex solo usan las especies y las **formas regionales**. Los datos también incluyen formas alternativas y diferencias de género, pero la web no las muestra (ver `includeEntry` en `src/lib/data.ts`).
-
+Las dex siempre usan las especies; las **formas regionales**, la **caja de Unown** y las **formas alternativas** (Vivillon, Alcremie y el resto por separado) son opciones al crear o editar la dex. Las diferencias de género están en los datos pero la web no las muestra (ver `includeEntry` en `src/lib/data.ts`).
 
 Se incluyen las formas que HOME guarda como distintas y que no se pueden cambiar a voluntad:
 
 - **Regionales:** Alola, Galar, Hisui y Paldea (incluidas las tres razas de Tauros).
-- **Alternativas:** Unown, Burmy, Wormadam, Shellos, Gastrodon, Basculin, Deerling, Sawsbuck, Vivillon, Flabébé, Floette, Florges, Pumpkaboo, Gourgeist, Zygarde 10 %, Oricorio, Lycanroc, núcleos de Minior, Magearna Color Vetusto, Toxtricity, Sinistea, Polteageist, las 63 Alcremie, Urshifu, Zarude Papá, Ursaluna Luna Carmesí, Maushold, Squawkabilly, Tatsugiri, Dudunsparce, Gimmighoul, Poltchageist, Sinistcha y las gorras de Pikachu.
+- **Alternativas:** Unown, Burmy, Wormadam, Shellos, Gastrodon, Basculin, Deerling, Sawsbuck, Vivillon, Flabébé, Floette, Florges, Pumpkaboo, Gourgeist, Zygarde 10 %, Oricorio, Lycanroc, núcleos de Minior, Magearna Color Vetusto, Toxtricity, Sinistea, Polteageist, las 63 Alcremie, Urshifu, Zarude Papá, Ursaluna Luna Carmesí, Maushold, Squawkabilly, Tatsugiri, Dudunsparce, Gimmighoul, Poltchageist, Sinistcha y las gorras de Pikachu. En la app, Unown, Vivillon y Alcremie tienen su propia opción; el resto va junto en «Otras formas sueltas».
 - **Género:** todas las especies con sprite de hembra distinto, más Meowstic, Indeedee, Basculegion, Oinkologne, Pyroar, Frillish y Jellicent.
 
 Quedan fuera las megaevoluciones, las formas Gigamax, las formas de combate y las totémicas. También las formas que se pueden cambiar (Rotom, Deoxys, Giratina, Shaymin, la Forma Tótem de Tornadus, Thundurus, Landorus y Enamorus, Arceus, Silvally, Furfrou, Ogerpon, Kyurem y Necrozma fusionados, Hoopa desatado, Calyrex con montura, Dialga y Palkia Origen), además de Pikachu Coqueta y Pikachu/Eevee compañeros, Pichu Picoreja, Floette Eterna y las variantes de Scatterbug y Spewpa, que se ven iguales.
@@ -166,7 +166,7 @@ Formato del fichero de progreso:
 ```json
 {
   "version": 1,
-  "dexes": [{ "id": "…", "title": "Living Dex", "shiny": false, "regional": true, "forms": true, "gender": true, "layout": "junto" }],
+  "dexes": [{ "id": "…", "title": "Living Dex", "shiny": false, "regional": true, "gender": true, "unown": true, "otherForms": true, "vivillon": false, "alcremie": false, "layout": "junto" }],
   "captures": { "<id de la dex>": { "pikachu": { "c": 1, "t": 1726570000000 }, "eevee": { "g": "sv", "t": 1726570000000 }, "mew": { "x": 1, "t": 1726570000000 } } }
 }
 ```

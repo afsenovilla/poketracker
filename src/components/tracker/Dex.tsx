@@ -5,7 +5,7 @@ import { memo, useMemo } from 'react';
 import { Box } from './Box';
 import { PokemonSlot } from './PokemonSlot';
 import { Progress } from '../Progress';
-import { groupBoxes, isUnown, normalize, pad } from '../../lib/data';
+import { formaGroup, groupBoxes, isUnown, normalize, pad } from '../../lib/data';
 import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
 import { isFiltering } from './SearchBar';
@@ -67,6 +67,9 @@ export const Dex = memo(function Dex ({ availability, captures, dex, filters, on
       if (filters.category === 'base' && (s.entry.category !== 'base' || isUnown(s.entry))) return false;
       if (filters.category === 'regional' && s.entry.category !== 'regional') return false;
       if (filters.category === 'unown' && !isUnown(s.entry)) return false;
+      if (filters.category === 'vivillon' && formaGroup(s.entry)?.value !== 'vivillon') return false;
+      if (filters.category === 'alcremie' && formaGroup(s.entry)?.value !== 'alcremie') return false;
+      if (filters.category === 'other' && formaGroup(s.entry)?.value !== 'other') return false;
       if (filters.available && (s.unavailable || st?.x || !availability.get(filters.available)?.has(s.entry.id))) return false;
       return matches(s, q);
     });

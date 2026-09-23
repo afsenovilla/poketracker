@@ -146,7 +146,16 @@ export function Tracker () {
       <Nav />
       <div className="tracker">
         <div className="dex-wrapper">
-          <SearchBar availableCounts={availableCounts} filters={filters} gameCounts={gameCounts} hasUnown={Boolean(dex.unown)} setFilters={setFilters} />
+          <SearchBar
+            availableCounts={availableCounts}
+            filters={filters}
+            gameCounts={gameCounts}
+            hasAlcremie={Boolean(dex.alcremie)}
+            hasOtherForms={Boolean(dex.otherForms)}
+            hasUnown={Boolean(dex.unown)}
+            hasVivillon={Boolean(dex.vivillon)}
+            setFilters={setFilters}
+          />
           <div className="dex-column" onScroll={handleScroll} ref={columnRef}>
             <Dex
               availability={availability}
