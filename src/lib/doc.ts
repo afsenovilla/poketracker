@@ -7,6 +7,17 @@ export const emptyDoc = (): ProgressDoc => ({
   captures: {},
 });
 
+/** Energía máxima del Transportador GO y cuánta se recupera por hora */
+export const GO_MAX_ENERGY = 10000;
+export const GO_ENERGY_PER_HOUR = 60;
+
+/** Energía estimada ahora mismo a partir de lo último apuntado. */
+export function goEnergyNow (go: ProgressDoc['go'], now = Date.now()) {
+  if (!go) return null;
+  const hours = Math.max(0, now - go.at) / 3600000;
+  return Math.min(GO_MAX_ENERGY, Math.floor(go.energy + hours * GO_ENERGY_PER_HOUR));
+}
+
 export function isProgressDoc (value: unknown): value is ProgressDoc {
   const v = value as ProgressDoc;
   return Boolean(v) && v.version === 1 && Array.isArray(v.dexes) && typeof v.captures === 'object';
@@ -54,6 +65,12 @@ export function applyOp (doc: ProgressDoc, op: Op, now = Date.now()): ProgressDo
         captures,
       };
     }
+    case 'go-energy':
+      return {
+        ...doc,
+        updatedAt: new Date(now).toISOString(),
+        go: { energy: Math.max(0, Math.min(GO_MAX_ENERGY, Math.round(op.energy))), at: now },
+      };
     case 'slot': {
       if (!doc.dexes.some((d) => d.id === op.dex)) return doc;
       const dexCaptures = { ...(doc.captures[op.dex] || {}) };

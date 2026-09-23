@@ -28,6 +28,8 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - Búsqueda por nombre, forma o número (sin importar las tildes) y filtros por juego, por generación, por «solo los que me faltan» y por «pendientes de pasar a HOME». El filtro de juegos solo muestra los que tienen Pokémon asignados, con su número.
 - Ficha con el render de HOME (normal o shiny), tipos y entrada de la Pokédex, con enlaces a WikiDex.
 - **Móvil:** la dex se ve como una rejilla de iconos, 6 por fila como en HOME. Un toque marca el Pokémon y una pulsación larga abre su ficha.
+- **Filtros de la dex:** por juego de origen, por juego donde se consigue, por tipo de casilla (especies, formas regionales o Unown) y por generación.
+- **Transferencias desde Pokémon GO:** tarjeta en el inicio con cuántos te quedan por pasar desde GO y la energía del Transportador (máx. 10 000, +60 por hora). Se apunta a mano y se va sumando sola.
 - **Caja de Unown:** opción al crear o editar una dex; la casilla de Unown del orden nacional se queda sin letra y las 28 letras (A-Z, ! y ?) van en su propia caja al final, cada una con su icono.
 - **Teclado:** con un Pokémon seleccionado, las flechas mueven la selección al de arriba, abajo o a los lados (también de una caja a la siguiente).
 - **Notas:** cada ficha tiene un desplegable de notas libres (por dex: la normal y la shiny llevan las suyas). Se guardan solas y en la caja sale un lápiz en los Pokémon con nota. Ojo: se ven también en modo lectura, porque van en el mismo `progreso.json`.

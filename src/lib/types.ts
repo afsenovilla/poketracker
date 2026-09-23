@@ -69,6 +69,8 @@ export interface ProgressDoc {
   updatedAt: string;
   dexes: DexConfig[];
   captures: Record<string, Record<string, SlotState>>;
+  /** Energía de transporte de Pokémon GO: lo apuntado y cuándo */
+  go?: { energy: number; at: number };
 }
 
 export interface SlotPatch {
@@ -84,6 +86,7 @@ export type Op =
   | { type: 'slot'; dex: string; entries: string[]; patch: SlotPatch }
   | { type: 'dex-upsert'; dex: DexConfig }
   | { type: 'dex-delete'; id: string }
+  | { type: 'go-energy'; energy: number }
   | { type: 'replace'; doc: ProgressDoc };
 
 export interface Slot {

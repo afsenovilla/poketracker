@@ -31,6 +31,8 @@ export function Tracker () {
     game: params.get('origen') || '',
     gen: Number(params.get('gen')) || 0,
     query: params.get('q') || '',
+    onlyPending: params.has('pendientes'),
+    category: params.get('cat') || '',
   }));
   const locations = useLocations();
   const availability = useMemo(() => availabilityByGame(locations), [locations]);
@@ -75,7 +77,7 @@ export function Tracker () {
 
   useEffect(() => {
     if (columnRef.current) columnRef.current.scrollTop = 0;
-  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game, filters.available]);
+  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game, filters.available, filters.category]);
 
 
   const filtering = isFiltering(filters);
@@ -144,7 +146,7 @@ export function Tracker () {
       <Nav />
       <div className="tracker">
         <div className="dex-wrapper">
-          <SearchBar availableCounts={availableCounts} filters={filters} gameCounts={gameCounts} setFilters={setFilters} />
+          <SearchBar availableCounts={availableCounts} filters={filters} gameCounts={gameCounts} hasUnown={Boolean(dex.unown)} setFilters={setFilters} />
           <div className="dex-column" onScroll={handleScroll} ref={columnRef}>
             <Dex
               availability={availability}

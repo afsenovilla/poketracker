@@ -1598,14 +1598,16 @@ $pending-color: #cfe3ff;
 // ---------- Filtros en dos filas: casillas arriba, desplegables abajo ----------
 .dex-search-bar .dex-search-bar-filters .form-group .dex-search-bar-selects {
   @include flexbox();
+  @include flex-wrap(wrap);
   gap: 8px;
   width: 100%;
 
   select,
   .game-select,
   .gen-select,
-  .available-select {
-    @include flex(1 1 0);
+  .available-select,
+  .category-select {
+    @include flex(1 1 190px);
     min-width: 0;
     width: auto;
     height: 30px;
@@ -1618,6 +1620,7 @@ $pending-color: #cfe3ff;
   }
 }
 
+.night-mode .dex-search-bar .category-select,
 .night-mode .dex-search-bar .available-select {
   background-color: $night-mode-04dp;
   color: $gray-medium;
@@ -1631,7 +1634,8 @@ $pending-color: #cfe3ff;
     select,
     .game-select,
     .gen-select,
-    .available-select {
+    .available-select,
+    .category-select {
       @include flex(1 1 calc(50% - 4px));
       height: 36px;
       margin: 0;
@@ -2018,4 +2022,97 @@ $stats-track: #eeeeee;
 .info .info-where-game li.derived .info-entry-link {
   font-weight: 400;
   font-style: italic;
+}
+
+// Transferencias desde Pokémon GO
+.stats .stats-card.go {
+  h3 .game-mark {
+    width: 16px;
+    height: 16px;
+  }
+
+  .go-energy {
+    margin-bottom: 6px;
+    font-size: 15px;
+
+    b {
+      font-size: 20px;
+    }
+  }
+
+  .go-track {
+    display: block;
+    height: 12px;
+    margin-bottom: 10px;
+
+    .stats-seg {
+      display: block;
+    }
+  }
+
+  .go-hint {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .go-actions {
+    @include flexbox();
+    @include flex-wrap(wrap);
+    @include align-items(center);
+    gap: 6px;
+
+    button {
+      padding: 5px 10px;
+      border: 1px solid $gray-dark;
+      border-radius: 3px;
+      background: none;
+      color: inherit;
+      font-family: $font-secondary;
+      font-size: 11px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, .05);
+      }
+    }
+
+    input {
+      width: 90px;
+      height: 28px;
+      padding: 0 8px;
+      border: 1px solid $gray-dark;
+      border-radius: 3px;
+      font-size: 14px;
+    }
+
+    .btn {
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      font-size: 11px;
+    }
+  }
+}
+
+.night-mode .stats .stats-card.go .go-actions {
+  button,
+  input {
+    border-color: $night-mode-12dp;
+    background-color: $night-mode-04dp;
+    color: $gray-medium;
+  }
+
+  button:hover {
+    background-color: $night-mode-08dp;
+  }
+}
+
+.info .info-category a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: $brand-primary;
+  }
 }

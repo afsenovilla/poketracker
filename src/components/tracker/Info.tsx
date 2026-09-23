@@ -2,8 +2,9 @@ import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-import { CATEGORY_LABEL, homeUrl, includeEntry, labelIndex, pad, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
+import { CATEGORY_LABEL, homeUrl, includeEntry, isUnown, labelIndex, pad, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -137,7 +138,13 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
               <span className="type-chip" key={t} style={{ backgroundColor: TYPE_COLORS[t] }}>{t}</span>
             ))}
           </div>
-          <p className="info-category">{CATEGORY_LABEL[entry.category]} · Generación {entry.gen}</p>
+          <p className="info-category">
+            <Link to={`/dex/${dex.id}?cat=${isUnown(entry) && entry.category === 'forma' ? 'unown' : entry.category}`}>
+              {isUnown(entry) && entry.category === 'forma' ? 'Unown' : CATEGORY_LABEL[entry.category]}
+            </Link>
+            {' · '}
+            <Link to={`/dex/${dex.id}?gen=${entry.gen}`}>Generación {entry.gen}</Link>
+          </p>
 
           {slot.unavailable ? (
             <div className="info-unavailable">
@@ -168,7 +175,7 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
                 aria-checked={status === 'game'}
                 className={classNames('game', { active: status === 'game' })}
                 disabled={Boolean(state?.x)}
-                onClick={() => patch({ c: false, g: state?.g || 'sv' })}
+                onClick={() => patch({ c: false, g: state?.g || 'go' })}
                 role="radio"
                 type="button"
               >

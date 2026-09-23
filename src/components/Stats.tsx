@@ -1,12 +1,13 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
 import { availabilityByGame, includeEntry, isUnavailable, isUnown, useLocations } from '../lib/data';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
+import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyNow } from '../lib/doc';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry, SlotState } from '../lib/types';
 
@@ -78,6 +79,94 @@ function Legend ({ pending = true, missing = false }: { pending?: boolean; missi
   );
 }
 
+/** Cuánto falta para llenarse, en texto */
+function fullIn (energy: number) {
+  const minutes = Math.ceil(((GO_MAX_ENERGY - energy) / GO_ENERGY_PER_HOUR) * 60);
+  if (minutes <= 0) return 'está al máximo';
+  const d = Math.floor(minutes / 1440);
+  const h = Math.floor((minutes % 1440) / 60);
+  if (d > 0) return `se llena en ${d} día${d === 1 ? '' : 's'}${h ? ` y ${h} h` : ''}`;
+  if (h > 0) return `se llena en ${h} h`;
+  return 'se llena en menos de 1 h';
+}
+
+/** Energía del Transportador GO y cuántos te quedan por pasar desde GO */
+function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
+  const { doc, dispatch, readOnly } = useStore();
+  const [, tick] = useState(0);
+  const [draft, setDraft] = useState('');
+
+  // se actualiza sola cada minuto
+  useEffect(() => {
+    const t = window.setInterval(() => tick((n) => n + 1), 60000);
+    return () => window.clearInterval(t);
+  }, []);
+
+  const energy = goEnergyNow(doc.go);
+  const save = (value: number) => dispatch({ type: 'go-energy', energy: value });
+
+  return (
+    <section className="stats-card go stacked">
+      <h3>
+        <GameMark game={GAME_BY_ID.go} /> Transferencias desde Pokémon GO
+      </h3>
+
+      <p className="stats-sub">
+        Te quedan <b>{pendingGo}</b> por pasar a HOME desde GO.{' '}
+        {pendingGo > 0 && <Link to={`${base}?origen=go&pendientes=1`}>Verlos</Link>}
+      </p>
+
+      {energy === null ? (
+        <p className="stats-sub">Apunta la energía que te queda y la iré sumando sola (60 por hora).</p>
+      ) : (
+        <>
+          <div className="go-energy">
+            <b>{energy.toLocaleString('es-ES')}</b> / {GO_MAX_ENERGY.toLocaleString('es-ES')} de energía
+            <span className="stats-muted"> · {fullIn(energy)}</span>
+          </div>
+          <span className="stats-track go-track">
+            <span className="stats-seg home" style={{ width: `${(100 * energy) / GO_MAX_ENERGY}%` }} />
+          </span>
+          <p className="stats-sub go-hint">
+            Te llegaría para <b>{Math.floor(energy / 10)}</b> normales de menos de 1000 PC (10 cada uno),
+            o <b>{Math.floor(energy / 1000)}</b> legendarios (1000).
+          </p>
+        </>
+      )}
+
+      {!readOnly && (
+        <div className="go-actions">
+          {energy !== null && (
+            <>
+              <button onClick={() => save(Math.max(0, energy - 10))} type="button">−10 normal</button>
+              <button onClick={() => save(Math.max(0, energy - 1000))} type="button">−1000 legendario</button>
+              <button onClick={() => save(Math.max(0, energy - 2000))} type="button">−2000 singular</button>
+            </>
+          )}
+          <input
+            aria-label="Energía que te queda"
+            inputMode="numeric"
+            max={GO_MAX_ENERGY}
+            min={0}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="Energía"
+            type="number"
+            value={draft}
+          />
+          <button
+            className="btn btn-blue"
+            disabled={draft.trim() === ''}
+            onClick={() => { save(Number(draft)); setDraft(''); }}
+            type="button"
+          >
+            Apuntar
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotState>; dex: DexConfig; entries: Entry[] }) {
   const locations = useLocations();
   const availability = useMemo(() => availabilityByGame(locations), [locations]);
@@ -99,10 +188,10 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
       link: `${base}?gen=${i + 1}`,
     }));
     const regional = counted.filter((e) => e.category === 'regional');
-    if (regional.length) groups.push({ key: 'reg', label: 'Regionales', name: 'Formas regionales', list: regional, link: base });
+    if (regional.length) groups.push({ key: 'reg', label: 'Regionales', name: 'Formas regionales', list: regional, link: `${base}?cat=regional` });
     // El Unown «A» cuenta en su generación; aquí van las otras letras
     const unown = counted.filter((e) => isUnown(e) && e.category === 'forma');
-    if (unown.length) groups.push({ key: 'unown', label: 'Unown', name: 'Unown', list: unown, link: `${base}?q=unown` });
+    if (unown.length) groups.push({ key: 'unown', label: 'Unown', name: 'Unown', list: unown, link: `${base}?cat=unown` });
     for (const g of groups) {
       if (!g.list.length) continue;
       let home = 0;
@@ -181,6 +270,10 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
     return { rows, nowhere };
   }, [locations, availability, missing, base]);
 
+  const pendingGo = useMemo(
+    () => counted.filter((e) => captures[e.id]?.g === 'go' && !captures[e.id]?.c).length,
+    [counted, captures],
+  );
   const doneCount = byGen.filter((r) => r.done).length;
   const maxOrigin = Math.max(1, ...byOrigin.map((r) => r.home + r.pending));
   const pendingTotal = missing.filter((e) => captures[e.id]?.g).length;
@@ -213,6 +306,8 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
           <p className="stats-empty">Aún no has indicado de qué juego viene ninguno.</p>
         )}
       </section>
+
+      <GoCard base={base} pendingGo={pendingGo} />
 
       <section className="stats-card wide stacked">
         <h3>Dónde conseguir lo que te falta</h3>

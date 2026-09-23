@@ -12,12 +12,14 @@ export interface Filters {
   game: string;
   /** juego donde se puede conseguir (incluye evolución y crianza); '' para todos */
   available: string;
+  /** tipo de casilla: '' todas, 'base' especies, 'regional' formas regionales, 'unown' letras de Unown */
+  category: string;
 }
 
-export const EMPTY_FILTERS: Filters = { query: '', hideCaught: false, gen: 0, onlyPending: false, game: '', available: '' };
+export const EMPTY_FILTERS: Filters = { query: '', hideCaught: false, gen: 0, onlyPending: false, game: '', available: '', category: '' };
 
 export const isFiltering = (f: Filters) => f.query.trim() !== '' || f.hideCaught || f.gen > 0 || f.onlyPending
-  || f.game !== '' || f.available !== '';
+  || f.game !== '' || f.available !== '' || f.category !== '';
 
 interface Props {
   filters: Filters;
@@ -26,11 +28,13 @@ interface Props {
   gameCounts: { id: string; name: string; count: number }[];
   /** juegos donde se consiguen, con cuántos (de los que faltan si está marcado «Solo los que me faltan») */
   availableCounts: { id: string; name: string; count: number }[];
+  /** la dex incluye la caja de Unown */
+  hasUnown: boolean;
 }
 
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-export function SearchBar ({ availableCounts, filters, gameCounts, setFilters }: Props) {
+export function SearchBar ({ availableCounts, filters, gameCounts, hasUnown, setFilters }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -112,6 +116,17 @@ export function SearchBar ({ availableCounts, filters, gameCounts, setFilters }:
                 ))}
               </select>
             )}
+            <select
+              aria-label="Tipo de casilla"
+              className="category-select"
+              onChange={(e) => update({ category: e.target.value })}
+              value={filters.category}
+            >
+              <option value="">Especies y formas</option>
+              <option value="base">Solo especies</option>
+              <option value="regional">Solo formas regionales</option>
+              {hasUnown && <option value="unown">Solo Unown</option>}
+            </select>
             <select
               aria-label="Generación"
               className="gen-select"
