@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:52:13.798Z",
+ "updatedAt": "2026-09-23T12:52:48.689Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5492,6 +5492,11 @@
     "t": 1790167901579,
     "c": 1,
     "g": "sv"
+   },
+   "basculin-blue-striped": {
+    "t": 1790167968689,
+    "c": 1,
+    "g": "go"
    }
   },
   "i3zog3zocg": {
