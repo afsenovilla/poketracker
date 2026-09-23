@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
+import { faLongArrowAltRight, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
@@ -28,6 +28,9 @@ export function Modal ({ children, onClose }: { children: ReactNode; onClose: ()
   return (
     <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div aria-modal="true" className={classNames('modal', { 'night-mode': nightMode })} role="dialog">
+        <button aria-label="Cerrar sin guardar" className="modal-close" onClick={onClose} type="button">
+          <FontAwesomeIcon icon={faTimes} />
+        </button>
         {children}
       </div>
     </div>
@@ -74,10 +77,10 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
     });
   };
 
-  const check = (id: string, label: string, value: boolean, set: (v: boolean) => void, disabled = false) => (
+  const check = (id: string, label: string, value: boolean, set: (v: boolean) => void, hint = '', disabled = false) => (
     <div className="form-option">
       <div className={classNames('checkbox', { disabled })}>
-        <label htmlFor={id}>
+        <label htmlFor={id} title={hint || undefined}>
           <input checked={value} disabled={disabled} id={id} onChange={(e) => set(e.target.checked)} type="checkbox" />
           <span className="checkbox-custom"><span /></span>{label}
         </label>
@@ -125,7 +128,7 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
             <div className="form-group">
               <label>Incluir</label>
               {check('opt_regional', 'Formas regionales', regional, setRegional)}
-              {check('opt_other_forms', 'Otras formas sueltas (Lycanroc, Oricorio, Zygarde 10%…)', otherForms, setOtherForms)}
+              {check('opt_other_forms', 'Otras formas sueltas', otherForms, setOtherForms, 'Lycanroc, Oricorio, Zygarde 10%, gorras de Pikachu…')}
               {check('opt_vivillon', 'Patrones de Vivillon (19)', vivillon, setVivillon)}
               {check('opt_alcremie', 'Combinaciones de Alcremie (62)', alcremie, setAlcremie)}
               {check('opt_unown', 'Caja de Unown (las 28 letras)', unown, setUnown)}

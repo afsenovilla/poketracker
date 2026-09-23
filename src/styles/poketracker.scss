@@ -445,10 +445,12 @@ header .shiny-badge {
 }
 
 .modal {
+  position: relative;
   width: min(500px, calc(100vw - 32px));
+  max-height: 90vh;
 
   .form {
-    padding: 30px 0 40px;
+    padding: 22px 0 28px;
   }
 
   form {
@@ -457,14 +459,44 @@ header .shiny-badge {
   }
 }
 
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: $gray-dark;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: $brand-primary;
+  }
+}
+
+.night-mode .modal-close {
+  color: $gray-medium;
+
+  &:hover {
+    color: $night-mode-link;
+  }
+}
+
 .dex-form {
+  .form-group {
+    margin-bottom: 16px;
+  }
+
   .form-group label {
-    margin-bottom: 10px;
+    margin-bottom: 6px;
   }
 
   .form-option .radio,
   .form-option .checkbox {
-    margin: 0 0 4px 8px;
+    margin: 0 0 3px 8px;
   }
 
   .dex-form-summary {
@@ -476,7 +508,7 @@ header .shiny-badge {
   }
 
   .btn:not(.btn-inline) {
-    margin-top: 20px;
+    margin-top: 14px;
   }
 }
 
