@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:02:21.157Z",
+ "updatedAt": "2026-09-23T12:13:33.662Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5418,6 +5418,11 @@
    },
    "graveler-alola": {
     "t": 1790163031156,
+    "c": 1,
+    "g": "sv"
+   },
+   "ninetales-alola": {
+    "t": 1790165613662,
     "c": 1,
     "g": "sv"
    }
