@@ -147,9 +147,16 @@ export function countEntries (dex: Pick<DexConfig, 'regional' | 'forms' | 'gende
 /** En una dex shiny, los Pokémon que no existen variocolor no cuentan. */
 export const isUnavailable = (dex: Pick<DexConfig, 'shiny'>, e: Entry) => Boolean(dex.shiny && e.noShiny);
 
-/** Página de WikiDex del Pokémon (opcionalmente, una sección como «Localización»). */
-export function wikidexUrl (entry: Pick<Entry, 'name'>, section?: string) {
-  const page = entry.name.replace(/[’‘]/g, "'").replace(/ /g, '_');
+/**
+ * Página de WikiDex del Pokémon (opcionalmente, una sección como «Localización»).
+ * Las formas regionales tienen su propia página: «Lilligant de Hisui».
+ */
+export function wikidexUrl (entry: Pick<Entry, 'name' | 'form' | 'category'>, section?: string) {
+  const region = entry.category === 'regional'
+    ? /^(?:Forma de )?(Alola|Galar|Hisui|Paldea)/.exec(entry.form || '')?.[1]
+    : undefined;
+  const title = region ? `${entry.name} de ${region}` : entry.name;
+  const page = title.replace(/[’‘]/g, "'").replace(/ /g, '_');
   return `https://www.wikidex.net/wiki/${encodeURIComponent(page)}${section ? `#${encodeURIComponent(section)}` : ''}`;
 }
 
