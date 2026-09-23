@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:32:57.783Z",
+ "updatedAt": "2026-09-23T08:37:53.087Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5146,6 +5146,10 @@
     "t": 1790152100741,
     "c": 1,
     "g": "swsh"
+   },
+   "typhlosion-hisui": {
+    "t": 1790152673087,
+    "c": 1
    }
   },
   "i3zog3zocg": {
