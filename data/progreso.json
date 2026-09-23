@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:52:48.689Z",
+ "updatedAt": "2026-09-23T12:54:55.555Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5497,6 +5497,11 @@
     "t": 1790167968689,
     "c": 1,
     "g": "go"
+   },
+   "maushold-family-of-three": {
+    "t": 1790168095555,
+    "c": 1,
+    "g": "sv"
    }
   },
   "i3zog3zocg": {
