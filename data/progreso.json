@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:38:32.279Z",
+ "updatedAt": "2026-09-23T08:38:36.224Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5194,6 +5194,11 @@
    },
    "goodra-hisui": {
     "t": 1790152712279,
+    "c": 1,
+    "g": "pla"
+   },
+   "sliggoo-hisui": {
+    "t": 1790152716224,
     "c": 1,
     "g": "pla"
    }
