@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { GameMark } from './GameMark';
 import { availabilityByGame, includeEntry, isUnavailable, isUnown, useLocations } from '../lib/data';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
-import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyNow } from '../lib/doc';
+import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyFromCoins, goEnergyFromTime, goEnergyNow } from '../lib/doc';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry, SlotState } from '../lib/types';
 
@@ -95,6 +95,9 @@ function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
   const { doc, dispatch, readOnly } = useStore();
   const [, tick] = useState(0);
   const [draft, setDraft] = useState('');
+  const [coinsDraft, setCoinsDraft] = useState('');
+  const [daysDraft, setDaysDraft] = useState('');
+  const [hoursDraft, setHoursDraft] = useState('');
 
   // se actualiza sola cada minuto
   useEffect(() => {
@@ -105,21 +108,40 @@ function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
   const energy = goEnergyNow(doc.go);
   const save = (value: number) => dispatch({ type: 'go-energy', energy: value });
 
-  return (
-    <section className="stats-card go stacked">
-      <h3>
-        <GameMark game={GAME_BY_ID.go} /> Transferencias desde Pokémon GO
-      </h3>
+  const saveFromCoins = () => {
+    const coins = Number(coinsDraft);
+    if (!Number.isFinite(coins) || coins < 0) return;
+    save(goEnergyFromCoins(coins));
+    setCoinsDraft('');
+  };
 
-      <p className="stats-sub">
-        Te quedan <b>{pendingGo}</b> por pasar a HOME{' '}
-        {pendingGo > 0
-          ? <Link to={`${base}?origen=go&pendientes=1`} title="Ver los que tienes pendientes en GO">desde GO</Link>
-          : 'desde GO'}.
+  const saveFromTime = () => {
+    const d = daysDraft.trim() === '' ? 0 : Number(daysDraft);
+    const h = hoursDraft.trim() === '' ? 0 : Number(hoursDraft);
+    if (!Number.isFinite(d) || !Number.isFinite(h) || (d === 0 && h === 0)) return;
+    save(goEnergyFromTime(d * 24 + h));
+    setDaysDraft('');
+    setHoursDraft('');
+  };
+
+  return (
+    <section className="stats-card go wide stacked">
+      <h3>Transferencias desde Pokémon GO</h3>
+
+      <p className="stats-sub go-from">
+        <GameMark game={GAME_BY_ID.go} />
+        <span>
+          Te quedan <b>{pendingGo}</b> por pasar a HOME{' '}
+          {pendingGo > 0
+            ? <Link to={`${base}?origen=go&pendientes=1`} title="Ver los que tienes pendientes en GO">desde GO</Link>
+            : 'desde GO'}.
+        </span>
       </p>
 
       {energy === null ? (
-        <p className="stats-sub">Guarda la energía que te queda y la iré sumando sola (60 por hora).</p>
+        <p className="stats-sub">
+          El juego no enseña la energía en bruto: dime las monedas o el tiempo que pide para cargarla del todo y la calculo yo (luego la voy sumando sola, 60 por hora).
+        </p>
       ) : (
         <>
           <div className="go-energy">
@@ -145,24 +167,80 @@ function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
               <button onClick={() => save(Math.max(0, energy - 2000))} type="button">−2000 singular</button>
             </>
           )}
-          <input
-            aria-label="Energía que te queda"
-            inputMode="numeric"
-            max={GO_MAX_ENERGY}
-            min={0}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Energía"
-            type="number"
-            value={draft}
-          />
-          <button
-            className="btn btn-blue"
-            disabled={draft.trim() === ''}
-            onClick={() => { save(Number(draft)); setDraft(''); }}
-            type="button"
-          >
-            Guardar
-          </button>
+
+          <div className="go-calc">
+            <label>
+              Monedas de «Cargar ahora»
+              <input
+                aria-label="Monedas para cargar del todo"
+                inputMode="numeric"
+                min={0}
+                onChange={(e) => setCoinsDraft(e.target.value)}
+                placeholder="p. ej. 976"
+                type="number"
+                value={coinsDraft}
+              />
+            </label>
+            <button disabled={coinsDraft.trim() === ''} onClick={saveFromCoins} type="button">Calcular y guardar</button>
+          </div>
+
+          <div className="go-calc">
+            <label>
+              Tiempo para completarse
+              <span className="go-calc-time">
+                <input
+                  aria-label="Días para completarse"
+                  inputMode="numeric"
+                  min={0}
+                  onChange={(e) => setDaysDraft(e.target.value)}
+                  placeholder="días"
+                  type="number"
+                  value={daysDraft}
+                />
+                <input
+                  aria-label="Horas para completarse"
+                  inputMode="numeric"
+                  max={23}
+                  min={0}
+                  onChange={(e) => setHoursDraft(e.target.value)}
+                  placeholder="horas"
+                  type="number"
+                  value={hoursDraft}
+                />
+              </span>
+            </label>
+            <button
+              disabled={daysDraft.trim() === '' && hoursDraft.trim() === ''}
+              onClick={saveFromTime}
+              type="button"
+            >
+              Calcular y guardar
+            </button>
+          </div>
+
+          <details className="go-manual">
+            <summary>O escribe el número de energía, si lo sabes</summary>
+            <div className="go-manual-row">
+              <input
+                aria-label="Energía que te queda"
+                inputMode="numeric"
+                max={GO_MAX_ENERGY}
+                min={0}
+                onChange={(e) => setDraft(e.target.value)}
+                placeholder="Energía"
+                type="number"
+                value={draft}
+              />
+              <button
+                className="btn btn-blue"
+                disabled={draft.trim() === ''}
+                onClick={() => { save(Number(draft)); setDraft(''); }}
+                type="button"
+              >
+                Guardar
+              </button>
+            </div>
+          </details>
         </div>
       )}
     </section>

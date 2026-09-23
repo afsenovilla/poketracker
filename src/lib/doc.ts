@@ -10,12 +10,23 @@ export const emptyDoc = (): ProgressDoc => ({
 /** Energía máxima del Transportador GO y cuánta se recupera por hora */
 export const GO_MAX_ENERGY = 10000;
 export const GO_ENERGY_PER_HOUR = 60;
+/** 1 moneda Pokémon equivale a 10 de energía al pulsar «Cargar ahora» */
+export const GO_ENERGY_PER_COIN = 10;
 
 /** Energía estimada ahora mismo a partir de lo último apuntado. */
 export function goEnergyNow (go: ProgressDoc['go'], now = Date.now()) {
   if (!go) return null;
   const hours = Math.max(0, now - go.at) / 3600000;
   return Math.min(GO_MAX_ENERGY, Math.floor(go.energy + hours * GO_ENERGY_PER_HOUR));
+}
+
+/** El juego nunca enseña la energía en bruto: se calcula a partir de lo que sí se ve. */
+export function goEnergyFromCoins (coins: number) {
+  return Math.max(0, Math.min(GO_MAX_ENERGY, Math.round(GO_MAX_ENERGY - coins * GO_ENERGY_PER_COIN)));
+}
+
+export function goEnergyFromTime (hours: number) {
+  return Math.max(0, Math.min(GO_MAX_ENERGY, Math.round(GO_MAX_ENERGY - hours * GO_ENERGY_PER_HOUR)));
 }
 
 export function isProgressDoc (value: unknown): value is ProgressDoc {

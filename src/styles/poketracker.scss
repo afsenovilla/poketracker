@@ -2026,9 +2026,16 @@ $stats-track: #eeeeee;
 
 // Transferencias desde Pokémon GO
 .stats .stats-card.go {
-  h3 .game-mark {
-    width: 16px;
-    height: 16px;
+  .go-from {
+    @include flexbox();
+    @include align-items(center);
+    gap: 8px;
+
+    .game-mark {
+      flex: none;
+      width: 18px;
+      height: 18px;
+    }
   }
 
   .go-energy {
@@ -2091,6 +2098,49 @@ $stats-track: #eeeeee;
       border: 0;
       font-size: 11px;
     }
+
+    .go-calc {
+      @include flexbox();
+      @include flex-wrap(wrap);
+      @include align-items(center);
+      gap: 8px 12px;
+      width: 100%;
+      padding-top: 8px;
+      margin-top: 2px;
+      border-top: 1px dashed $gray-medium;
+
+      label {
+        @include flexbox();
+        @include align-items(center);
+        gap: 8px;
+        font-size: 13px;
+        color: #555;
+      }
+
+      input { width: 78px; }
+    }
+
+    .go-calc-time {
+      @include flexbox();
+      gap: 6px;
+
+      input { width: 56px; }
+    }
+
+    .go-manual {
+      width: 100%;
+      margin-top: 2px;
+      font-size: 12px;
+      color: #777;
+
+      summary { cursor: pointer; }
+
+      .go-manual-row {
+        @include flexbox();
+        gap: 6px;
+        margin-top: 8px;
+      }
+    }
   }
 }
 
@@ -2105,6 +2155,14 @@ $stats-track: #eeeeee;
   button:hover {
     background-color: $night-mode-08dp;
   }
+
+  .go-calc {
+    border-top-color: $night-mode-12dp;
+
+    label { color: $gray-medium; }
+  }
+
+  .go-manual { color: $gray-medium; }
 }
 
 .info .info-category a {
