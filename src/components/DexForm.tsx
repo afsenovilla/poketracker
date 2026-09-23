@@ -25,6 +25,11 @@ export function Modal ({ children, onClose }: { children: ReactNode; onClose: ()
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [onClose]);
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prevOverflow; };
+  }, []);
   return (
     <div className="modal-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div aria-modal="true" className={classNames('modal', { 'night-mode': nightMode })} role="dialog">
