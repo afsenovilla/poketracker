@@ -1,6 +1,6 @@
 {
- "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto)",
- "updated": "2026-09-23",
+ "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá y Ursaluna Luna Carmesí)",
+ "updated": "2026-09-24",
  "entries": [
   {
    "id": "victini",
@@ -125,6 +125,14 @@
   {
    "id": "pikachu-world-cap",
    "name": "Pikachu (Gorra Trotamundos)"
+  },
+  {
+   "id": "zarude-dada",
+   "name": "Zarude (Papá)"
+  },
+  {
+   "id": "ursaluna-bloodmoon",
+   "name": "Ursaluna (Luna Carmesí)"
   }
  ]
 }
