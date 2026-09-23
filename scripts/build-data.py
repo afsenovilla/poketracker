@@ -89,6 +89,73 @@ ALC_SWEET = {
 }
 
 
+
+# Evoluciones que dependen de una forma regional concreta (la preevolución no es la normal)
+SPECIAL_EVO = {
+    'perrserker': 'meowth-galar',
+    'sirfetchd': 'farfetchd-galar',
+    'mr-rime': 'mr-mime-galar',
+    'cursola': 'corsola-galar',
+    'obstagoon': 'linoone-galar',
+    'runerigus': 'yamask-galar',
+    'overqwil': 'qwilfish-hisui',
+    'sneasler': 'sneasel-hisui',
+    'clodsire': 'wooper-paldea',
+    'basculegion-male': 'basculin-white-striped',
+    'basculegion-female': 'basculin-white-striped',
+}
+
+REGIONS = ('alola', 'galar', 'hisui', 'paldea')
+
+
+def region_of(entry):
+    if entry['category'] != 'regional':
+        return None
+    return next((r for r in REGIONS if f'-{r}' in entry['id']), None)
+
+
+def display_name(entry):
+    """Nombre con la región, como en WikiDex: «Vulpix de Alola»."""
+    r = region_of(entry)
+    if r:
+        return f"{entry['name']} de {r.capitalize()}"
+    if entry['category'] == 'forma' and entry.get('form'):
+        return f"{entry['name']} ({entry['form']})"
+    return entry['name']
+
+
+def link_evolutions(entries, species):
+    """Rellena evo (nombre) y evoId (id de la casilla) teniendo en cuenta las formas regionales."""
+    by_id = {e['id']: e for e in entries}
+    by_species = {}
+    for e in entries:
+        by_species.setdefault(e['species'], []).append(e)
+
+    def parent_of(e):
+        special = SPECIAL_EVO.get(e['id'])
+        if special:
+            return by_id.get(special)
+        prev = species[str(e['species'])]['evolves_from_species_id'] if str(e['species']) in species else None
+        if not prev:
+            return None
+        cands = by_species.get(int(prev), [])
+        reg = region_of(e)
+        if reg:
+            same = next((c for c in cands if region_of(c) == reg), None)
+            if same:
+                return same
+        # si no hay forma regional equivalente, la preevolución es la normal
+        return next((c for c in cands if c['category'] == 'base'), None)
+
+    for e in entries:
+        src = e
+        if e['category'] in ('genero', 'forma'):
+            # las variantes heredan la preevolución de su forma base
+            src = next((b for b in by_species[e['species']] if b['category'] in ('base', 'regional')), e)
+        p = parent_of(src)
+        e['evo'] = display_name(p) if p else None
+        e['evoId'] = p['id'] if p else None
+
 def read(folder, name):
     with open(os.path.join(folder, name + '.csv'), encoding='utf-8') as f:
         return list(csv.DictReader(f))
@@ -255,6 +322,8 @@ def main():
                     'homeShiny': sprite_for('shiny/', home, sid, '', pid, female=True),
                     'formOrder': 0.5,  # justo después de la forma base
                 })
+
+    link_evolutions(entries, species)
 
     # Clases del sprite sheet de PokédexTracker (iconos de caja, estilo HOME)
     rules = set()

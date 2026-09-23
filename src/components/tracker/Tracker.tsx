@@ -79,6 +79,15 @@ export function Tracker () {
 
   const filtering = isFiltering(filters);
 
+  // Selecciona una casilla y la trae a la vista
+  const goTo = useCallback((id: string) => {
+    setSelected(id);
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`.dex .pokemon[data-entry="${id}"]`);
+      el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    });
+  }, []);
+
   // Navegación con las flechas del teclado por la casilla seleccionada
   useEffect(() => {
     const byIndex = new Map(slots.map((s) => [s.index, s]));
@@ -111,16 +120,11 @@ export function Tracker () {
         }
       }
       e.preventDefault();
-      if (!next) return;
-      setSelected(next);
-      requestAnimationFrame(() => {
-        const scope = filtering ? '.search-results ' : '.box ';
-        document.querySelector(`${scope}.pokemon[data-entry="${next}"]`)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-      });
+      if (next) goTo(next);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [slots, selected, filtering]);
+  }, [slots, selected, filtering, goTo]);
 
   const handleScroll = useCallback(() => {
     const top = columnRef.current?.scrollTop ?? 0;
@@ -161,6 +165,7 @@ export function Tracker () {
           <Info
             dex={dex}
             flavor={data.flavor[selectedSlot.entry.species]}
+            onSelectEntry={goTo}
             slot={selectedSlot}
             state={captures[selectedSlot.entry.id]}
           />

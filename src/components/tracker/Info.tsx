@@ -1,9 +1,9 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExternalLinkAlt, faCaretLeft, faCaretRight, faLongArrowAltRight } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
+import { faExternalLinkAlt, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { useEffect, useMemo, useState } from 'react';
 
-import { CATEGORY_LABEL, homeUrl, pad, TYPE_COLORS, useLocations, wikidexUrl } from '../../lib/data';
+import { CATEGORY_LABEL, homeUrl, includeEntry, labelIndex, pad, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -13,13 +13,38 @@ import type { DexConfig, SlotPatch, Slot, SlotState } from '../../lib/types';
 
 interface Props {
   dex: DexConfig;
+  /** ir a otra casilla de la dex (preevoluciones) */
+  onSelectEntry?: (id: string) => void;
   flavor?: string;
   slot: Slot;
   state?: SlotState;
 }
 
-function WhereToCatch ({ entryId, evo }: { entryId: string; evo: string | null }) {
+/** Enlace a otra casilla de la misma dex; si no está en la dex, solo texto. */
+function EntryLink ({ dex, id, label, onSelect }: { dex: DexConfig; id?: string | null; label: string; onSelect?: (id: string) => void }) {
+  const { data } = usePokedex();
+  const target = id ? data?.entries.find((e) => e.id === id) : undefined;
+  const available = Boolean(onSelect && target && includeEntry(dex, target));
+  if (!available) return <b>{label}</b>;
+  return (
+    <button className="info-entry-link" onClick={() => onSelect!(id!)} title={`Ver ${label}`} type="button">
+      {label}
+    </button>
+  );
+}
+
+const DERIVED = /^(Evolución de|Crianza con) (.+)$/;
+
+function WhereToCatch ({ dex, entryId, evo, evoId, onSelect }: {
+  dex: DexConfig;
+  entryId: string;
+  evo: string | null;
+  evoId?: string | null;
+  onSelect?: (id: string) => void;
+}) {
   const data = useLocations();
+  const { data: dex_ } = usePokedex();
+  const byLabel = useMemo(() => labelIndex(dex_?.entries || []), [dex_]);
   if (!data) return <p className="info-muted">Cargando…</p>;
   const list = data.locations[entryId] || [];
 
@@ -44,19 +69,29 @@ function WhereToCatch ({ entryId, evo }: { entryId: string; evo: string | null }
               <span className="count">{places.length}</span>
             </summary>
             <ul>
-              {places.map((p) => (
-                <li className={/^(Evolución de|Crianza con) /.test(p) ? 'derived' : undefined} key={p}>{p}</li>
-              ))}
+              {places.map((p) => {
+                const m = DERIVED.exec(p);
+                return m ? (
+                  <li className="derived" key={p}>
+                    {m[1]}{' '}
+                    <EntryLink dex={dex} id={byLabel.get(m[2])} label={m[2]} onSelect={onSelect} />
+                  </li>
+                ) : <li key={p}>{p}</li>;
+              })}
             </ul>
           </details>
         )
       ))}
-      {evo && <p className="info-evo">Evoluciona de <b>{evo}</b></p>}
+      {evo && (
+        <p className="info-evo">
+          Evoluciona de <EntryLink dex={dex} id={evoId} label={evo} onSelect={onSelect} />
+        </p>
+      )}
     </div>
   );
 }
 
-export function Info ({ dex, flavor, slot, state }: Props) {
+export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
   const { showInfo, setShowInfo } = useUI();
   const { dispatch, readOnly } = useStore();
   const { entry } = slot;
@@ -194,16 +229,11 @@ export function Info ({ dex, flavor, slot, state }: Props) {
               Ver en WikiDex <FontAwesomeIcon icon={faExternalLinkAlt} />
             </a>
           </h3>
-          <WhereToCatch entryId={entry.id} evo={entry.evo} />
+          <WhereToCatch dex={dex} entryId={entry.id} evo={entry.evo} evoId={entry.evoId} onSelect={onSelectEntry} />
 
           {flavor && <blockquote className="info-flavor">{flavor}</blockquote>}
         </div>
 
-        <div className="info-footer">
-          <a href={wikidexUrl(entry)} rel="noopener noreferrer" target="_blank">
-            WikiDex <FontAwesomeIcon icon={faLongArrowAltRight} />
-          </a>
-        </div>
       </div>
     </div>
   );

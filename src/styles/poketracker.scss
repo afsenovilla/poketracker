@@ -1997,3 +1997,25 @@ $stats-track: #eeeeee;
     height: 10px;
   }
 }
+
+// Enlace a otra casilla desde la ficha (preevoluciones)
+.info .info-entry-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+
+  &:hover {
+    color: $brand-primary;
+  }
+}
+
+.info .info-where-game li.derived .info-entry-link {
+  font-weight: 400;
+  font-style: italic;
+}

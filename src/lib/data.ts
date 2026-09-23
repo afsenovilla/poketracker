@@ -90,6 +90,23 @@ export function usePokedex () {
   return { data, error };
 }
 
+/** Nombre tal y como se muestra: «Vulpix de Alola», «Basculin (Estilo Blanco)». */
+export function entryLabel (e: Entry) {
+  const region = e.category === 'regional'
+    ? /^(?:Forma de )?(Alola|Galar|Hisui|Paldea)/.exec(e.form || '')?.[1]
+    : null;
+  if (region) return `${e.name} de ${region}`;
+  if (e.category === 'forma' && e.form) return `${e.name} (${e.form})`;
+  return e.name;
+}
+
+/** Etiqueta -> id, para enlazar los textos de «Evolución de X» / «Crianza con Y». */
+export function labelIndex (entries: Entry[]) {
+  const map = new Map<string, string>();
+  for (const e of entries) if (!map.has(entryLabel(e))) map.set(entryLabel(e), e.id);
+  return map;
+}
+
 export function includeEntry (dex: Pick<DexConfig, 'regional' | 'forms' | 'gender'>, e: Entry) {
   switch (e.category) {
     case 'base': return true;

@@ -6,8 +6,10 @@ export interface Entry {
   species: number;
   /** identificador inglés de la especie */
   slug: string;
-  /** nombre de la preevolución, si la tiene */
+  /** nombre de la preevolución (con región: «Vulpix de Alola»), si la tiene */
   evo: string | null;
+  /** id de la casilla de la preevolución */
+  evoId?: string | null;
   name: string;
   form: string | null;
   category: Category;

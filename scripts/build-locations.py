@@ -231,6 +231,11 @@ def derive(csv_dir, entries, result):
     in_dex['bdsp'] = set(range(1, 494))
 
     by_id = {e['id']: e for e in entries}
+
+    def label_of(e):
+        """Nombre con la región: «Vulpix de Alola»."""
+        r = region(e)
+        return f"{e['name']} de {r.capitalize()}" if r else e['name']
     by_species = defaultdict(list)
     for e in entries:
         if e['category'] in ('base', 'regional'):
@@ -279,7 +284,7 @@ def derive(csv_dir, entries, result):
             p = parent(e, game)
             while p and not note:
                 if p['id'] in caught and p['species'] in in_dex[game]:
-                    note = f'Evolución de {p["name"]}'
+                    note = f'Evolución de {label_of(p)}'
                 p = parent(p, game)
             # crianza: solo para la primera fase, a partir de una evolución capturable
             if not note and game in BREEDING_GAMES and parent(e, game) is None:
@@ -289,7 +294,7 @@ def derive(csv_dir, entries, result):
                     while stack and not note:
                         c = stack.pop(0)
                         if c['id'] in caught and c['species'] not in no_eggs:
-                            note = f'Crianza con {c["name"]}'
+                            note = f'Crianza con {label_of(c)}'
                         stack.extend(children[c['id']])
             if note:
                 result[e['id']].setdefault(game, OrderedDict())[note] = set()
