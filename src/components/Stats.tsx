@@ -79,22 +79,76 @@ function Legend ({ pending = true, missing = false }: { pending?: boolean; missi
   );
 }
 
+/** «2 días y 3 h», «5 h», «menos de 1 h»… a partir de minutos */
+function formatDuration (minutes: number) {
+  if (minutes <= 0) return 'menos de 1 h';
+  const d = Math.floor(minutes / 1440);
+  const h = Math.floor((minutes % 1440) / 60);
+  if (d > 0) return `${d} día${d === 1 ? '' : 's'}${h ? ` y ${h} h` : ''}`;
+  if (h > 0) return `${h} h`;
+  return 'menos de 1 h';
+}
+
 /** Cuánto falta para llenarse, en texto */
 function fullIn (energy: number) {
   const minutes = Math.ceil(((GO_MAX_ENERGY - energy) / GO_ENERGY_PER_HOUR) * 60);
-  if (minutes <= 0) return 'está al máximo';
-  const d = Math.floor(minutes / 1440);
-  const h = Math.floor((minutes % 1440) / 60);
-  if (d > 0) return `se llena en ${d} día${d === 1 ? '' : 's'}${h ? ` y ${h} h` : ''}`;
-  if (h > 0) return `se llena en ${h} h`;
-  return 'se llena en menos de 1 h';
+  return minutes <= 0 ? 'está al máximo' : `se llena en ${formatDuration(minutes)}`;
+}
+
+/** Cuánto se tarda en recargar una cantidad de energía dada (no lo que queda para llenarse del todo) */
+function rechargeTime (energyCost: number) {
+  return formatDuration(Math.ceil((energyCost / GO_ENERGY_PER_HOUR) * 60));
+}
+
+/** Costes de transferencia del Transportador GO (Bulbapedia): categoría base y su variante shiny */
+const GO_COSTS: { key: string; label: string; energy: number; shinyEnergy: number }[] = [
+  { key: 'normal', label: 'Normal (menos de 1000 PC)', energy: 10, shinyEnergy: 2000 },
+  { key: 'legendary', label: 'Legendario / Ultraentidad', energy: 1000, shinyEnergy: 10000 },
+  { key: 'mythical', label: 'Mítico', energy: 2000, shinyEnergy: 10000 },
+];
+
+/** Tabla de referencia: cuánta energía (y tiempo de recarga equivalente) cuesta cada transferencia */
+function GoCosts () {
+  return (
+    <details className="go-costs">
+      <summary>Ver costes de transferencia</summary>
+      <div className="go-costs-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col" />
+              <th scope="col">Normal</th>
+              <th scope="col">Shiny</th>
+            </tr>
+          </thead>
+          <tbody>
+            {GO_COSTS.map((c) => (
+              <tr key={c.key}>
+                <th scope="row">{c.label}</th>
+                <td>
+                  {c.energy.toLocaleString('es-ES')}
+                  <span className="stats-muted"> · {rechargeTime(c.energy)}</span>
+                </td>
+                <td>
+                  {c.shinyEnergy.toLocaleString('es-ES')}
+                  <span className="stats-muted"> · {rechargeTime(c.shinyEnergy)}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="stats-sub go-costs-note">
+        La energía se recupera a 60 por hora; el tiempo es lo que tardarías en recargar esa cantidad desde 0, no lo que te queda a ti ahora.
+      </p>
+    </details>
+  );
 }
 
 /** Energía del Transportador GO y cuántos te quedan por pasar desde GO */
 function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
   const { doc, dispatch, readOnly } = useStore();
   const [, tick] = useState(0);
-  const [draft, setDraft] = useState('');
   const [coinsDraft, setCoinsDraft] = useState('');
   const [daysDraft, setDaysDraft] = useState('');
   const [hoursDraft, setHoursDraft] = useState('');
@@ -158,92 +212,107 @@ function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
         </>
       )}
 
+      <GoCosts />
+
       {!readOnly && (
         <div className="go-actions">
-          {energy !== null && (
-            <>
-              <button onClick={() => save(Math.max(0, energy - 10))} type="button">−10 normal</button>
-              <button onClick={() => save(Math.max(0, energy - 1000))} type="button">−1000 legendario</button>
-              <button onClick={() => save(Math.max(0, energy - 2000))} type="button">−2000 singular</button>
-            </>
+          {energy === null ? (
+            <GoCalcFields
+              coinsDraft={coinsDraft}
+              daysDraft={daysDraft}
+              hoursDraft={hoursDraft}
+              onSaveCoins={saveFromCoins}
+              onSaveTime={saveFromTime}
+              setCoinsDraft={setCoinsDraft}
+              setDaysDraft={setDaysDraft}
+              setHoursDraft={setHoursDraft}
+            />
+          ) : (
+            <details className="go-manual">
+              <summary>Corregir con monedas o tiempo restante</summary>
+              <GoCalcFields
+                coinsDraft={coinsDraft}
+                daysDraft={daysDraft}
+                hoursDraft={hoursDraft}
+                onSaveCoins={saveFromCoins}
+                onSaveTime={saveFromTime}
+                setCoinsDraft={setCoinsDraft}
+                setDaysDraft={setDaysDraft}
+                setHoursDraft={setHoursDraft}
+              />
+            </details>
           )}
-
-          <div className="go-calc">
-            <label>
-              Monedas de «Cargar ahora»
-              <input
-                aria-label="Monedas para cargar del todo"
-                inputMode="numeric"
-                min={0}
-                onChange={(e) => setCoinsDraft(e.target.value)}
-                placeholder="p. ej. 976"
-                type="number"
-                value={coinsDraft}
-              />
-            </label>
-            <button disabled={coinsDraft.trim() === ''} onClick={saveFromCoins} type="button">Calcular y guardar</button>
-          </div>
-
-          <div className="go-calc">
-            <label>
-              Tiempo para completarse
-              <span className="go-calc-time">
-                <input
-                  aria-label="Días para completarse"
-                  inputMode="numeric"
-                  min={0}
-                  onChange={(e) => setDaysDraft(e.target.value)}
-                  placeholder="días"
-                  type="number"
-                  value={daysDraft}
-                />
-                <input
-                  aria-label="Horas para completarse"
-                  inputMode="numeric"
-                  max={23}
-                  min={0}
-                  onChange={(e) => setHoursDraft(e.target.value)}
-                  placeholder="horas"
-                  type="number"
-                  value={hoursDraft}
-                />
-              </span>
-            </label>
-            <button
-              disabled={daysDraft.trim() === '' && hoursDraft.trim() === ''}
-              onClick={saveFromTime}
-              type="button"
-            >
-              Calcular y guardar
-            </button>
-          </div>
-
-          <details className="go-manual">
-            <summary>O escribe el número de energía, si lo sabes</summary>
-            <div className="go-manual-row">
-              <input
-                aria-label="Energía que te queda"
-                inputMode="numeric"
-                max={GO_MAX_ENERGY}
-                min={0}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Energía"
-                type="number"
-                value={draft}
-              />
-              <button
-                className="btn btn-blue"
-                disabled={draft.trim() === ''}
-                onClick={() => { save(Number(draft)); setDraft(''); }}
-                type="button"
-              >
-                Guardar
-              </button>
-            </div>
-          </details>
         </div>
       )}
     </section>
+  );
+}
+
+/** Los dos campos para calcular la energía (monedas o tiempo restante), reutilizados abiertos o plegados. */
+function GoCalcFields ({
+  coinsDraft, daysDraft, hoursDraft, onSaveCoins, onSaveTime, setCoinsDraft, setDaysDraft, setHoursDraft,
+}: {
+  coinsDraft: string;
+  daysDraft: string;
+  hoursDraft: string;
+  onSaveCoins: () => void;
+  onSaveTime: () => void;
+  setCoinsDraft: (v: string) => void;
+  setDaysDraft: (v: string) => void;
+  setHoursDraft: (v: string) => void;
+}) {
+  return (
+    <>
+      <div className="go-calc">
+        <label>
+          Monedas de «Cargar ahora»
+          <input
+            aria-label="Monedas para cargar del todo"
+            inputMode="numeric"
+            min={0}
+            onChange={(e) => setCoinsDraft(e.target.value)}
+            placeholder="p. ej. 976"
+            type="number"
+            value={coinsDraft}
+          />
+        </label>
+        <button disabled={coinsDraft.trim() === ''} onClick={onSaveCoins} type="button">Calcular y guardar</button>
+      </div>
+
+      <div className="go-calc">
+        <label>
+          Tiempo para completarse
+          <span className="go-calc-time">
+            <input
+              aria-label="Días para completarse"
+              inputMode="numeric"
+              min={0}
+              onChange={(e) => setDaysDraft(e.target.value)}
+              placeholder="días"
+              type="number"
+              value={daysDraft}
+            />
+            <input
+              aria-label="Horas para completarse"
+              inputMode="numeric"
+              max={23}
+              min={0}
+              onChange={(e) => setHoursDraft(e.target.value)}
+              placeholder="horas"
+              type="number"
+              value={hoursDraft}
+            />
+          </span>
+        </label>
+        <button
+          disabled={daysDraft.trim() === '' && hoursDraft.trim() === ''}
+          onClick={onSaveTime}
+          type="button"
+        >
+          Calcular y guardar
+        </button>
+      </div>
+    </>
   );
 }
 
