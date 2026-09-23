@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:27:14.648Z",
+ "updatedAt": "2026-09-23T08:27:36.523Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5109,6 +5109,16 @@
    },
    "meowth-galar": {
     "t": 1790152034648,
+    "c": 1,
+    "g": "swsh"
+   },
+   "slowpoke-galar": {
+    "t": 1790152056522,
+    "c": 1,
+    "g": "swsh"
+   },
+   "mr-mime-galar": {
+    "t": 1790152056523,
     "c": 1,
     "g": "swsh"
    }
