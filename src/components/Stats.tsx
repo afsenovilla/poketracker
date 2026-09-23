@@ -103,7 +103,7 @@ function rechargeTime (energyCost: number) {
 /** Costes de transferencia del Transportador GO (Bulbapedia): categoría base y su variante shiny */
 const GO_COSTS: { key: string; label: string; energy: number; shinyEnergy: number }[] = [
   { key: 'normal', label: 'Normal (menos de 1000 PC)', energy: 10, shinyEnergy: 2000 },
-  { key: 'legendary', label: 'Legendario / Ultraentidad', energy: 1000, shinyEnergy: 10000 },
+  { key: 'legendary', label: 'Legendario / Ultraente', energy: 1000, shinyEnergy: 10000 },
   { key: 'mythical', label: 'Mítico', energy: 2000, shinyEnergy: 10000 },
 ];
 
