@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T08:39:48.865Z",
+ "updatedAt": "2026-09-23T08:40:07.667Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -9469,6 +9469,11 @@
    },
    "zoroark-hisui": {
     "t": 1790152788865,
+    "c": 1,
+    "g": "pla"
+   },
+   "arcanine-hisui": {
+    "t": 1790152807667,
     "c": 1,
     "g": "pla"
    }
