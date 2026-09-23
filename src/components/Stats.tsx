@@ -112,12 +112,14 @@ function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
       </h3>
 
       <p className="stats-sub">
-        Te quedan <b>{pendingGo}</b> por pasar a HOME desde GO.{' '}
-        {pendingGo > 0 && <Link to={`${base}?origen=go&pendientes=1`}>Verlos</Link>}
+        Te quedan <b>{pendingGo}</b> por pasar a HOME{' '}
+        {pendingGo > 0
+          ? <Link to={`${base}?origen=go&pendientes=1`} title="Ver los que tienes pendientes en GO">desde GO</Link>
+          : 'desde GO'}.
       </p>
 
       {energy === null ? (
-        <p className="stats-sub">Apunta la energía que te queda y la iré sumando sola (60 por hora).</p>
+        <p className="stats-sub">Guarda la energía que te queda y la iré sumando sola (60 por hora).</p>
       ) : (
         <>
           <div className="go-energy">
@@ -159,7 +161,7 @@ function GoCard ({ base, pendingGo }: { base: string; pendingGo: number }) {
             onClick={() => { save(Number(draft)); setDraft(''); }}
             type="button"
           >
-            Apuntar
+            Guardar
           </button>
         </div>
       )}
