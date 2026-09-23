@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T12:20:50.046Z",
+ "updatedAt": "2026-09-23T12:21:19.458Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5465,6 +5465,10 @@
     "t": 1790166050046,
     "c": 1,
     "g": "swsh"
+   },
+   "lycanroc-midnight": {
+    "t": 1790166079458,
+    "c": 1
    }
   },
   "i3zog3zocg": {
