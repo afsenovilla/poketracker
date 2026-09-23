@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T13:08:46.846Z",
+ "updatedAt": "2026-09-23T13:21:39.597Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5550,6 +5550,16 @@
    },
    "basculin-white-striped": {
     "t": 1790168926846,
+    "c": 1,
+    "g": "pla"
+   },
+   "rotom-mow": {
+    "t": 1790169699596,
+    "c": 1,
+    "g": "pla"
+   },
+   "rotom-wash": {
+    "t": 1790169699597,
     "c": 1,
     "g": "pla"
    }
