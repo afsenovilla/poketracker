@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T11:05:09.415Z",
+ "updatedAt": "2026-09-23T11:05:45.432Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -5391,6 +5391,11 @@
    },
    "meowth-alola": {
     "t": 1790161509415,
+    "c": 1,
+    "g": "swsh"
+   },
+   "marowak-alola": {
+    "t": 1790161545432,
     "c": 1,
     "g": "swsh"
    }
