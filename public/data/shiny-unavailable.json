@@ -1,6 +1,6 @@
 {
- "source": "https://bulbapedia.bulbagarden.net/wiki/List_of_unobtainable_Shiny_Pok%C3%A9mon (gorras de Pikachu), https://www.serebii.net/games/shiny.shtml (resto, incl. Zarude Papá, Ursaluna Luna Carmesí, Urshifu Estilo Fluido, Floette Flor Eterna, Magearna Color Vetusto, Vivillon Motivo Poké Ball y Hoopa Desatado, que hereda el bloqueo de Hoopa)",
- "updated": "2026-09-27",
+ "source": "https://www.serebii.net/games/shiny.shtml",
+ "updated": "2026-10-01",
  "entries": [
   {
    "id": "victini",
@@ -97,62 +97,6 @@
   {
    "id": "pecharunt",
    "name": "Pecharunt"
-  },
-  {
-   "id": "pikachu-original-cap",
-   "name": "Pikachu (Gorra Original)"
-  },
-  {
-   "id": "pikachu-hoenn-cap",
-   "name": "Pikachu (Gorra Hoenn)"
-  },
-  {
-   "id": "pikachu-sinnoh-cap",
-   "name": "Pikachu (Gorra Sinnoh)"
-  },
-  {
-   "id": "pikachu-unova-cap",
-   "name": "Pikachu (Gorra Teselia)"
-  },
-  {
-   "id": "pikachu-kalos-cap",
-   "name": "Pikachu (Gorra Kalos)"
-  },
-  {
-   "id": "pikachu-alola-cap",
-   "name": "Pikachu (Gorra Alola)"
-  },
-  {
-   "id": "pikachu-world-cap",
-   "name": "Pikachu (Gorra Trotamundos)"
-  },
-  {
-   "id": "zarude-dada",
-   "name": "Zarude (Papá)"
-  },
-  {
-   "id": "ursaluna-bloodmoon",
-   "name": "Ursaluna (Luna Carmesí)"
-  },
-  {
-   "id": "urshifu-rapid-strike",
-   "name": "Urshifu (Estilo Fluido)"
-  },
-  {
-   "id": "floette-eternal",
-   "name": "Floette (Flor Eterna)"
-  },
-  {
-   "id": "magearna-original",
-   "name": "Magearna (Color Vetusto)"
-  },
-  {
-   "id": "vivillon-poke-ball",
-   "name": "Vivillon (Motivo Poké Ball)"
-  },
-  {
-   "id": "hoopa-unbound",
-   "name": "Hoopa (Desatado)"
   }
  ]
 }
