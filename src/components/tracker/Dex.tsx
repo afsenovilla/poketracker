@@ -82,6 +82,36 @@ export const Dex = memo(function Dex ({
 
   const boxes = useMemo(() => groupBoxes(slots), [slots]);
 
+  // Pokédex de juego: la regional en una sola sección y la nacional por generaciones
+  const sections = useMemo(() => {
+    if (!gameDex) return [];
+    const groups: { key: string; title: string; slots: Slot[] }[] = [];
+    if (scope === 'regional' && gameDef) {
+      groups.push({ key: 'regional', title: `Pokédex de ${gameDef.regional.label}`, slots });
+    } else {
+      for (const s of slots) {
+        const key = `g${s.entry.gen}`;
+        let g = groups.find((x) => x.key === key);
+        if (!g) {
+          g = { key, title: `Generación ${s.entry.gen}`, slots: [] };
+          groups.push(g);
+        }
+        g.slots.push(s);
+      }
+    }
+    return groups.map((g) => {
+      const counted = g.slots.filter((s) => !s.unavailable && !captures[s.entry.id]?.x);
+      const first = slotNumber(g.slots[0]);
+      const last = slotNumber(g.slots[g.slots.length - 1]);
+      return {
+        ...g,
+        range: `#${pad(first, digits)} – #${pad(last, digits)}`,
+        caught: counted.filter((s) => captures[s.entry.id]?.c).length,
+        total: counted.length,
+      };
+    });
+  }, [gameDex, scope, gameDef, slots, captures, digits]);
+
   const filtering = isFiltering(filters);
 
   const results = useMemo(() => {
@@ -121,7 +151,7 @@ export const Dex = memo(function Dex ({
             <h2>
               {gameDef && dex.title !== gameDef.name ? `${gameDef.name} · ` : ''}
               {scope === 'regional' && gameDef ? `Pokédex de ${gameDef.regional.label}` : 'Pokédex nacional'}
-              {' · '}{slots.length} Pokémon · {boxes.length} cajas del PC
+              {' · '}{slots.length} Pokémon
             </h2>
           ) : (
             <h2>
@@ -193,6 +223,33 @@ export const Dex = memo(function Dex ({
               </>
             )}
           </div>
+        ) : gameDex ? (
+          // Pokédex de juego: una lista por número, en secciones (sin cajas)
+          sections.map((sec) => (
+            <section className="search-results pokedex-section" key={sec.key}>
+              <h3 className="pokedex-section-title">
+                {sec.title}
+                <span className="pokedex-section-range">{sec.range}</span>
+                <span className="pokedex-section-count">{sec.caught}/{sec.total}</span>
+              </h3>
+              <div className="box-container">
+                {sec.slots.map((s) => (
+                  <PokemonSlot
+                    dexId={dex.id}
+                    digits={digits}
+                    gameDex
+                    key={s.entry.id}
+                    onSelect={onSelect}
+                    selected={selected === s.entry.id}
+                    shiny={dex.shiny}
+                    slot={s}
+                    state={captures[s.entry.id]}
+                    tradeHint={tradeHints?.get(s.entry.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))
         ) : (
           boxes.map((box, i) => (
             <Box

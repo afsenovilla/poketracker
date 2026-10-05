@@ -36,9 +36,9 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - **Notas:** cada ficha tiene un desplegable de notas libres (por dex: la normal y la shiny llevan las suyas). Se guardan solas y en la caja sale un lápiz en los Pokémon con nota. Ojo: se ven también en modo lectura, porque van en el mismo `progreso.json`.
 - **Filtro «Se consigue en»:** en la dex, junto a «Solo los que me faltan», elige un juego y verás solo los que se pueden conseguir ahí (también evolucionando o criando), con el número en el propio desplegable.
 - **Estadísticas:** debajo de tus dex, en el inicio: progreso por generación, de qué juegos vienen los que tienes y cuántos de los que te faltan se consiguen en cada juego. Cada fila lleva a la dex con ese filtro puesto.
-- **Dex de un juego:** al crear una dex, en «Juego» puedes elegir Rojo Fuego o Verde Hoja en vez de HOME. Es la Pokédex de esa partida:
+- **Pokédex de un juego:** al crear una dex, en «Qué quieres seguir» puedes elegir la Pokédex de Rojo Fuego o de Verde Hoja en vez de la living dex de HOME. No es una living dex: marcas lo que has visto o capturado en esa partida aunque ya no lo tengas, y se ve como una lista por número (la regional entera y la nacional por generaciones), sin cajas:
   - Arriba eliges **Kanto** (las 151, con su número regional) o **Nacional** (las 386 hasta la 3.ª generación), cada una con su progreso. La web recuerda cuál estabas viendo.
-  - Solo especies, sin formas, y cajas de 30 como las del PC del juego.
+  - Solo especies, sin formas.
   - Cada Pokémon puede estar **visto** o **capturado**. Un clic lo marca capturado; en la ficha eliges «Visto». Si desmarcas uno capturado, vuelve a quedar como visto si lo era.
   - «Solo los que me faltan» y «Vistos sin capturar» funcionan igual que en las dex de HOME.
   - En el inicio se ve el progreso de las dos Pokédex, y en las estadísticas, el de cada generación.

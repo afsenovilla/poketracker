@@ -116,7 +116,7 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete, regio
         <form onSubmit={handleSubmit}>
           <div className="form-column">
             <div className="form-group">
-              <label htmlFor="dex_game">Juego</label>
+              <label htmlFor="dex_game">Qué quieres seguir</label>
               <select
                 className="form-control"
                 disabled={Boolean(initial)}
@@ -125,11 +125,11 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete, regio
                 title={initial ? 'El juego de una dex no se puede cambiar' : undefined}
                 value={game}
               >
-                <option value="">Pokémon HOME (Living Dex)</option>
+                <option value="">Living Dex de Pokémon HOME (cajas)</option>
                 {[...new Set(GAME_DEXES.map((g) => g.family))].map((family) => (
                   <optgroup key={family} label={family}>
                     {GAME_DEXES.filter((g) => g.family === family).map((g) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
+                      <option key={g.id} value={g.id}>Pokédex de {g.name}</option>
                     ))}
                   </optgroup>
                 ))}
@@ -204,13 +204,15 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete, regio
             {gameDef ? (
               <p className="dex-form-summary">
                 {regionalTotal > 0 && <><b>{regionalTotal}</b> en la Pokédex de {gameDef.regional.label} y </>}
-                <b>{total}</b> en la nacional, en <b>{boxes}</b> cajas del PC
+                <b>{total}</b> en la nacional
               </p>
             ) : (
               <p className="dex-form-summary"><b>{total}</b> Pokémon en <b>{boxes}</b> cajas de HOME</p>
             )}
             {gameDef && !initial && (
-              <p className="dex-form-note">Solo especies, sin formas. Para cada Pokémon marcarás si lo has visto o capturado.</p>
+              <p className="dex-form-note">
+                Es la Pokédex del juego, no una living dex: marcas si has visto o capturado cada especie, aunque ya no la tengas. Sin formas ni cajas.
+              </p>
             )}
             {initial && <p className="dex-form-note">Cambiar las opciones no borra lo que ya hayas marcado.</p>}
 

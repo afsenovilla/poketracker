@@ -199,15 +199,26 @@ export function Tracker () {
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
 
       let next: string | undefined;
-      if (filtering) {
-        // en los resultados de búsqueda: según la rejilla que se ve en pantalla
-        const cells = Array.from(document.querySelectorAll<HTMLElement>('.search-results .pokemon[data-entry]'));
+      if (filtering || gameDex) {
+        // resultados de búsqueda y Pokédex de juego: según la rejilla que se ve en
+        // pantalla (las secciones de la Pokédex no tienen por qué ir alineadas)
+        const cells = Array.from(document.querySelectorAll<HTMLElement>('.dex .pokemon[data-entry]'));
         const pos = cells.findIndex((c) => c.dataset.entry === selected);
         if (pos < 0) return;
-        const top = cells[0].offsetTop;
-        const cols = Math.max(1, cells.filter((c) => c.offsetTop === top).length);
-        const step = { up: -cols, down: cols, left: -1, right: 1 }[dir]!;
-        next = cells[pos + step]?.dataset.entry;
+        if (dir === 'left' || dir === 'right') {
+          next = cells[pos + (dir === 'left' ? -1 : 1)]?.dataset.entry;
+        } else {
+          const cur = cells[pos].getBoundingClientRect();
+          const rows = cells
+            .map((c) => ({ c, r: c.getBoundingClientRect() }))
+            .filter(({ r }) => (dir === 'up' ? r.top < cur.top - 2 : r.top > cur.top + 2));
+          if (rows.length) {
+            const rowTop = dir === 'up' ? Math.max(...rows.map(({ r }) => r.top)) : Math.min(...rows.map(({ r }) => r.top));
+            const row = rows.filter(({ r }) => Math.abs(r.top - rowTop) < 2);
+            row.sort((x, y) => Math.abs(x.r.left - cur.left) - Math.abs(y.r.left - cur.left));
+            next = row[0]?.c.dataset.entry;
+          }
+        }
       } else {
         // en las cajas: 6 columnas y las cajas van seguidas, así que arriba/abajo = ±6
         const current = slots.find((s) => s.entry.id === selected);
@@ -223,7 +234,7 @@ export function Tracker () {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [slots, selected, filtering, goTo]);
+  }, [slots, selected, filtering, gameDex, goTo]);
 
   const handleScroll = useCallback(() => {
     const top = columnRef.current?.scrollTop ?? 0;

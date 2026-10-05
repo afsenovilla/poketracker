@@ -19,8 +19,6 @@ export interface GameDexDef {
   };
   /** la nacional llega hasta esta especie */
   nationalMax: number;
-  /** cajas del PC del juego */
-  boxes: number;
   /** cifras del número en el juego (#001) */
   digits: number;
   /** lugares de captura: public/data/locations-<locations>.json, con esta versión */
@@ -30,11 +28,11 @@ export interface GameDexDef {
 export const GAME_DEXES: GameDexDef[] = [
   {
     id: 'lg', name: 'Verde Hoja', family: 'Rojo Fuego / Verde Hoja', regional: { dex: 'kanto', label: 'Kanto' },
-    nationalMax: 386, boxes: 14, digits: 3, locations: { file: 'frlg', version: 'lg' },
+    nationalMax: 386, digits: 3, locations: { file: 'frlg', version: 'lg' },
   },
   {
     id: 'fr', name: 'Rojo Fuego', family: 'Rojo Fuego / Verde Hoja', regional: { dex: 'kanto', label: 'Kanto' },
-    nationalMax: 386, boxes: 14, digits: 3, locations: { file: 'frlg', version: 'fr' },
+    nationalMax: 386, digits: 3, locations: { file: 'frlg', version: 'fr' },
   },
 ];
 

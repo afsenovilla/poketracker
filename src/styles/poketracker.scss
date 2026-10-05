@@ -2431,3 +2431,34 @@ $stats-track: #eeeeee;
     padding: 2px;
   }
 }
+
+// Pokédex de juego: secciones en vez de cajas
+.dex .pokedex-section {
+  margin-top: 32px;
+
+  .pokedex-section-title {
+    @include flexbox();
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 10px;
+    font-size: 20px;
+  }
+
+  .pokedex-section-range {
+    font-size: 14px;
+    font-weight: 400;
+    color: lighten(#000, 40%);
+  }
+
+  .pokedex-section-count {
+    margin-left: auto;
+    font-family: $font-secondary;
+    font-size: 12px;
+    font-weight: 700;
+    color: $gray-dark;
+  }
+}
+
+.night-mode .dex .pokedex-section .pokedex-section-range {
+  color: $gray-dark;
+}
