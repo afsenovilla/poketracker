@@ -43,7 +43,10 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
   - «Solo los que me faltan» y «Vistos sin capturar» funcionan igual que en las dex de HOME.
   - En el inicio se ve el progreso de las dos Pokédex, y en las estadísticas, el de cada generación.
   - Los juegos están en `src/lib/gamedex.ts`. Si la Pokédex regional de un juego nuevo no sigue el orden nacional, añade su identificador de PokéAPI a `GAME_POKEDEXES` en `scripts/build-data.py`.
-  - Todavía no incluye dónde capturarlos en esos juegos.
+  - **Dónde conseguirlo** en tu versión: lugares (con surf, Caña Vieja/Buena, Supercaña o Golpe Roca), regalos, Casino, fósiles, intercambios del juego, encuentros fijos, «Evolución de X» (avisa si es por intercambio o con qué objeto) y «Crianza con Y».
+  - Lo que solo sale en la otra versión lleva una etiqueta **RF** o **VH** abajo a la izquierda de la casilla, y lo que no sale en ninguna de las dos, el icono ⇄. La ficha dice en qué otros juegos de la 3.ª generación sale (Rubí, Zafiro, Esmeralda, Colosseum, XD) o si fue de evento.
+  - Filtro «Se consigue» (en tu versión / solo en la otra / fuera de RF/VH) y, en las estadísticas, cuántos de los que te faltan hay en cada caso.
+  - En RF/VH no se puede conseguir a Espeon ni a Umbreon (no hay reloj), y tampoco el Diente Marino, la Escama Marina ni los Pokécubos: la web ya lo tiene en cuenta.
 - Modo noche y copia de seguridad (exportar/importar JSON).
 
 Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 de especies y 2 de formas.
@@ -117,6 +120,8 @@ Los iconos se muestran a su tamaño original, sin escalar, para que no se vean b
 - «Evolución de X» y «Crianza con Y» cuando un Pokémon no se captura directamente en un juego, pero sí su preevolución o su evolución (por ejemplo, Ledyba en DBPR solo se consigue criando a Ledian);
 - disponibilidad en Pokémon GO.
 
+`public/data/locations-frlg.json` (lugares de Rojo Fuego / Verde Hoja para las dex de juego) se genera con `scripts/build-locations-frlg.py`, con las tablas de la 3.ª generación de PKHeX y las evoluciones de PokéAPI. Se regenera en el mismo workflow.
+
 Los nombres de los lugares salen en español, tal como aparecen en los juegos. Limitaciones:
 
 - Las exclusivas de versión solo se indican en Let's Go, Espada/Escudo y DBPR, y en los encuentros fijos de Escarlata/Púrpura. Las tablas salvajes de Escarlata/Púrpura no distinguen la versión.
@@ -168,6 +173,7 @@ src/
 scripts/
   build-data.py       genera pokedex.json (PokéAPI)
   build-locations.py  genera locations.json (PKHeX)
+  build-locations-frlg.py  genera locations-frlg.json (PKHeX, 3.ª generación)
   update-data.sh  descarga las fuentes y lo ejecuta
 ```
 

@@ -123,7 +123,7 @@ export function SearchBar ({
                 onChange={(e) => update({ available: e.target.value })}
                 value={filters.available}
               >
-                <option value="">Se consigue en: cualquier juego</option>
+                <option value="">{gameDex ? 'Se consigue: en cualquier sitio' : 'Se consigue en: cualquier juego'}</option>
                 {availableCounts.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name} ({g.count}{filters.hideCaught ? ' que faltan' : ''})

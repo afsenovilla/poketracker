@@ -7,8 +7,9 @@ import { Nav } from '../Nav';
 import { NotFound } from '../NotFound';
 import { EMPTY_FILTERS, isFiltering, SearchBar } from './SearchBar';
 import { GAMES } from '../../lib/games';
-import { availabilityByGame, BOX_COLUMNS, buildSlots, scopeEntries, useLocations, usePokedex } from '../../lib/data';
-import { gameDexOf } from '../../lib/gamedex';
+import { availabilityByGame, BOX_COLUMNS, buildSlots, scopeEntries, useGameLocations, useLocations, usePokedex } from '../../lib/data';
+import { AVAILABILITY_KEYS, availabilityLabels, gameAvailabilityMap, gameDexOf, otherSources, pairedVersion, versionShort } from '../../lib/gamedex';
+import type { TradeHint } from './PokemonSlot';
 import type { DexScope } from '../../lib/gamedex';
 import type { ScopeSummary } from './Dex';
 import { useStore } from '../../lib/store';
@@ -58,7 +59,8 @@ export function Tracker () {
   }));
   const locations = useLocations();
   const gameDex = Boolean(dex?.game);
-  const availability = useMemo(() => (gameDex ? new Map<string, Set<string>>() : availabilityByGame(locations)), [locations, gameDex]);
+  const gameLoc = (dex && gameDexOf(dex)?.locations) || null;
+  const gameLocations = useGameLocations(gameLoc?.file);
   const [selected, setSelected] = useState<string | null>(null);
   const [showScroll, setShowScroll] = useState(false);
 
@@ -97,6 +99,25 @@ export function Tracker () {
     if (data.regionalDexes?.[def.regional.dex]) list.unshift(summary('regional', def.regional.label));
     return list;
   }, [dex, data, doc.captures]);
+  // Dónde se consigue: en las dex de HOME, por juego; en las de juego, en esta versión / en la otra / fuera
+  const availability = useMemo(() => (gameDex
+    ? gameAvailabilityMap(gameLocations, gameLoc?.version, slots.map((s) => s.entry.id))
+    : availabilityByGame(locations)), [locations, gameDex, gameLocations, gameLoc?.version, slots]);
+  // Aviso en las casillas de lo que no se consigue en esta versión
+  const tradeHints = useMemo(() => {
+    const map = new Map<string, TradeHint>();
+    if (!gameDex || !gameLocations || !gameLoc) return map;
+    const other = pairedVersion(gameLocations, gameLoc.version);
+    const otherName = other ? gameLocations.versions[other] : '';
+    for (const id of availability.get('version') || []) {
+      map.set(id, { short: other ? versionShort(other, otherName) : '?', title: `Solo en ${otherName}: hay que intercambiarlo` });
+    }
+    for (const id of availability.get('outside') || []) {
+      const games = otherSources(gameLocations, id).map(([g]) => gameLocations.other[g] || g);
+      map.set(id, { short: '', title: games.length ? `No sale en ${Object.values(gameLocations.versions).join(' ni ')}: ${games.join(', ')}` : 'No se consigue en este juego' });
+    }
+    return map;
+  }, [gameDex, gameLocations, gameLoc, availability]);
   const activeScope: DexScope = scopes.some((s) => s.scope === scope) ? scope : 'national';
   const gens = useMemo(() => [...new Set(slots.map((s) => s.entry.gen))].sort((a, b) => a - b), [slots]);
 
@@ -113,9 +134,12 @@ export function Tracker () {
 
   // Juegos donde se consiguen (solo cuentan los que puntúan: ni excluidos ni sin shiny)
   const availableCounts = useMemo(() => {
-    // los lugares son de los juegos compatibles con HOME, no del juego de la dex
-    if (!locations || gameDex) return [];
-    return Object.entries(locations.games).map(([id, name]) => {
+    const games: [string, string][] = gameDex
+      ? (gameLocations && gameLoc
+        ? AVAILABILITY_KEYS.map((k) => [k, availabilityLabels(gameLocations, gameLoc.version)[k]])
+        : [])
+      : Object.entries(locations?.games || {});
+    return games.map(([id, name]) => {
       const set = availability.get(id);
       let count = 0;
       for (const s of slots) {
@@ -126,7 +150,7 @@ export function Tracker () {
       }
       return { id, name, count };
     }).filter((g) => g.count > 0 || g.id === filters.available);
-  }, [locations, availability, slots, captures, filters.hideCaught, filters.available, gameDex]);
+  }, [locations, availability, slots, captures, filters.hideCaught, filters.available, gameDex, gameLocations, gameLoc]);
 
   useEffect(() => {
     document.title = dex ? `${dex.title} | Poketracker` : 'Poketracker';
@@ -228,6 +252,7 @@ export function Tracker () {
               dex={dex}
               filters={filters}
               onScope={setScope}
+              tradeHints={tradeHints}
               scope={activeScope}
               scopes={scopes}
               onScrollTop={() => { if (columnRef.current) columnRef.current.scrollTop = 0; }}

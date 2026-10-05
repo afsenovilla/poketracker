@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { GAME_DEX_BY_ID } from './gamedex';
-import type { DexScope } from './gamedex';
+import type { DexScope, GameLocationsData } from './gamedex';
 import type { DexConfig, Entry, PokedexData, Slot } from './types';
 
 const SPRITES = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
@@ -46,6 +46,29 @@ export function useLocations () {
     locCache.then((d) => alive && setData(d)).catch(() => {});
     return () => { alive = false; };
   }, []);
+  return data;
+}
+
+const gameLocCache = new Map<string, Promise<GameLocationsData>>();
+
+/** Lugares de los juegos clásicos (Rojo Fuego / Verde Hoja…); `file` = null si la dex no los tiene */
+export function useGameLocations (file: string | null | undefined) {
+  const [data, setData] = useState<GameLocationsData | null>(null);
+  useEffect(() => {
+    setData(null);
+    if (!file) return undefined;
+    let alive = true;
+    if (!gameLocCache.has(file)) {
+      const p = fetch(`${import.meta.env.BASE_URL}data/locations-${file}.json`, FRESH).then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json() as Promise<GameLocationsData>;
+      });
+      p.catch(() => gameLocCache.delete(file));
+      gameLocCache.set(file, p);
+    }
+    gameLocCache.get(file)!.then((d) => alive && setData(d)).catch(() => {});
+    return () => { alive = false; };
+  }, [file]);
   return data;
 }
 

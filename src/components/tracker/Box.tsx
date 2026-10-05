@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 
 import { PokemonSlot } from './PokemonSlot';
+import type { TradeHint } from './PokemonSlot';
 import { BOX_SIZE, pad, slotNumber } from '../../lib/data';
 import { gameDexOf } from '../../lib/gamedex';
 import { useStore } from '../../lib/store';
@@ -13,6 +14,7 @@ interface Props {
   onSelect: (id: string) => void;
   selected?: string;
   slots: Slot[];
+  tradeHints?: Map<string, TradeHint>;
 }
 
 function boxTitle (slots: Slot[], digits: number) {
@@ -26,7 +28,7 @@ function boxTitle (slots: Slot[], digits: number) {
   return nonBase ? `Formas · ${range}` : range;
 }
 
-export const Box = memo(function Box ({ captures, dex, number, onSelect, selected, slots }: Props) {
+export const Box = memo(function Box ({ captures, dex, number, onSelect, selected, slots, tradeHints }: Props) {
   const { dispatch, readOnly } = useStore();
   const digits = dex.game ? gameDexOf(dex)?.digits ?? 3 : 4;
   const empties = BOX_SIZE - slots.length;
@@ -69,6 +71,7 @@ export const Box = memo(function Box ({ captures, dex, number, onSelect, selecte
             dexId={dex.id}
             digits={digits}
             gameDex={Boolean(dex.game)}
+            tradeHint={tradeHints?.get(s.entry.id)}
             key={s.entry.id}
             onSelect={onSelect}
             selected={selected === s.entry.id}

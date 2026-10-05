@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faEye, faInfo, faLock, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faEye, faInfo, faLock, faPen, faRightLeft } from '@fortawesome/free-solid-svg-icons';
 import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
@@ -11,8 +11,18 @@ import { useStore } from '../../lib/store';
 import { useUI } from '../../lib/ui';
 import type { Slot, SlotState } from '../../lib/types';
 
+/**
+ * Dex de juego: el Pokémon no se consigue en esta versión. `short` es la otra
+ * versión («RF») si sale allí; si no, va vacío (otros juegos o eventos).
+ */
+export interface TradeHint {
+  short: string;
+  title: string;
+}
+
 interface Props {
   dexId: string;
+  tradeHint?: TradeHint;
   /** dex de un juego: estados «visto» y «capturado», sin juego de origen */
   gameDex?: boolean;
   /** cifras del número (4 en HOME, 3 en los juegos clásicos) */
@@ -26,7 +36,7 @@ interface Props {
 
 const LONG_PRESS_MS = 450;
 
-export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameDex = false, onSelect, selected, shiny, slot, state }: Props) {
+export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameDex = false, onSelect, selected, shiny, slot, state, tradeHint }: Props) {
   const { dispatch, readOnly } = useStore();
   const { setShowInfo } = useUI();
   const { entry } = slot;
@@ -127,6 +137,11 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameD
         </div>
       )}
       {seen && !excluded && <div className="slot-flag seen" title="Visto"><FontAwesomeIcon icon={faEye} /></div>}
+      {tradeHint && !state?.c && !excluded && (
+        <div className={classNames('slot-flag trade', { outside: !tradeHint.short })} title={tradeHint.title}>
+          {tradeHint.short || <FontAwesomeIcon icon={faRightLeft} />}
+        </div>
+      )}
       {state?.n && <div className="slot-flag note" title={state.n}><FontAwesomeIcon icon={faPen} /></div>}
       {excluded && <div className="slot-flag ban" title="Excluido"><FontAwesomeIcon icon={faBan} /></div>}
       {unavailable && <div className="slot-flag lock" title="No disponible: nunca ha salido variocolor"><FontAwesomeIcon icon={faLock} /></div>}

@@ -4,7 +4,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p .data/csv
-FILES="pokedexes pokemon_dex_numbers pokemon_egg_groups pokemon_species pokemon_species_names pokemon pokemon_forms pokemon_form_names pokemon_types type_names pokemon_species_flavor_text"
+FILES="pokedexes pokemon_dex_numbers pokemon_evolution pokemon_egg_groups pokemon_species pokemon_species_names pokemon pokemon_forms pokemon_form_names pokemon_types type_names pokemon_species_flavor_text"
 for f in $FILES; do
   echo "↓ $f.csv"
   curl -sfL -o ".data/csv/$f.csv" "https://raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/$f.csv"
@@ -30,10 +30,15 @@ git -C .data/pkhex sparse-checkout set \
   PKHeX.Core/Resources/text/locations/gen8a PKHeX.Core/Resources/text/locations/gen8b \
   PKHeX.Core/Resources/text/locations/gen9 PKHeX.Core/Resources/text/locations/gen9a \
   PKHeX.Core/Legality/Encounters/Data/Gen7 PKHeX.Core/Legality/Encounters/Data/Gen8 \
-  PKHeX.Core/Legality/Encounters/Data/Gen9
+  PKHeX.Core/Legality/Encounters/Data/Gen9 \
+  PKHeX.Core/Resources/text/locations/gen3 PKHeX.Core/Legality/Encounters/Data/Gen3
 
 python3 scripts/build-locations.py --pkhex .data/pkhex/PKHeX.Core --csv .data/csv \
   --pokedex public/data/pokedex.json --out public/data/locations.json
+
+# Rojo Fuego / Verde Hoja (dex de juego)
+python3 scripts/build-locations-frlg.py --pkhex .data/pkhex/PKHeX.Core --csv .data/csv \
+  --pokedex public/data/pokedex.json --out public/data/locations-frlg.json
 
 echo "↓ shinies no disponibles (Serebii)"
 python3 scripts/build-shiny-unavailable.py --pokedex public/data/pokedex.json --out public/data/shiny-unavailable.json

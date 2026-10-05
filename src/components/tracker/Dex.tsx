@@ -12,6 +12,7 @@ import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
 import { isFiltering } from './SearchBar';
 import type { Filters } from './SearchBar';
+import type { TradeHint } from './PokemonSlot';
 
 /** Progreso de cada Pokédex de una dex de juego, para el selector Kanto / Nacional */
 export interface ScopeSummary {
@@ -23,6 +24,8 @@ export interface ScopeSummary {
 
 interface Props {
   availability: Map<string, Set<string>>;
+  /** dex de juego: casillas que no se consiguen en esta versión -> aviso de la casilla */
+  tradeHints?: Map<string, TradeHint>;
   /** dex de juego: Pokédex que se está viendo y cómo cambiarla */
   scope?: DexScope;
   scopes?: ScopeSummary[];
@@ -50,7 +53,7 @@ function matches (slot: Slot, q: string, padding: number) {
 }
 
 export const Dex = memo(function Dex ({
-  availability, captures, dex, filters, onScope, onScrollTop, onSelect, scope, scopes, selected, showScrollButton, slots,
+  availability, captures, tradeHints, dex, filters, onScope, onScrollTop, onSelect, scope, scopes, selected, showScrollButton, slots,
 }: Props) {
   const { readOnly } = useStore();
   const gameDex = Boolean(dex.game);
@@ -159,6 +162,7 @@ export const Dex = memo(function Dex ({
                       dexId={dex.id}
                       digits={digits}
                       gameDex={gameDex}
+                      tradeHint={tradeHints?.get(s.entry.id)}
                       key={s.entry.id}
                       onSelect={onSelect}
                       selected={selected === s.entry.id}
@@ -182,6 +186,7 @@ export const Dex = memo(function Dex ({
               onSelect={onSelect}
               selected={selected}
               slots={box}
+              tradeHints={tradeHints}
             />
           ))
         )}

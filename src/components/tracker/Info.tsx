@@ -4,8 +4,8 @@ import { faExternalLinkAlt, faCaretLeft, faCaretRight } from '@fortawesome/free-
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, slotNumber, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
-import { gameDexOf } from '../../lib/gamedex';
+import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, slotNumber, TYPE_COLORS, useGameLocations, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
+import { gameDexOf, otherSources, pairedVersion, placesIn } from '../../lib/gamedex';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -88,6 +88,89 @@ function WhereToCatch ({ dex, entryId, evo, evoId, onSelect }: {
         <p className="info-evo">
           Evoluciona de <EntryLink dex={dex} id={evoId} label={evo} onSelect={onSelect} />
         </p>
+      )}
+    </div>
+  );
+}
+
+/** Lista plegable de lugares, con enlaces en «Evolución de X» / «Crianza con Y» */
+function PlaceList ({ dex, onSelect, open, places, title }: {
+  dex: DexConfig;
+  onSelect?: (id: string) => void;
+  open: boolean;
+  places: string[];
+  title: string;
+}) {
+  const { data } = usePokedex();
+  const byLabel = useMemo(() => labelIndex(data?.entries || []), [data]);
+  if (!places.length) {
+    return (
+      <div className="info-where-game static">
+        <span className="game-name">{title}</span>
+      </div>
+    );
+  }
+  return (
+    <details className="info-where-game" open={open}>
+      <summary>
+        <span className="game-name">{title}</span>
+        <span className="count">{places.length}</span>
+      </summary>
+      <ul>
+        {places.map((p) => {
+          // «Evolución de Seadra (por intercambio con Escama Dragón)»
+          const m = /^(Evolución de|Crianza con) ([^(]+?)(?: \((.+)\))?$/.exec(p);
+          return m ? (
+            <li className="derived" key={p}>
+              {m[1]}{' '}
+              <EntryLink dex={dex} id={byLabel.get(m[2])} label={m[2]} onSelect={onSelect} />
+              {m[3] && <> ({m[3]})</>}
+            </li>
+          ) : <li key={p}>{p}</li>;
+        })}
+      </ul>
+    </details>
+  );
+}
+
+/** Dónde conseguirlo en una dex de juego: en esta versión, en la otra o en otros juegos */
+function GameWhere ({ dex, entryId, onSelect }: { dex: DexConfig; entryId: string; onSelect?: (id: string) => void }) {
+  const def = gameDexOf(dex);
+  const data = useGameLocations(def?.locations?.file);
+  if (!def?.locations) {
+    return <p className="info-muted">Los lugares de {def?.name ?? 'este juego'} aún no están en la web: míralos en WikiDex.</p>;
+  }
+  if (!data) return <p className="info-muted">Cargando…</p>;
+  const version = def.locations.version;
+  const here = placesIn(data, version, entryId);
+  const other = pairedVersion(data, version);
+  const there = other ? placesIn(data, other, entryId) : [];
+  const elsewhere = otherSources(data, entryId);
+  const versionsText = Object.values(data.versions).join(' ni en ');
+  const onlyEvents = elsewhere.every(([g]) => g === 'event');
+
+  return (
+    <div className="info-where">
+      {here.length > 0 && <PlaceList dex={dex} onSelect={onSelect} open places={here} title={data.versions[version]} />}
+      {here.length === 0 && there.length > 0 && (
+        <>
+          <p className="info-where-note">No sale en {data.versions[version]}: tienes que conseguirlo en {data.versions[other!]} e intercambiarlo.</p>
+          <PlaceList dex={dex} onSelect={onSelect} open places={there} title={data.versions[other!]} />
+        </>
+      )}
+      {here.length > 0 && there.length > 0 && there.join('|') !== here.join('|') && (
+        <PlaceList dex={dex} onSelect={onSelect} open={false} places={there} title={data.versions[other!]} />
+      )}
+      {here.length === 0 && there.length === 0 && (
+        <>
+          <p className="info-where-note">
+            No se puede conseguir en {versionsText}.
+            {onlyEvents ? ' Solo se ha distribuido en eventos.' : ' Hay que traerlo de otro juego:'}
+          </p>
+          {!onlyEvents && elsewhere.map(([g, places]) => (
+            <PlaceList dex={dex} key={g} onSelect={onSelect} open={elsewhere.length === 1} places={places} title={data.other[g] || g} />
+          ))}
+        </>
       )}
     </div>
   );
@@ -290,16 +373,14 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
             </a>
           </h3>
           {gameDex ? (
-            <div className="info-where">
-              <p className="info-muted">
-                Los lugares de {gameDef?.name ?? 'este juego'} aún no están en la web: míralos en WikiDex.
-              </p>
+            <>
+              <GameWhere dex={dex} entryId={entry.id} onSelect={onSelectEntry} />
               {entry.evo && evoInGame && (
                 <p className="info-evo">
                   Evoluciona de <EntryLink dex={dex} id={entry.evoId} label={entry.evo} onSelect={onSelectEntry} />
                 </p>
               )}
-            </div>
+            </>
           ) : (
             <WhereToCatch dex={dex} entryId={entry.id} evo={entry.evo} evoId={entry.evoId} onSelect={onSelectEntry} />
           )}

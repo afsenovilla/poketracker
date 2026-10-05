@@ -5,8 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
-import { availabilityByGame, formaGroup, includeEntry, isUnavailable, isUnown, scopeEntries, useLocations } from '../lib/data';
-import { gameDexOf } from '../lib/gamedex';
+import { availabilityByGame, formaGroup, includeEntry, isUnavailable, isUnown, scopeEntries, useGameLocations, useLocations } from '../lib/data';
+import { AVAILABILITY_KEYS, availabilityLabels, gameAvailability, gameDexOf } from '../lib/gamedex';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
 import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyFromCoins, goEnergyFromTime, goEnergyNow } from '../lib/doc';
 import { useStore } from '../lib/store';
@@ -94,6 +94,28 @@ function GameDexStats ({ captures, dex, entries, regionalDexes }: {
 }) {
   const def = gameDexOf(dex);
   const base = `/dex/${dex.id}`;
+  const gameLocations = useGameLocations(def?.locations?.file);
+
+  // Lo que falta de la nacional, según dónde se consigue
+  const byAvailability = useMemo(() => {
+    const version = def?.locations?.version;
+    if (!gameLocations || !version) return null;
+    const labels = availabilityLabels(gameLocations, version);
+    const missing = scopeEntries(dex, entries).map((x) => x.entry)
+      .filter((e) => !isUnavailable(dex, e) && !captures[e.id]?.x && !captures[e.id]?.c);
+    const rows: Row[] = AVAILABILITY_KEYS.map((k) => {
+      const n = missing.filter((e) => gameAvailability(gameLocations, version, e.id) === k).length;
+      return {
+        key: k,
+        label: labels[k],
+        home: 0,
+        pending: n,
+        link: `${base}?pokedex=nacional&faltan=${k}`,
+        tip: `${n} de los que te faltan: ${labels[k].toLowerCase()}`,
+      };
+    }).filter((r) => r.pending > 0);
+    return { rows, missing: missing.length };
+  }, [gameLocations, def, dex, entries, captures, base]);
 
   const rows = useMemo(() => {
     const counts = (list: Entry[]) => {
@@ -147,6 +169,19 @@ function GameDexStats ({ captures, dex, entries, regionalDexes }: {
         <Legend labels={['Capturados', 'Vistos sin capturar']} />
         <Bars rows={rows} valueText={(r) => (r.done ? <b>¡Completa!</b> : <><b>{r.home}</b>/{r.total}</>)} />
       </section>
+
+      {byAvailability && (
+        <section className="stats-card stacked">
+          <h3>Dónde conseguir lo que te falta</h3>
+          <p className="stats-sub">
+            Te faltan <b>{byAvailability.missing}</b> de la nacional. Cuenta también los que se consiguen evolucionando, criando o con regalos.
+          </p>
+          <Legend missing />
+          {byAvailability.rows.length === 0
+            ? <p className="stats-empty">¡No te falta ninguno!</p>
+            : <Bars missing rows={byAvailability.rows} scale={Math.max(1, byAvailability.missing)} valueText={(r) => <b>{r.pending}</b>} />}
+        </section>
+      )}
     </div>
   );
 }
