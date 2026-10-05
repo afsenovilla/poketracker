@@ -1,6 +1,6 @@
 {
  "version": 1,
- "updatedAt": "2026-09-23T13:21:39.597Z",
+ "updatedAt": "2026-10-05T12:51:01.491Z",
  "dexes": [
   {
    "id": "9k6dhkzdhm",
@@ -27,6 +27,20 @@
    "gender": false,
    "layout": "separado",
    "createdAt": "2026-09-17T14:12:27.520Z"
+  },
+  {
+   "id": "i2vz6508pu",
+   "title": "Verde Hoja",
+   "shiny": false,
+   "regional": false,
+   "unown": false,
+   "otherForms": false,
+   "vivillon": false,
+   "alcremie": false,
+   "gender": false,
+   "layout": "separado",
+   "createdAt": "2026-10-05T12:50:59.490Z",
+   "game": "lg"
   }
  ],
  "captures": {
