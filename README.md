@@ -36,6 +36,14 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - **Notas:** cada ficha tiene un desplegable de notas libres (por dex: la normal y la shiny llevan las suyas). Se guardan solas y en la caja sale un lápiz en los Pokémon con nota. Ojo: se ven también en modo lectura, porque van en el mismo `progreso.json`.
 - **Filtro «Se consigue en»:** en la dex, junto a «Solo los que me faltan», elige un juego y verás solo los que se pueden conseguir ahí (también evolucionando o criando), con el número en el propio desplegable.
 - **Estadísticas:** debajo de tus dex, en el inicio: progreso por generación, de qué juegos vienen los que tienes y cuántos de los que te faltan se consiguen en cada juego. Cada fila lleva a la dex con ese filtro puesto.
+- **Dex de un juego:** al crear una dex, en «Juego» puedes elegir Rojo Fuego o Verde Hoja en vez de HOME. Es la Pokédex de esa partida:
+  - Arriba eliges **Kanto** (las 151, con su número regional) o **Nacional** (las 386 hasta la 3.ª generación), cada una con su progreso. La web recuerda cuál estabas viendo.
+  - Solo especies, sin formas, y cajas de 30 como las del PC del juego.
+  - Cada Pokémon puede estar **visto** o **capturado**. Un clic lo marca capturado; en la ficha eliges «Visto». Si desmarcas uno capturado, vuelve a quedar como visto si lo era.
+  - «Solo los que me faltan» y «Vistos sin capturar» funcionan igual que en las dex de HOME.
+  - En el inicio se ve el progreso de las dos Pokédex, y en las estadísticas, el de cada generación.
+  - Los juegos están en `src/lib/gamedex.ts`. Si la Pokédex regional de un juego nuevo no sigue el orden nacional, añade su identificador de PokéAPI a `GAME_POKEDEXES` en `scripts/build-data.py`.
+  - Todavía no incluye dónde capturarlos en esos juegos.
 - Modo noche y copia de seguridad (exportar/importar JSON).
 
 Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 de especies y 2 de formas.
@@ -89,6 +97,7 @@ Sin iniciar sesión, la web lee `data/progreso.json` del repositorio público y 
 `public/data/pokedex.json` se genera con `scripts/build-data.py` a partir de:
 
 - los CSV de [PokéAPI](https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv): nombres en español, formas, tipos y entradas de la Pokédex;
+- la numeración de las Pokédex regionales de los juegos (`regionalDexes`, ahora mismo la de Kanto), para las dex de juego;
 - el listado de [PokeAPI/sprites](https://github.com/PokeAPI/sprites), para los renders de HOME de la ficha, que se cargan desde `raw.githubusercontent.com`.
 
 En las cajas se usan los **iconos de caja** (estilo HOME) del sprite sheet de PokédexTracker: `public/pokesprite-v12.png` y `src/styles/pokesprite.scss`, que cubren las 1025 especies y las formas regionales, en normal y variocolor. `build-data.py` lee ese SCSS y guarda en cada entrada las clases que le tocan (`icon` e `iconShiny`).
@@ -150,6 +159,7 @@ src/
     types.ts      modelos (Entry, DexConfig, ProgressDoc…)
     data.ts       carga de la Pokédex y de las ubicaciones, orden de las cajas y URLs de los sprites
     games.ts      juegos para el desplegable «en otro juego»
+    gamedex.ts    juegos con dex propia (Rojo Fuego / Verde Hoja): Pokédex regional, nacional, cajas
     doc.ts        operaciones puras sobre el progreso
     store.tsx     estado global y sincronización con GitHub (con reintento ante conflictos)
     github.ts     API de contenidos de GitHub
@@ -172,6 +182,8 @@ Formato del fichero de progreso:
 ```
 
 `c` = en HOME, `g` = juego de origen (donde está si no tiene `c`), `x` = excluido y `t` = fecha de la última modificación.
+
+En una dex de juego, la configuración lleva `"game": "lg"` (o `"fr"`), `c` significa «capturado» y `v` significa «visto».
 
 ## Créditos
 

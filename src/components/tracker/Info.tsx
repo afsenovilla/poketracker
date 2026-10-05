@@ -4,7 +4,8 @@ import { faExternalLinkAlt, faCaretLeft, faCaretRight } from '@fortawesome/free-
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
+import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, slotNumber, TYPE_COLORS, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
+import { gameDexOf } from '../../lib/gamedex';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -92,6 +93,40 @@ function WhereToCatch ({ dex, entryId, evo, evoId, onSelect }: {
   );
 }
 
+/** Estados de una dex de juego: no lo tengo, visto y capturado */
+function GameStatus ({ dex, patch, state }: { dex: DexConfig; patch: (p: SlotPatch) => void; state?: SlotState }) {
+  const status = state?.c ? 'caught' : state?.v ? 'seen' : 'none';
+  const options: { value: typeof status; label: string; className?: string; patch: SlotPatch }[] = [
+    { value: 'none', label: 'No lo tengo', patch: { c: false, v: false } },
+    { value: 'seen', label: 'Visto', className: 'game', patch: { c: false, v: true } },
+    // «visto» se conserva: si luego se desmarca la captura, vuelve a quedar como visto
+    { value: 'caught', label: 'Capturado', className: 'home', patch: { c: true } },
+  ];
+  return (
+    <div className="info-actions">
+      <div className="info-status" role="radiogroup" aria-label={`Estado en ${gameDexOf(dex)?.name ?? 'el juego'}`}>
+        {options.map((o) => (
+          <button
+            aria-checked={status === o.value}
+            className={classNames(o.className, { active: status === o.value })}
+            disabled={Boolean(state?.x)}
+            key={o.value}
+            onClick={() => patch(o.patch)}
+            role="radio"
+            type="button"
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+      <label className="info-exclude">
+        <input checked={Boolean(state?.x)} onChange={(e) => patch({ x: e.target.checked })} type="checkbox" />
+        Excluir de esta dex (no lo busco / solo por intercambio)
+      </label>
+    </div>
+  );
+}
+
 export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
   const { showInfo, setShowInfo } = useUI();
   const { dispatch, readOnly } = useStore();
@@ -103,6 +138,13 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
   const patch = (p: SlotPatch) => dispatch({ type: 'slot', dex: dex.id, entries: [entry.id], patch: p });
 
   const status = state?.c ? 'home' : state?.g ? 'game' : 'none';
+  const gameDex = Boolean(dex.game);
+  const gameDef = gameDexOf(dex);
+  const { data: pokedex } = usePokedex();
+  // en una dex de juego, la preevolución solo se cita si existe en ese juego (Munchlax no está en Rojo Fuego)
+  const evoTarget = entry.evoId ? pokedex?.entries.find((e) => e.id === entry.evoId) : undefined;
+  const evoInGame = Boolean(evoTarget && includeEntry(dex, evoTarget));
+  const digits = gameDex ? gameDef?.digits ?? 3 : 4;
 
   return (
     <div className={classNames('info', { collapsed: !showInfo })}>
@@ -121,7 +163,7 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
             </h1>
             {entry.form && entry.category !== 'base' && <p className="info-form">{entry.form}</p>}
           </div>
-          <h2>#{pad(entry.species)}</h2>
+          <h2>#{pad(slotNumber(slot), digits)}</h2>
         </div>
 
         <div className="info-body">
@@ -139,11 +181,16 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
             ))}
           </div>
           <p className="info-category">
-            <Link to={`/dex/${dex.id}?cat=${formaGroup(entry)?.value ?? entry.category}`}>
-              {formaGroup(entry)?.label ?? CATEGORY_LABEL[entry.category]}
-            </Link>
-            {' · '}
-            <Link to={`/dex/${dex.id}?gen=${entry.gen}`}>Generación {entry.gen}</Link>
+            {!gameDex && (
+              <>
+                <Link to={`/dex/${dex.id}?cat=${formaGroup(entry)?.value ?? entry.category}`}>
+                  {formaGroup(entry)?.label ?? CATEGORY_LABEL[entry.category]}
+                </Link>
+                {' · '}
+              </>
+            )}
+            <Link to={`/dex/${dex.id}?gen=${entry.gen}${gameDex ? '&pokedex=nacional' : ''}`}>Generación {entry.gen}</Link>
+            {gameDex && slot.number !== undefined && slot.number !== entry.species && <> · Nacional #{pad(entry.species, digits)}</>}
           </p>
 
           {slot.unavailable ? (
@@ -151,6 +198,12 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
               <b>No disponible</b>
               Nunca se ha distribuido variocolor, así que no cuenta para completar la dex shiny.
             </div>
+          ) : gameDex ? (
+            readOnly ? (
+              <p className={`info-readonly status-${state?.c ? 'home' : state?.v ? 'game' : 'none'}`}>
+                {state?.x ? 'Excluido de esta dex' : state?.c ? '✓ Capturado' : state?.v ? 'Visto' : 'Aún no lo tienes'}
+              </p>
+            ) : <GameStatus dex={dex} patch={patch} state={state} />
           ) : readOnly ? (
             <p className={`info-readonly status-${status}`}>
               {state?.x ? 'Excluido de esta dex'
@@ -236,7 +289,20 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
               Ver en WikiDex <FontAwesomeIcon icon={faExternalLinkAlt} />
             </a>
           </h3>
-          <WhereToCatch dex={dex} entryId={entry.id} evo={entry.evo} evoId={entry.evoId} onSelect={onSelectEntry} />
+          {gameDex ? (
+            <div className="info-where">
+              <p className="info-muted">
+                Los lugares de {gameDef?.name ?? 'este juego'} aún no están en la web: míralos en WikiDex.
+              </p>
+              {entry.evo && evoInGame && (
+                <p className="info-evo">
+                  Evoluciona de <EntryLink dex={dex} id={entry.evoId} label={entry.evo} onSelect={onSelectEntry} />
+                </p>
+              )}
+            </div>
+          ) : (
+            <WhereToCatch dex={dex} entryId={entry.id} evo={entry.evo} evoId={entry.evoId} onSelect={onSelectEntry} />
+          )}
 
           {flavor && <blockquote className="info-flavor">{flavor}</blockquote>}
         </div>

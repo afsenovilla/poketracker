@@ -5,14 +5,28 @@ import { memo, useMemo } from 'react';
 import { Box } from './Box';
 import { PokemonSlot } from './PokemonSlot';
 import { Progress } from '../Progress';
-import { formaGroup, groupBoxes, isUnown, normalize, pad } from '../../lib/data';
+import { formaGroup, groupBoxes, isUnown, normalize, pad, slotNumber } from '../../lib/data';
+import { gameDexOf } from '../../lib/gamedex';
+import type { DexScope } from '../../lib/gamedex';
 import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
 import { isFiltering } from './SearchBar';
 import type { Filters } from './SearchBar';
 
+/** Progreso de cada Pokédex de una dex de juego, para el selector Kanto / Nacional */
+export interface ScopeSummary {
+  scope: DexScope;
+  label: string;
+  caught: number;
+  total: number;
+}
+
 interface Props {
   availability: Map<string, Set<string>>;
+  /** dex de juego: Pokédex que se está viendo y cómo cambiarla */
+  scope?: DexScope;
+  scopes?: ScopeSummary[];
+  onScope?: (scope: DexScope) => void;
   captures: Record<string, SlotState>;
   dex: DexConfig;
   filters: Filters;
@@ -23,19 +37,25 @@ interface Props {
   slots: Slot[];
 }
 
-function matches (slot: Slot, q: string) {
+function matches (slot: Slot, q: string, padding: number) {
   if (!q) return true;
   const e = slot.entry;
   const digits = q.replace(/^#/, '');
   if (/^\d+$/.test(digits)) {
-    return String(e.species) === String(Number(digits)) || pad(e.species).startsWith(digits);
+    const n = slotNumber(slot);
+    return String(n) === String(Number(digits)) || pad(n, padding).startsWith(digits);
   }
   const hay = normalize(`${e.name} ${e.category === 'base' ? '' : e.form ?? ''}`);
   return q.split(/\s+/).every((word) => hay.includes(word));
 }
 
-export const Dex = memo(function Dex ({ availability, captures, dex, filters, onScrollTop, onSelect, selected, showScrollButton, slots }: Props) {
+export const Dex = memo(function Dex ({
+  availability, captures, dex, filters, onScope, onScrollTop, onSelect, scope, scopes, selected, showScrollButton, slots,
+}: Props) {
   const { readOnly } = useStore();
+  const gameDex = Boolean(dex.game);
+  const gameDef = gameDexOf(dex);
+  const digits = gameDex ? gameDef?.digits ?? 3 : 4;
   const { caught, total, pending } = useMemo(() => {
     let c = 0;
     let t = 0;
@@ -45,10 +65,10 @@ export const Dex = memo(function Dex ({ availability, captures, dex, filters, on
       if (st?.x || s.unavailable) continue;
       t++;
       if (st?.c) c++;
-      else if (st?.g) p++;
+      else if (gameDex ? st?.v : st?.g) p++;
     }
     return { caught: c, total: t, pending: p };
-  }, [slots, captures]);
+  }, [slots, captures, gameDex]);
 
   const boxes = useMemo(() => groupBoxes(slots), [slots]);
 
@@ -62,7 +82,8 @@ export const Dex = memo(function Dex ({ availability, captures, dex, filters, on
       if (filters.hideCaught && (st?.c || st?.x || s.unavailable)) return false;
       if (filters.onlyPending && s.unavailable) return false;
       if (filters.gen && s.entry.gen !== filters.gen) return false;
-      if (filters.onlyPending && (st?.c || !st?.g)) return false;
+      // en una dex de juego, «pendientes» son los vistos sin capturar
+      if (filters.onlyPending && (st?.c || !(gameDex ? st?.v : st?.g))) return false;
       if (filters.game && st?.g !== filters.game) return false;
       if (filters.category === 'base' && (s.entry.category !== 'base' || isUnown(s.entry))) return false;
       if (filters.category === 'regional' && s.entry.category !== 'regional') return false;
@@ -71,9 +92,9 @@ export const Dex = memo(function Dex ({ availability, captures, dex, filters, on
       if (filters.category === 'alcremie' && formaGroup(s.entry)?.value !== 'alcremie') return false;
       if (filters.category === 'other' && formaGroup(s.entry)?.value !== 'other') return false;
       if (filters.available && (s.unavailable || st?.x || !availability.get(filters.available)?.has(s.entry.id))) return false;
-      return matches(s, q);
+      return matches(s, q, digits);
     });
-  }, [filtering, filters, slots, captures, availability]);
+  }, [filtering, filters, slots, captures, availability, gameDex, digits]);
 
   return (
     <div className="dex">
@@ -86,14 +107,41 @@ export const Dex = memo(function Dex ({ availability, captures, dex, filters, on
             <h1>{dex.title}</h1>
             {dex.shiny && <span className="shiny-badge"><FontAwesomeIcon icon={faStar} /> Shiny</span>}
           </div>
-          <h2>
-            {slots.length} casillas · {boxes.length} cajas de HOME
-            {dex.layout === 'separado' ? ' · formas al final' : ''}
-          </h2>
+          {gameDex ? (
+            <h2>
+              {gameDef && dex.title !== gameDef.name ? `${gameDef.name} · ` : ''}
+              {scope === 'regional' && gameDef ? `Pokédex de ${gameDef.regional.label}` : 'Pokédex nacional'}
+              {' · '}{slots.length} Pokémon · {boxes.length} cajas del PC
+            </h2>
+          ) : (
+            <h2>
+              {slots.length} casillas · {boxes.length} cajas de HOME
+              {dex.layout === 'separado' ? ' · formas al final' : ''}
+            </h2>
+          )}
+          {gameDex && scopes && scopes.length > 1 && (
+            <div className="dex-scope" role="tablist" aria-label="Pokédex">
+              {scopes.map((s) => (
+                <button
+                  aria-selected={s.scope === scope}
+                  className={s.scope === scope ? 'active' : undefined}
+                  key={s.scope}
+                  onClick={() => onScope?.(s.scope)}
+                  role="tab"
+                  type="button"
+                >
+                  <span className="dex-scope-label">{s.label}</span>
+                  <span className="dex-scope-count">{s.caught}/{s.total}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </header>
         <p className="mobile-hint">{readOnly ? 'Modo lectura · toca un Pokémon para ver su ficha' : 'Toca para marcar · mantén pulsado para ver la ficha'}</p>
         <div className="percentage">
-          <Progress caught={caught} pending={pending} total={total} />
+          {gameDex
+            ? <Progress caught={caught} caughtLabel="capturados" pending={pending} pendingLabel="vistos sin capturar" total={total} />
+            : <Progress caught={caught} pending={pending} total={total} />}
         </div>
 
         {filtering ? (
@@ -109,6 +157,8 @@ export const Dex = memo(function Dex ({ availability, captures, dex, filters, on
                   {results.slice(0, 300).map((s) => (
                     <PokemonSlot
                       dexId={dex.id}
+                      digits={digits}
+                      gameDex={gameDex}
                       key={s.entry.id}
                       onSelect={onSelect}
                       selected={selected === s.entry.id}

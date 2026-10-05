@@ -4,12 +4,15 @@ import { faLongArrowAltRight, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
-import { buildSlots, countEntries, groupBoxes } from '../lib/data';
+import { buildSlots, countEntries, groupBoxes, scopeEntries } from '../lib/data';
+import { GAME_DEX_BY_ID, GAME_DEXES } from '../lib/gamedex';
 import type { DexConfig, Entry, Layout } from '../lib/types';
 import { useUI } from '../lib/ui';
 
 interface Props {
   entries: Entry[];
+  /** Pokédex regionales (de pokedex.json), para contar las dex de juego */
+  regionalDexes?: Record<string, number[]>;
   initial?: DexConfig;
   onCancel: () => void;
   onSubmit: (dex: DexConfig) => void;
@@ -42,8 +45,11 @@ export function Modal ({ children, onClose }: { children: ReactNode; onClose: ()
   );
 }
 
-export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Props) {
+export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete, regionalDexes }: Props) {
   const [title, setTitle] = useState(initial?.title ?? '');
+  // '' = Living Dex de HOME; si no, el id del juego (src/lib/gamedex.ts). No se cambia al editar.
+  const [game, setGame] = useState(initial?.game ?? '');
+  const gameDef = game ? GAME_DEX_BY_ID[game] : undefined;
   const [shiny, setShiny] = useState(initial?.shiny ?? false);
   const [regional, setRegional] = useState(initial?.regional ?? true);
   const [unown, setUnown] = useState(initial?.unown ?? false);
@@ -55,30 +61,40 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const total = useMemo(
-    () => countEntries({ regional, unown, otherForms, vivillon, alcremie }, entries),
-    [regional, unown, otherForms, vivillon, alcremie, entries],
+    () => countEntries({ regional, unown, otherForms, vivillon, alcremie, game: game || undefined }, entries),
+    [regional, unown, otherForms, vivillon, alcremie, game, entries],
   );
   const boxes = useMemo(
     () => groupBoxes(buildSlots(
-      { id: '', title: '', shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, createdAt: '' }, entries,
+      { id: '', title: '', shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, createdAt: '', game: game || undefined }, entries,
     )).length,
-    [shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, entries],
+    [shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, game, entries],
   );
+  const regionalTotal = useMemo(
+    () => (gameDef && regionalDexes?.[gameDef.regional.dex]
+      ? scopeEntries({ regional: false, game }, entries, { scope: 'regional', regionalDexes }).length
+      : 0),
+    [gameDef, game, entries, regionalDexes],
+  );
+  const defaultTitle = gameDef ? gameDef.name : 'Living Dex';
+  const placeholder = shiny ? `${defaultTitle} Shiny` : defaultTitle;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit({
       id: initial?.id ?? newId(),
-      title: title.trim() || (shiny ? 'Living Dex Shiny' : 'Living Dex'),
+      title: title.trim() || placeholder,
       shiny,
-      regional,
-      unown,
-      otherForms,
-      vivillon,
-      alcremie,
+      // en una dex de juego no hay formas
+      regional: game ? false : regional,
+      unown: game ? false : unown,
+      otherForms: game ? false : otherForms,
+      vivillon: game ? false : vivillon,
+      alcremie: game ? false : alcremie,
       gender,
       layout,
       createdAt: initial?.createdAt ?? new Date().toISOString(),
+      ...(game ? { game } : {}),
     });
   };
 
@@ -100,6 +116,28 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
         <form onSubmit={handleSubmit}>
           <div className="form-column">
             <div className="form-group">
+              <label htmlFor="dex_game">Juego</label>
+              <select
+                className="form-control"
+                disabled={Boolean(initial)}
+                id="dex_game"
+                onChange={(e) => setGame(e.target.value)}
+                title={initial ? 'El juego de una dex no se puede cambiar' : undefined}
+                value={game}
+              >
+                <option value="">Pokémon HOME (Living Dex)</option>
+                {[...new Set(GAME_DEXES.map((g) => g.family))].map((family) => (
+                  <optgroup key={family} label={family}>
+                    {GAME_DEXES.filter((g) => g.family === family).map((g) => (
+                      <option key={g.id} value={g.id}>{g.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+                {initial?.game && !GAME_DEX_BY_ID[initial.game] && <option value={initial.game}>{initial.game}</option>}
+              </select>
+            </div>
+
+            <div className="form-group">
               <label htmlFor="dex_title">Nombre</label>
               <input
                 autoFocus
@@ -107,7 +145,7 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
                 id="dex_title"
                 maxLength={60}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={shiny ? 'Living Dex Shiny' : 'Living Dex'}
+                placeholder={placeholder}
                 value={title}
               />
             </div>
@@ -130,6 +168,8 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
               </div>
             </div>
 
+            {!game && (
+            <>
             <div className="form-group">
               <label>Incluir</label>
               {check('opt_regional', 'Formas regionales', regional, setRegional)}
@@ -158,8 +198,20 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete }: Pro
                 </div>
               </div>
             </div>
+            </>
+            )}
 
-            <p className="dex-form-summary"><b>{total}</b> Pokémon en <b>{boxes}</b> cajas de HOME</p>
+            {gameDef ? (
+              <p className="dex-form-summary">
+                {regionalTotal > 0 && <><b>{regionalTotal}</b> en la Pokédex de {gameDef.regional.label} y </>}
+                <b>{total}</b> en la nacional, en <b>{boxes}</b> cajas del PC
+              </p>
+            ) : (
+              <p className="dex-form-summary"><b>{total}</b> Pokémon en <b>{boxes}</b> cajas de HOME</p>
+            )}
+            {gameDef && !initial && (
+              <p className="dex-form-note">Solo especies, sin formas. Para cada Pokémon marcarás si lo has visto o capturado.</p>
+            )}
             {initial && <p className="dex-form-note">Cambiar las opciones no borra lo que ya hayas marcado.</p>}
 
             <button className="btn btn-blue" type="submit">

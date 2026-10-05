@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { GAME_DEX_BY_ID } from './gamedex';
+import type { DexScope } from './gamedex';
 import type { DexConfig, Entry, PokedexData, Slot } from './types';
 
 const SPRITES = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
@@ -135,7 +137,17 @@ export function formaGroup (e: Pick<Entry, 'category' | 'species'>): FormaGroup 
   return null;
 }
 
-export function includeEntry (dex: Pick<DexConfig, 'regional' | 'unown' | 'otherForms' | 'vivillon' | 'alcremie'>, e: Entry) {
+type IncludeOptions = Pick<DexConfig, 'regional' | 'unown' | 'otherForms' | 'vivillon' | 'alcremie' | 'game'>;
+
+/**
+ * ¿Entra esta casilla en la dex? En una dex de juego, solo las especies de su
+ * Pokédex nacional (la regional es un subconjunto: ver `scopeEntries`).
+ */
+export function includeEntry (dex: IncludeOptions, e: Entry) {
+  if (dex.game) {
+    const def = GAME_DEX_BY_ID[dex.game];
+    return e.category === 'base' && (!def || e.species <= def.nationalMax);
+  }
   switch (e.category) {
     case 'base': return true;
     case 'regional': return dex.regional;
@@ -167,8 +179,45 @@ const groupOf = (e: Entry) => {
   }
 };
 
-/** Devuelve las casillas de la dex en el orden de las cajas de HOME. */
-export function buildSlots (dex: DexConfig, entries: Entry[]): Slot[] {
+export interface ScopeOptions {
+  /** en una dex de juego: su Pokédex regional o la nacional (por defecto) */
+  scope?: DexScope;
+  regionalDexes?: PokedexData['regionalDexes'];
+}
+
+/**
+ * Entradas de una dex de juego en el orden de la Pokédex elegida, con su número
+ * en esa Pokédex. En la nacional, el número es el de la especie.
+ */
+export function scopeEntries (dex: IncludeOptions, entries: Entry[], { scope = 'national', regionalDexes }: ScopeOptions = {}) {
+  const def = dex.game ? GAME_DEX_BY_ID[dex.game] : undefined;
+  const order = def && scope === 'regional' ? regionalDexes?.[def.regional.dex] : undefined;
+  if (!order) return entries.filter((e) => includeEntry(dex, e)).map((entry) => ({ entry, number: entry.species }));
+  const bySpecies = new Map(entries.filter((e) => includeEntry(dex, e)).map((e) => [e.species, e]));
+  const list: { entry: Entry; number: number }[] = [];
+  order.forEach((sid, i) => {
+    const entry = bySpecies.get(sid);
+    if (entry) list.push({ entry, number: i + 1 });
+  });
+  return list;
+}
+
+/** Número que se muestra en la casilla: el de la Pokédex regional si se está viendo esa. */
+export const slotNumber = (slot: Pick<Slot, 'entry' | 'number'>) => slot.number ?? slot.entry.species;
+
+/** Devuelve las casillas de la dex en el orden de las cajas de HOME (o del PC del juego). */
+export function buildSlots (dex: DexConfig, entries: Entry[], options: ScopeOptions = {}): Slot[] {
+  if (dex.game) {
+    return scopeEntries(dex, entries, options).map(({ entry, number }, index) => ({
+      entry,
+      number,
+      unavailable: Boolean(dex.shiny && entry.noShiny),
+      index,
+      box: Math.floor(index / BOX_SIZE) + 1,
+      row: Math.floor((index % BOX_SIZE) / BOX_COLUMNS) + 1,
+      col: (index % BOX_COLUMNS) + 1,
+    }));
+  }
   const list = entries.filter((e) => includeEntry(dex, e));
   let ordered = list;
   if (dex.layout === 'separado') {
@@ -205,7 +254,7 @@ export function groupBoxes (slots: Slot[]) {
   return boxes;
 }
 
-export function countEntries (dex: Pick<DexConfig, 'regional' | 'unown' | 'otherForms' | 'vivillon' | 'alcremie'>, entries: Entry[]) {
+export function countEntries (dex: IncludeOptions, entries: Entry[]) {
   return entries.reduce((n, e) => n + (includeEntry(dex, e) ? 1 : 0), 0);
 }
 

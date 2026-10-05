@@ -1,7 +1,8 @@
 import { memo, useMemo } from 'react';
 
 import { PokemonSlot } from './PokemonSlot';
-import { BOX_SIZE, pad } from '../../lib/data';
+import { BOX_SIZE, pad, slotNumber } from '../../lib/data';
+import { gameDexOf } from '../../lib/gamedex';
 import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
 
@@ -14,10 +15,12 @@ interface Props {
   slots: Slot[];
 }
 
-function boxTitle (slots: Slot[]) {
+function boxTitle (slots: Slot[], digits: number) {
   const first = slots[0].entry;
   const last = slots[slots.length - 1].entry;
-  const range = first.species === last.species ? pad(first.species) : `${pad(first.species)} – ${pad(last.species)}`;
+  const a = slotNumber(slots[0]);
+  const b = slotNumber(slots[slots.length - 1]);
+  const range = a === b ? pad(a, digits) : `${pad(a, digits)} – ${pad(b, digits)}`;
   if (slots.every((s) => s.entry.species === first.species)) return `${first.name} · ${first.form} – ${last.form}`;
   const nonBase = slots.every((s) => s.entry.category !== 'base');
   return nonBase ? `Formas · ${range}` : range;
@@ -25,6 +28,7 @@ function boxTitle (slots: Slot[]) {
 
 export const Box = memo(function Box ({ captures, dex, number, onSelect, selected, slots }: Props) {
   const { dispatch, readOnly } = useStore();
+  const digits = dex.game ? gameDexOf(dex)?.digits ?? 3 : 4;
   const empties = BOX_SIZE - slots.length;
 
   const countable = useMemo(() => slots.filter((s) => !s.unavailable), [slots]);
@@ -49,7 +53,7 @@ export const Box = memo(function Box ({ captures, dex, number, onSelect, selecte
       <div className="box-header">
         <h1>
           <span className="box-number">Caja {number}</span>
-          <span className="box-range">{boxTitle(slots)}</span>
+          <span className="box-range">{boxTitle(slots, digits)}</span>
         </h1>
         {readOnly ? (
           <span className="box-count">{countable.length - pendingIds.length}/{countable.length}</span>
@@ -63,6 +67,8 @@ export const Box = memo(function Box ({ captures, dex, number, onSelect, selecte
         {slots.map((s) => (
           <PokemonSlot
             dexId={dex.id}
+            digits={digits}
+            gameDex={Boolean(dex.game)}
             key={s.entry.id}
             onSelect={onSelect}
             selected={selected === s.entry.id}

@@ -1,11 +1,11 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faInfo, faLock, faPen } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faEye, faInfo, faLock, faPen } from '@fortawesome/free-solid-svg-icons';
 import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
 import { GameMark } from '../GameMark';
-import { isUnown, pad, spriteUrl } from '../../lib/data';
+import { isUnown, pad, slotNumber, spriteUrl } from '../../lib/data';
 import { GAME_BY_ID } from '../../lib/games';
 import { useStore } from '../../lib/store';
 import { useUI } from '../../lib/ui';
@@ -13,6 +13,10 @@ import type { Slot, SlotState } from '../../lib/types';
 
 interface Props {
   dexId: string;
+  /** dex de un juego: estados «visto» y «capturado», sin juego de origen */
+  gameDex?: boolean;
+  /** cifras del número (4 en HOME, 3 en los juegos clásicos) */
+  digits?: number;
   onSelect: (id: string) => void;
   selected: boolean;
   shiny: boolean;
@@ -22,7 +26,7 @@ interface Props {
 
 const LONG_PRESS_MS = 450;
 
-export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selected, shiny, slot, state }: Props) {
+export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameDex = false, onSelect, selected, shiny, slot, state }: Props) {
   const { dispatch, readOnly } = useStore();
   const { setShowInfo } = useUI();
   const { entry } = slot;
@@ -30,8 +34,10 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
   const formLabel = entry.category !== 'base' || isUnown(entry) ? entry.form : null;
   const unavailable = Boolean(slot.unavailable);
   const excluded = Boolean(state?.x) && !unavailable;
-  const game = state?.g && !unavailable ? GAME_BY_ID[state.g] : undefined;
-  const pending = Boolean(game) && !state?.c;
+  const game = state?.g && !unavailable && !gameDex ? GAME_BY_ID[state.g] : undefined;
+  // en una dex de juego, «visto» se pinta como los pendientes de pasar a HOME
+  const seen = gameDex && Boolean(state?.v) && !state?.c && !unavailable;
+  const pending = (Boolean(game) && !state?.c) || seen;
 
   const timer = useRef<number | undefined>(undefined);
   const longPressed = useRef(false);
@@ -79,7 +85,9 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
 
   const iconClass = (shiny ? entry.iconShiny : entry.icon) || entry.icon;
   const label = formLabel ? `${entry.name} (${formLabel})` : entry.name;
-  const title = unavailable ? `${label} · no existe shiny` : game ? `${label} · ${state?.c ? `desde ${game.name}` : `pendiente en ${game.name}`}` : label;
+  const title = unavailable ? `${label} · no existe shiny`
+    : game ? `${label} · ${state?.c ? `desde ${game.name}` : `pendiente en ${game.name}`}`
+      : seen ? `${label} · visto` : label;
 
   return (
     <div
@@ -111,13 +119,14 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, onSelect, selecte
             ? <i className={`pkicon ${iconClass}`} role="img" />
             : <img alt={label} decoding="async" draggable={false} loading="lazy" src={spriteUrl(entry, shiny)} />}
         </div>
-        <p>#{pad(entry.species)}</p>
+        <p>#{pad(slotNumber(slot), digits)}</p>
       </div>
       {game && !excluded && (
         <div className="slot-flag game">
           <GameMark game={game} title={state?.c ? `Desde ${game.name}` : `Pendiente en ${game.name}`} />
         </div>
       )}
+      {seen && !excluded && <div className="slot-flag seen" title="Visto"><FontAwesomeIcon icon={faEye} /></div>}
       {state?.n && <div className="slot-flag note" title={state.n}><FontAwesomeIcon icon={faPen} /></div>}
       {excluded && <div className="slot-flag ban" title="Excluido"><FontAwesomeIcon icon={faBan} /></div>}
       {unavailable && <div className="slot-flag lock" title="No disponible: nunca ha salido variocolor"><FontAwesomeIcon icon={faLock} /></div>}

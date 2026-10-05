@@ -7,12 +7,19 @@ import { DexForm } from './DexForm';
 import { Nav } from './Nav';
 import { Progress } from './Progress';
 import { Stats } from './Stats';
-import { includeEntry, isUnavailable, usePokedex } from '../lib/data';
+import { includeEntry, isUnavailable, scopeEntries, usePokedex } from '../lib/data';
+import { gameDexOf } from '../lib/gamedex';
 import { useStore } from '../lib/store';
-import type { DexConfig, Entry } from '../lib/types';
+import type { DexConfig, Entry, PokedexData } from '../lib/types';
 
-function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[]; onEdit?: () => void }) {
+function DexPreview ({ dex, entries, onEdit, regionalDexes }: {
+  dex: DexConfig;
+  entries: Entry[];
+  onEdit?: () => void;
+  regionalDexes?: PokedexData['regionalDexes'];
+}) {
   const { doc } = useStore();
+  const gameDef = gameDexOf(dex);
   const { caught, total, pending } = useMemo(() => {
     const caps = doc.captures[dex.id] || {};
     let c = 0;
@@ -24,14 +31,28 @@ function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[
       if (s?.x) continue;
       t++;
       if (s?.c) c++;
-      else if (s?.g) p++;
+      else if (dex.game ? s?.v : s?.g) p++;
     }
     return { caught: c, total: t, pending: p };
   }, [doc.captures, dex, entries]);
 
-  const tags = [
-    dex.regional && 'Regionales',
-  ].filter(Boolean);
+  // Dex de juego: también el progreso de su Pokédex regional
+  const regionalProgress = useMemo(() => {
+    if (!gameDef || !regionalDexes?.[gameDef.regional.dex]) return null;
+    const caps = doc.captures[dex.id] || {};
+    let c = 0;
+    let t = 0;
+    for (const { entry } of scopeEntries(dex, entries, { scope: 'regional', regionalDexes })) {
+      if (isUnavailable(dex, entry) || caps[entry.id]?.x) continue;
+      t++;
+      if (caps[entry.id]?.c) c++;
+    }
+    return { caught: c, total: t, label: gameDef.regional.label };
+  }, [doc.captures, dex, entries, gameDef, regionalDexes]);
+
+  const tags = dex.game
+    ? [gameDef?.name ?? dex.game]
+    : [dex.regional && 'Regionales'].filter(Boolean);
 
   return (
     <div className="dex-preview">
@@ -46,8 +67,21 @@ function DexPreview ({ dex, entries, onEdit }: { dex: DexConfig; entries: Entry[
         </div>
       </div>
       <div className="percentage">
-        <Progress caught={caught} pending={pending} total={total} />
+        {dex.game
+          ? <Progress caught={caught} caughtLabel="capturados" pending={pending} pendingLabel="vistos sin capturar" total={total} />
+          : <Progress caught={caught} pending={pending} total={total} />}
       </div>
+      {regionalProgress && (
+        <p className="dex-preview-scopes">
+          <Link className="link" to={`/dex/${dex.id}?pokedex=${regionalProgress.label.toLowerCase()}`}>
+            Pokédex de {regionalProgress.label}: <b>{regionalProgress.caught}</b>/{regionalProgress.total}
+          </Link>
+          {' · '}
+          <Link className="link" to={`/dex/${dex.id}?pokedex=nacional`}>
+            Nacional: <b>{caught}</b>/{total}
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
@@ -68,9 +102,9 @@ export function HomePage () {
         <div className="wrapper">
           <header>
             <div className="header-row">
-              <h1>Mis Living Dex</h1>
+              <h1>Mis dex</h1>
             </div>
-            <h2>Seguimiento de tus cajas de Pokémon HOME</h2>
+            <h2>Seguimiento de tus cajas de Pokémon HOME y de tus partidas</h2>
           </header>
 
           {readOnly && (
@@ -87,7 +121,13 @@ export function HomePage () {
           )}
 
           {doc.dexes.map((dex) => (
-            <DexPreview dex={dex} entries={data.entries} key={dex.id} onEdit={readOnly ? undefined : () => setEditing(dex)} />
+            <DexPreview
+              dex={dex}
+              entries={data.entries}
+              key={dex.id}
+              onEdit={readOnly ? undefined : () => setEditing(dex)}
+              regionalDexes={data.regionalDexes}
+            />
           ))}
 
           {!readOnly && (
@@ -96,13 +136,14 @@ export function HomePage () {
             </div>
           )}
 
-          {doc.dexes.length > 0 && <Stats dexes={doc.dexes} entries={data.entries} />}
+          {doc.dexes.length > 0 && <Stats dexes={doc.dexes} entries={data.entries} regionalDexes={data.regionalDexes} />}
         </div>
       </div>
 
       {editing && (
         <DexForm
           entries={data.entries}
+          regionalDexes={data.regionalDexes}
           initial={editing === 'new' ? undefined : editing}
           onCancel={() => setEditing(null)}
           onDelete={editing === 'new' ? undefined : () => {

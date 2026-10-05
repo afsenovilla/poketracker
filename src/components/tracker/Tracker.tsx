@@ -7,11 +7,33 @@ import { Nav } from '../Nav';
 import { NotFound } from '../NotFound';
 import { EMPTY_FILTERS, isFiltering, SearchBar } from './SearchBar';
 import { GAMES } from '../../lib/games';
-import { availabilityByGame, BOX_COLUMNS, buildSlots, useLocations, usePokedex } from '../../lib/data';
+import { availabilityByGame, BOX_COLUMNS, buildSlots, scopeEntries, useLocations, usePokedex } from '../../lib/data';
+import { gameDexOf } from '../../lib/gamedex';
+import type { DexScope } from '../../lib/gamedex';
+import type { ScopeSummary } from './Dex';
 import { useStore } from '../../lib/store';
 import type { Filters } from './SearchBar';
 
 const SHOW_SCROLL_THRESHOLD = 400;
+
+/** Pokédex elegida en cada dex de juego (regional o nacional), recordada en este navegador */
+const scopeKey = (dexId: string) => `pt:scope:${dexId}`;
+
+function readScope (dexId?: string): DexScope | null {
+  if (!dexId) return null;
+  try {
+    const v = localStorage.getItem(scopeKey(dexId));
+    return v === 'regional' || v === 'national' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/** ?pokedex=nacional / ?pokedex=kanto (o cualquier otro nombre de regional) en el enlace */
+function scopeFromParam (value: string | null): DexScope | null {
+  if (!value) return null;
+  return value === 'nacional' || value === 'national' ? 'national' : 'regional';
+}
 
 export function Tracker () {
   const { dexId } = useParams<{ dexId: string }>();
@@ -35,25 +57,64 @@ export function Tracker () {
     category: params.get('cat') || '',
   }));
   const locations = useLocations();
-  const availability = useMemo(() => availabilityByGame(locations), [locations]);
+  const gameDex = Boolean(dex?.game);
+  const availability = useMemo(() => (gameDex ? new Map<string, Set<string>>() : availabilityByGame(locations)), [locations, gameDex]);
   const [selected, setSelected] = useState<string | null>(null);
   const [showScroll, setShowScroll] = useState(false);
 
-  const slots = useMemo(() => (dex && data ? buildSlots(dex, data.entries) : []), [dex, data]);
+  // Dex de juego: Pokédex regional (por defecto) o nacional
+  const [scope, setScopeState] = useState<DexScope>(() => scopeFromParam(params.get('pokedex')) || readScope(dexId) || 'regional');
+  const setScope = useCallback((next: DexScope) => {
+    setScopeState(next);
+    // en la regional no hay generaciones posteriores: quita ese filtro si ya no aplica
+    if (next === 'regional') setFilters((f) => (f.gen > 1 ? { ...f, gen: 0 } : f));
+    try { if (dexId) localStorage.setItem(scopeKey(dexId), next); } catch { /* sin almacenamiento */ }
+  }, [dexId]);
+
+  const slots = useMemo(
+    () => (dex && data ? buildSlots(dex, data.entries, { scope, regionalDexes: data.regionalDexes }) : []),
+    [dex, data, scope],
+  );
+
+  // Progreso de cada Pokédex del juego, para el selector
+  const scopes = useMemo<ScopeSummary[]>(() => {
+    const def = dex && gameDexOf(dex);
+    if (!dex || !data || !def) return [];
+    const caps = doc.captures[dex.id] || {};
+    const summary = (s: DexScope, label: string): ScopeSummary => {
+      let caught = 0;
+      let total = 0;
+      for (const { entry } of scopeEntries(dex, data.entries, { scope: s, regionalDexes: data.regionalDexes })) {
+        const st = caps[entry.id];
+        if (st?.x || (dex.shiny && entry.noShiny)) continue;
+        total++;
+        if (st?.c) caught++;
+      }
+      return { scope: s, label, caught, total };
+    };
+    const list = [summary('national', 'Nacional')];
+    // sin los datos de la regional (pokedex.json antiguo) solo se ofrece la nacional
+    if (data.regionalDexes?.[def.regional.dex]) list.unshift(summary('regional', def.regional.label));
+    return list;
+  }, [dex, data, doc.captures]);
+  const activeScope: DexScope = scopes.some((s) => s.scope === scope) ? scope : 'national';
+  const gens = useMemo(() => [...new Set(slots.map((s) => s.entry.gen))].sort((a, b) => a - b), [slots]);
 
   // Solo se ofrecen los juegos que tienen algún Pokémon asignado en esta dex
   const gameCounts = useMemo(() => {
+    if (gameDex) return [];
     const counts = new Map<string, number>();
     for (const s of slots) {
       const g = captures[s.entry.id]?.g;
       if (g) counts.set(g, (counts.get(g) || 0) + 1);
     }
     return GAMES.filter((g) => counts.has(g.id)).map((g) => ({ id: g.id, name: g.name, count: counts.get(g.id)! }));
-  }, [slots, captures]);
+  }, [slots, captures, gameDex]);
 
   // Juegos donde se consiguen (solo cuentan los que puntúan: ni excluidos ni sin shiny)
   const availableCounts = useMemo(() => {
-    if (!locations) return [];
+    // los lugares son de los juegos compatibles con HOME, no del juego de la dex
+    if (!locations || gameDex) return [];
     return Object.entries(locations.games).map(([id, name]) => {
       const set = availability.get(id);
       let count = 0;
@@ -65,7 +126,7 @@ export function Tracker () {
       }
       return { id, name, count };
     }).filter((g) => g.count > 0 || g.id === filters.available);
-  }, [locations, availability, slots, captures, filters.hideCaught, filters.available]);
+  }, [locations, availability, slots, captures, filters.hideCaught, filters.available, gameDex]);
 
   useEffect(() => {
     document.title = dex ? `${dex.title} | Poketracker` : 'Poketracker';
@@ -77,19 +138,21 @@ export function Tracker () {
 
   useEffect(() => {
     if (columnRef.current) columnRef.current.scrollTop = 0;
-  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game, filters.available, filters.category]);
+  }, [filters.query, filters.hideCaught, filters.gen, filters.onlyPending, filters.game, filters.available, filters.category, activeScope]);
 
 
   const filtering = isFiltering(filters);
 
-  // Selecciona una casilla y la trae a la vista
+  // Selecciona una casilla y la trae a la vista. En una dex de juego, si no está
+  // en la Pokédex regional (Pichu desde la ficha de Pikachu), pasa a la nacional.
   const goTo = useCallback((id: string) => {
+    if (gameDex && !slots.some((s) => s.entry.id === id)) setScope('national');
     setSelected(id);
     requestAnimationFrame(() => {
       const el = document.querySelector(`.dex .pokemon[data-entry="${id}"]`);
       el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     });
-  }, []);
+  }, [gameDex, slots, setScope]);
 
   // Navegación con las flechas del teclado por la casilla seleccionada
   useEffect(() => {
@@ -150,6 +213,8 @@ export function Tracker () {
             availableCounts={availableCounts}
             filters={filters}
             gameCounts={gameCounts}
+            gameDex={gameDex}
+            gens={gens}
             hasAlcremie={Boolean(dex.alcremie)}
             hasOtherForms={Boolean(dex.otherForms)}
             hasUnown={Boolean(dex.unown)}
@@ -162,6 +227,9 @@ export function Tracker () {
               captures={captures}
               dex={dex}
               filters={filters}
+              onScope={setScope}
+              scope={activeScope}
+              scopes={scopes}
               onScrollTop={() => { if (columnRef.current) columnRef.current.scrollTop = 0; }}
               onSelect={setSelected}
               selected={selectedSlot?.entry.id}

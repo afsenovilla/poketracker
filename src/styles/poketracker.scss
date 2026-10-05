@@ -2297,3 +2297,77 @@ $stats-track: #eeeeee;
     color: $brand-primary;
   }
 }
+
+// ---------- Dex de juego (Rojo Fuego / Verde Hoja…) ----------
+
+// Selector de Pokédex: regional o nacional
+.dex header .dex-scope {
+  @include flexbox();
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+
+  button {
+    @include flexbox();
+    align-items: baseline;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 2px solid $brand-secondary;
+    background: none;
+    color: $brand-secondary;
+    font-family: $font-secondary;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+
+    &.active {
+      background-color: $brand-secondary;
+      color: #fff;
+    }
+  }
+
+  .dex-scope-count {
+    font-weight: 400;
+    opacity: .8;
+  }
+}
+
+// «Visto» en la casilla: un ojo arriba a la derecha (el fondo es el de los pendientes)
+.pokemon .slot-flag.seen {
+  top: 6px;
+  right: 7px;
+  font-size: 9px;
+  color: $brand-secondary-light;
+  pointer-events: none;
+}
+
+.dex-preview .dex-preview-scopes {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+
+.night-mode {
+  .dex header .dex-scope button {
+    border-color: $night-mode-link;
+    color: $gray-medium;
+
+    &.active {
+      background-color: $night-mode-link;
+      color: #fff;
+    }
+  }
+
+  .pokemon .slot-flag.seen {
+    color: #9cc3f5;
+  }
+}
+
+@media (max-width: 750px) {
+  .pokemon .slot-flag.seen {
+    top: 4px;
+    right: 4px;
+    font-size: 8px;
+  }
+}

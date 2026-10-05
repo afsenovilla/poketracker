@@ -52,6 +52,10 @@ FEMALE_FORMS = {'frillish-female', 'jellicent-female', 'pyroar-female', 'meowsti
 
 REGIONAL = ('alola', 'galar', 'hisui', 'paldea')
 
+# Pokédex regionales que usan las dex de juego (src/lib/gamedex.ts): se guarda
+# la lista de especies en su orden, por identificador de PokéAPI (pokedexes.csv)
+GAME_POKEDEXES = ('kanto',)
+
 # Traducciones que faltan en PokéAPI
 MANUAL_FORM_ES = {
     'basculin-white-striped': 'Forma Raya Blanca',
@@ -389,14 +393,28 @@ def main():
         del e['formOrder']
     flav = {int(k): v[1] for k, v in flavor.items() if int(k) in {e['species'] for e in entries}}
 
+    # Orden de las Pokédex regionales de los juegos (especies, por número regional)
+    regional_dexes = {}
+    if os.path.exists(os.path.join(a.csv, 'pokedexes.csv')):
+        dex_ids = {r['id']: r['identifier'] for r in read(a.csv, 'pokedexes') if r['identifier'] in GAME_POKEDEXES}
+        numbers = defaultdict(list)
+        for r in read(a.csv, 'pokemon_dex_numbers'):
+            if r['pokedex_id'] in dex_ids:
+                numbers[dex_ids[r['pokedex_id']]].append((int(r['pokedex_number']), int(r['species_id'])))
+        regional_dexes = {k: [sid for _, sid in sorted(v)] for k, v in numbers.items()}
+    missing_dexes = [d for d in GAME_POKEDEXES if not regional_dexes.get(d)]
+    if missing_dexes:
+        raise SystemExit(f'Faltan las Pokédex regionales {missing_dexes} (¿se ha descargado pokedexes.csv?)')
+
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, 'w', encoding='utf-8') as f:
-        json.dump({'entries': entries, 'flavor': flav}, f, ensure_ascii=False, separators=(',', ':'))
+        json.dump({'entries': entries, 'flavor': flav, 'regionalDexes': regional_dexes}, f, ensure_ascii=False, separators=(',', ':'))
 
     cats = defaultdict(int)
     for e in entries:
         cats[e['category']] += 1
     print('Total entradas:', len(entries), dict(cats))
+    print('Pokédex regionales:', {k: len(v) for k, v in regional_dexes.items()})
     print('Sin icono de caja:', [e['id'] for e in entries if not e['icon'] and e['category'] in ('base', 'regional')])
     print('Sin icono shiny:', [e['id'] for e in entries if e['icon'] and e['icon'] == e['iconShiny'] and e['category'] in ('base', 'regional')])
     print('Sin sprite:', [e['id'] for e in entries if not e['sprite']])

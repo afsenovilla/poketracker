@@ -39,12 +39,16 @@ interface Props {
   hasVivillon: boolean;
   /** la dex incluye las combinaciones de Alcremie */
   hasAlcremie: boolean;
+  /** dex de un juego: sin juegos de origen ni tipos de casilla, y «vistos» en vez de pendientes */
+  gameDex?: boolean;
+  /** generaciones que hay en la dex (por defecto, todas) */
+  gens?: number[];
 }
 
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 export function SearchBar ({
-  availableCounts, filters, gameCounts, hasAlcremie, hasOtherForms, hasUnown, hasVivillon, setFilters,
+  availableCounts, filters, gameCounts, gameDex = false, gens = GENS, hasAlcremie, hasOtherForms, hasUnown, hasVivillon, setFilters,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -97,7 +101,7 @@ export function SearchBar ({
             <div className="checkbox">
               <label>
                 <input checked={filters.onlyPending} onChange={(e) => update({ onlyPending: e.target.checked })} type="checkbox" />
-                <span className="checkbox-custom"><span /></span>Pendientes de pasar a HOME
+                <span className="checkbox-custom"><span /></span>{gameDex ? 'Vistos sin capturar' : 'Pendientes de pasar a HOME'}
               </label>
             </div>
             <div className="dex-search-bar-selects">
@@ -127,6 +131,7 @@ export function SearchBar ({
                 ))}
               </select>
             )}
+            {!gameDex && (
             <select
               aria-label="Tipo de casilla"
               className="category-select"
@@ -141,6 +146,8 @@ export function SearchBar ({
               {hasAlcremie && <option value="alcremie">Solo Alcremie</option>}
               {hasUnown && <option value="unown">Solo Unown</option>}
             </select>
+            )}
+            {gens.length > 1 && (
             <select
               aria-label="Generación"
               className="gen-select"
@@ -148,8 +155,9 @@ export function SearchBar ({
               value={filters.gen}
             >
               <option value={0}>Todas las generaciones</option>
-              {GENS.map((g) => <option key={g} value={g}>Generación {g}</option>)}
+              {gens.map((g) => <option key={g} value={g}>Generación {g}</option>)}
             </select>
+            )}
             </div>
           </div>
         </div>

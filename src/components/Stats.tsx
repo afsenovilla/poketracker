@@ -5,11 +5,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
-import { availabilityByGame, formaGroup, includeEntry, isUnavailable, isUnown, useLocations } from '../lib/data';
+import { availabilityByGame, formaGroup, includeEntry, isUnavailable, isUnown, scopeEntries, useLocations } from '../lib/data';
+import { gameDexOf } from '../lib/gamedex';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
 import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyFromCoins, goEnergyFromTime, goEnergyNow } from '../lib/doc';
 import { useStore } from '../lib/store';
-import type { DexConfig, Entry, SlotState } from '../lib/types';
+import type { DexConfig, Entry, PokedexData, SlotState } from '../lib/types';
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
 const KEY_TAB = 'pt:stats-dex';
@@ -64,17 +65,88 @@ function Bars ({ missing, rows, scale, valueText }: {
   );
 }
 
-function Legend ({ pending = true, missing = false }: { pending?: boolean; missing?: boolean }) {
+function Legend ({ pending = true, missing = false, labels = ['En HOME', 'Por pasar a HOME'] }: {
+  pending?: boolean;
+  missing?: boolean;
+  /** textos de las dos series (en una dex de juego: capturados y vistos) */
+  labels?: [string, string];
+}) {
   return (
     <div className="stats-legend">
       {missing ? (
         <span><i className="stats-swatch missing" /> Te faltan</span>
       ) : (
         <>
-          <span><i className="stats-swatch home" /> En HOME</span>
-          {pending && <span><i className="stats-swatch pending" /> Por pasar a HOME</span>}
+          <span><i className="stats-swatch home" /> {labels[0]}</span>
+          {pending && <span><i className="stats-swatch pending" /> {labels[1]}</span>}
         </>
       )}
+    </div>
+  );
+}
+
+/** Estadísticas de una dex de juego: su Pokédex regional y la nacional por generación */
+function GameDexStats ({ captures, dex, entries, regionalDexes }: {
+  captures: Record<string, SlotState>;
+  dex: DexConfig;
+  entries: Entry[];
+  regionalDexes?: PokedexData['regionalDexes'];
+}) {
+  const def = gameDexOf(dex);
+  const base = `/dex/${dex.id}`;
+
+  const rows = useMemo(() => {
+    const counts = (list: Entry[]) => {
+      let home = 0;
+      let pending = 0;
+      let total = 0;
+      for (const e of list) {
+        const s = captures[e.id];
+        if (s?.x || isUnavailable(dex, e)) continue;
+        total++;
+        if (s?.c) home++;
+        else if (s?.v) pending++;
+      }
+      return { home, pending, total };
+    };
+    const row = (key: string, label: string, name: string, list: Entry[], link: string): Row | null => {
+      const { home, pending, total } = counts(list);
+      if (!total) return null;
+      return {
+        key,
+        label,
+        home,
+        pending,
+        total,
+        link,
+        done: home === total,
+        tip: home === total
+          ? `${name}: ¡completa! (${total} de ${total})`
+          : `${name}: ${home} capturados${pending ? `, ${pending} vistos sin capturar` : ''}, faltan ${total - home - pending} de ${total}`,
+      };
+    };
+    const national = scopeEntries(dex, entries).map((x) => x.entry);
+    const list: (Row | null)[] = [];
+    if (def && regionalDexes?.[def.regional.dex]) {
+      const regional = scopeEntries(dex, entries, { scope: 'regional', regionalDexes }).map((x) => x.entry);
+      const slug = def.regional.label.toLowerCase();
+      list.push(row('regional', def.regional.label, `Pokédex de ${def.regional.label}`, regional, `${base}?pokedex=${slug}`));
+    }
+    list.push(row('national', 'Nacional', 'Pokédex nacional', national, `${base}?pokedex=nacional`));
+    const gens = [...new Set(national.map((e) => e.gen))].sort((a, b) => a - b);
+    for (const g of gens) {
+      list.push(row(`g${g}`, `Gen. ${ROMAN[g - 1]}`, `Generación ${g}`, national.filter((e) => e.gen === g), `${base}?pokedex=nacional&gen=${g}`));
+    }
+    return list.filter((r): r is Row => r !== null);
+  }, [captures, dex, entries, def, regionalDexes, base]);
+
+  return (
+    <div className="stats-grid">
+      <section className="stats-card gen stacked">
+        <h3>Progreso en {def?.name ?? 'el juego'}</h3>
+        <Legend labels={['Capturados', 'Vistos sin capturar']} />
+        <Bars rows={rows} valueText={(r) => (r.done ? <b>¡Completa!</b> : <><b>{r.home}</b>/{r.total}</>)} />
+      </section>
     </div>
   );
 }
@@ -493,7 +565,7 @@ function DexStats ({ captures, dex, entries }: { captures: Record<string, SlotSt
   );
 }
 
-export function Stats ({ dexes, entries }: { dexes: DexConfig[]; entries: Entry[] }) {
+export function Stats ({ dexes, entries, regionalDexes }: { dexes: DexConfig[]; entries: Entry[]; regionalDexes?: PokedexData['regionalDexes'] }) {
   const { doc } = useStore();
   const [tab, setTab] = useState<string>(() => {
     try { return localStorage.getItem(KEY_TAB) || ''; } catch { return ''; }
@@ -527,7 +599,9 @@ export function Stats ({ dexes, entries }: { dexes: DexConfig[]; entries: Entry[
           </div>
         )}
       </div>
-      <DexStats captures={doc.captures[dex.id] || {}} dex={dex} entries={entries} />
+      {dex.game
+        ? <GameDexStats captures={doc.captures[dex.id] || {}} dex={dex} entries={entries} regionalDexes={regionalDexes} />
+        : <DexStats captures={doc.captures[dex.id] || {}} dex={dex} entries={entries} />}
       <p className="stats-hint">Pulsa una fila para ver esos Pokémon en la dex.</p>
     </div>
   );

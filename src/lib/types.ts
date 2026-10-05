@@ -29,6 +29,8 @@ export interface Entry {
 export interface PokedexData {
   entries: Entry[];
   flavor: Record<string, string>;
+  /** Pokédex regionales de los juegos: identificador de PokéAPI -> especies en orden */
+  regionalDexes?: Record<string, number[]>;
 }
 
 export type Layout = 'junto' | 'separado';
@@ -51,13 +53,21 @@ export interface DexConfig {
   alcremie?: boolean;
   /** 'junto': cada forma va tras su especie; 'separado': primero las 1025 especies y luego las formas */
   layout: Layout;
+  /**
+   * Dex de un juego concreto (id de src/lib/gamedex.ts, p. ej. 'lg' = Verde Hoja)
+   * en vez de una Living Dex de HOME: solo especies, con su Pokédex regional y la
+   * nacional del juego, y los estados «visto» y «capturado».
+   */
+  game?: string;
   createdAt: string;
 }
 
 /** Estado de una casilla. Claves cortas para que el JSON ocupe poco. */
 export interface SlotState {
-  /** capturado */
+  /** capturado (en una dex de HOME: está en HOME) */
   c?: 1;
+  /** visto (solo en las dex de juego) */
+  v?: 1;
   /** excluido / no disponible (no cuenta para el total) */
   x?: 1;
   /** juego del que viene: si no está marcado en HOME, es que sigue ahí pendiente */
@@ -79,6 +89,8 @@ export interface ProgressDoc {
 
 export interface SlotPatch {
   c?: boolean;
+  /** visto (dex de juego) */
+  v?: boolean;
   x?: boolean;
   /** juego donde está pendiente; cadena vacía para quitarlo */
   g?: string;
@@ -95,6 +107,8 @@ export type Op =
 
 export interface Slot {
   entry: Entry;
+  /** número en la Pokédex que se está viendo (dex de juego); si no, el nacional */
+  number?: number;
   index: number;
   box: number;
   row: number;
