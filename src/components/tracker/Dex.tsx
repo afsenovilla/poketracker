@@ -14,6 +14,12 @@ import { isFiltering } from './SearchBar';
 import type { Filters } from './SearchBar';
 import type { TradeHint } from './PokemonSlot';
 
+/** Leyenda de los bordes de color de una dex de juego */
+export interface TradeLegendItem {
+  color: string;
+  label: string;
+}
+
 /** Progreso de cada Pokédex de una dex de juego, para el selector Kanto / Nacional */
 export interface ScopeSummary {
   scope: DexScope;
@@ -26,6 +32,7 @@ interface Props {
   availability: Map<string, Set<string>>;
   /** dex de juego: casillas que no se consiguen en esta versión -> aviso de la casilla */
   tradeHints?: Map<string, TradeHint>;
+  tradeLegend?: TradeLegendItem[];
   /** dex de juego: Pokédex que se está viendo y cómo cambiarla */
   scope?: DexScope;
   scopes?: ScopeSummary[];
@@ -53,7 +60,7 @@ function matches (slot: Slot, q: string, padding: number) {
 }
 
 export const Dex = memo(function Dex ({
-  availability, captures, tradeHints, dex, filters, onScope, onScrollTop, onSelect, scope, scopes, selected, showScrollButton, slots,
+  availability, captures, tradeHints, tradeLegend, dex, filters, onScope, onScrollTop, onSelect, scope, scopes, selected, showScrollButton, slots,
 }: Props) {
   const { readOnly } = useStore();
   const gameDex = Boolean(dex.game);
@@ -138,6 +145,16 @@ export const Dex = memo(function Dex ({
                 </button>
               ))}
             </div>
+          )}
+          {gameDex && tradeLegend && tradeLegend.length > 0 && (
+            <p className="dex-trade-legend">
+              <span className="dex-trade-legend-title">Hay que traerlo de:</span>
+              {tradeLegend.map((l) => (
+                <span className="dex-trade-legend-item" key={l.label}>
+                  <i style={{ borderColor: l.color }} />{l.label}
+                </span>
+              ))}
+            </p>
           )}
         </header>
         <p className="mobile-hint">{readOnly ? 'Modo lectura · toca un Pokémon para ver su ficha' : 'Toca para marcar · mantén pulsado para ver la ficha'}</p>

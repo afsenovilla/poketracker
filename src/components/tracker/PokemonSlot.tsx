@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faEye, faInfo, faLock, faPen, faRightLeft } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faEye, faInfo, faLock, faPen } from '@fortawesome/free-solid-svg-icons';
 import { memo, useRef } from 'react';
 import type { MouseEvent, TouchEvent } from 'react';
 
@@ -12,11 +12,12 @@ import { useUI } from '../../lib/ui';
 import type { Slot, SlotState } from '../../lib/types';
 
 /**
- * Dex de juego: el Pokémon no se consigue en esta versión. `short` es la otra
- * versión («RF») si sale allí; si no, va vacío (otros juegos o eventos).
+ * Dex de juego: el Pokémon no se consigue en esta versión. La casilla lleva un
+ * borde interior del color del juego de donde hay que traerlo (`background`:
+ * un color o franjas de varios).
  */
 export interface TradeHint {
-  short: string;
+  background: string;
   title: string;
 }
 
@@ -95,7 +96,8 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameD
 
   const iconClass = (shiny ? entry.iconShiny : entry.icon) || entry.icon;
   const label = formLabel ? `${entry.name} (${formLabel})` : entry.name;
-  const title = unavailable ? `${label} · no existe shiny`
+  const title = tradeHint && !state?.c && !excluded ? `${label} · ${tradeHint.title}`
+    : unavailable ? `${label} · no existe shiny`
     : game ? `${label} · ${state?.c ? `desde ${game.name}` : `pendiente en ${game.name}`}`
       : seen ? `${label} · visto` : label;
 
@@ -138,9 +140,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameD
       )}
       {seen && !excluded && <div className="slot-flag seen" title="Visto"><FontAwesomeIcon icon={faEye} /></div>}
       {tradeHint && !state?.c && !excluded && (
-        <div className={classNames('slot-flag trade', { outside: !tradeHint.short })} title={tradeHint.title}>
-          {tradeHint.short || <FontAwesomeIcon icon={faRightLeft} />}
-        </div>
+        <div aria-hidden className="slot-trade-border" style={{ background: tradeHint.background }} />
       )}
       {state?.n && <div className="slot-flag note" title={state.n}><FontAwesomeIcon icon={faPen} /></div>}
       {excluded && <div className="slot-flag ban" title="Excluido"><FontAwesomeIcon icon={faBan} /></div>}

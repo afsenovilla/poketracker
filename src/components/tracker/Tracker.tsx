@@ -8,10 +8,10 @@ import { NotFound } from '../NotFound';
 import { EMPTY_FILTERS, isFiltering, SearchBar } from './SearchBar';
 import { GAMES } from '../../lib/games';
 import { availabilityByGame, BOX_COLUMNS, buildSlots, scopeEntries, useGameLocations, useLocations, usePokedex } from '../../lib/data';
-import { AVAILABILITY_KEYS, availabilityLabels, gameAvailabilityMap, gameDexOf, otherSources, pairedVersion, versionShort } from '../../lib/gamedex';
+import { AVAILABILITY_KEYS, availabilityLabels, GAME_COLORS, gameAvailabilityMap, gameDexOf, sourcesBackground, tradeSources } from '../../lib/gamedex';
 import type { TradeHint } from './PokemonSlot';
 import type { DexScope } from '../../lib/gamedex';
-import type { ScopeSummary } from './Dex';
+import type { ScopeSummary, TradeLegendItem } from './Dex';
 import { useStore } from '../../lib/store';
 import type { Filters } from './SearchBar';
 
@@ -103,20 +103,29 @@ export function Tracker () {
   const availability = useMemo(() => (gameDex
     ? gameAvailabilityMap(gameLocations, gameLoc?.version, slots.map((s) => s.entry.id))
     : availabilityByGame(locations)), [locations, gameDex, gameLocations, gameLoc?.version, slots]);
-  // Aviso en las casillas de lo que no se consigue en esta versión
-  const tradeHints = useMemo(() => {
+  // Borde de color en las casillas de lo que no se consigue en esta versión, y su leyenda
+  const { tradeHints, tradeLegend } = useMemo(() => {
     const map = new Map<string, TradeHint>();
-    if (!gameDex || !gameLocations || !gameLoc) return map;
-    const other = pairedVersion(gameLocations, gameLoc.version);
-    const otherName = other ? gameLocations.versions[other] : '';
-    for (const id of availability.get('version') || []) {
-      map.set(id, { short: other ? versionShort(other, otherName) : '?', title: `Solo en ${otherName}: hay que intercambiarlo` });
+    const used = new Set<string>();
+    if (!gameDex || !gameLocations || !gameLoc) return { tradeHints: map, tradeLegend: [] as TradeLegendItem[] };
+    const names: Record<string, string> = { ...gameLocations.other, ...gameLocations.versions };
+    for (const key of ['version', 'outside']) {
+      for (const id of availability.get(key) || []) {
+        const sources = tradeSources(gameLocations, gameLoc.version, id);
+        sources.forEach((g) => used.add(g === 'xd' ? 'colo' : g));
+        const list = sources.map((g) => (g === 'colo' ? 'Colosseum / XD' : names[g] || g)).join(', ');
+        map.set(id, {
+          background: sourcesBackground(sources),
+          title: key === 'version'
+            ? `solo en ${list}: hay que intercambiarlo`
+            : sources[0] === 'event' ? 'solo de evento' : `no sale en ${Object.values(gameLocations.versions).join(' ni ')}: ${list}`,
+        });
+      }
     }
-    for (const id of availability.get('outside') || []) {
-      const games = otherSources(gameLocations, id).map(([g]) => gameLocations.other[g] || g);
-      map.set(id, { short: '', title: games.length ? `No sale en ${Object.values(gameLocations.versions).join(' ni ')}: ${games.join(', ')}` : 'No se consigue en este juego' });
-    }
-    return map;
+    const legend: TradeLegendItem[] = Object.keys(GAME_COLORS)
+      .filter((g) => used.has(g))
+      .map((g) => ({ color: GAME_COLORS[g], label: g === 'colo' ? 'Colosseum / XD' : names[g] || g }));
+    return { tradeHints: map, tradeLegend: legend };
   }, [gameDex, gameLocations, gameLoc, availability]);
   const activeScope: DexScope = scopes.some((s) => s.scope === scope) ? scope : 'national';
   const gens = useMemo(() => [...new Set(slots.map((s) => s.entry.gen))].sort((a, b) => a - b), [slots]);
@@ -253,6 +262,7 @@ export function Tracker () {
               filters={filters}
               onScope={setScope}
               tradeHints={tradeHints}
+              tradeLegend={tradeLegend}
               scope={activeScope}
               scopes={scopes}
               onScrollTop={() => { if (columnRef.current) columnRef.current.scrollTop = 0; }}

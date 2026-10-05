@@ -106,6 +106,45 @@ export function gameAvailabilityMap (data: GameLocationsData | null, version: st
   return map;
 }
 
-/** Nombre corto de cada versión, para la casilla */
-const VERSION_SHORT: Record<string, string> = { fr: 'RF', lg: 'VH' };
-export const versionShort = (id: string, name: string) => VERSION_SHORT[id] || name.split(/\s+/).map((w) => w[0]).join('').toUpperCase();
+/**
+ * Color de cada juego para el borde de las casillas que no se consiguen en tu
+ * versión. Rubí es carmesí para no confundirse con el rojo anaranjado de Rojo
+ * Fuego, y Esmeralda verde azulado para no confundirse con Verde Hoja.
+ */
+export const GAME_COLORS: Record<string, string> = {
+  fr: '#e8552a',
+  lg: '#5aa832',
+  r: '#b0123f',
+  s: '#2457c5',
+  e: '#0f9d6e',
+  colo: '#7b4fb3',
+  xd: '#7b4fb3',
+  event: '#9e9e9e',
+};
+
+/** Juegos de los que hay que traerlo (los que dan color al borde), por orden de preferencia */
+export function tradeSources (data: GameLocationsData, version: string, entryId: string): string[] {
+  const availability = gameAvailability(data, version, entryId);
+  if (availability === 'here') return [];
+  if (availability === 'version') return Object.keys(data.versions).filter((v) => v !== version && placesIn(data, v, entryId).length);
+  const games = otherSources(data, entryId).map(([g]) => g);
+  const rse = games.filter((g) => g === 'r' || g === 's' || g === 'e');
+  if (rse.length) return rse;
+  const gc = games.filter((g) => g === 'colo' || g === 'xd');
+  // Colosseum y XD comparten color: con uno basta
+  if (gc.length) return [gc[0]];
+  return ['event'];
+}
+
+/**
+ * Fondo del borde: un color, o un tramo del marco por juego si son varios
+ * (Rubí, Zafiro y Esmeralda: un tercio cada uno, en el sentido de las agujas
+ * del reloj desde la esquina de arriba a la izquierda).
+ */
+export function sourcesBackground (sources: string[]) {
+  const colors = sources.map((g) => GAME_COLORS[g] || GAME_COLORS.event);
+  if (colors.length <= 1) return colors[0] || GAME_COLORS.event;
+  const step = 360 / colors.length;
+  const stops = colors.map((c, i) => `${c} ${Math.round(i * step)}deg ${Math.round((i + 1) * step)}deg`);
+  return `conic-gradient(from -45deg, ${stops.join(', ')})`;
+}
