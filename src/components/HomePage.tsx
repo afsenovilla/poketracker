@@ -8,7 +8,7 @@ import { Nav } from './Nav';
 import { Progress } from './Progress';
 import { Stats } from './Stats';
 import { includeEntry, isUnavailable, scopeEntries, usePokedex } from '../lib/data';
-import { gameDexOf } from '../lib/gamedex';
+import { availableScopes, gameDexOf } from '../lib/gamedex';
 import { useStore } from '../lib/store';
 import type { DexConfig, Entry, PokedexData } from '../lib/types';
 
@@ -36,18 +36,22 @@ function DexPreview ({ dex, entries, onEdit, regionalDexes }: {
     return { caught: c, total: t, pending: p };
   }, [doc.captures, dex, entries]);
 
-  // Dex de juego: también el progreso de su Pokédex regional
-  const regionalProgress = useMemo(() => {
-    if (!gameDef || !regionalDexes?.[gameDef.regional.dex]) return null;
+  // Dex de juego: el progreso de cada una de sus Pokédex (sin «Todas», que es el total de arriba)
+  const scopeProgress = useMemo(() => {
+    if (!gameDef) return [];
     const caps = doc.captures[dex.id] || {};
-    let c = 0;
-    let t = 0;
-    for (const { entry } of scopeEntries(dex, entries, { scope: 'regional', regionalDexes })) {
-      if (isUnavailable(dex, entry) || caps[entry.id]?.x) continue;
-      t++;
-      if (caps[entry.id]?.c) c++;
-    }
-    return { caught: c, total: t, label: gameDef.regional.label };
+    const scopes = availableScopes(gameDef, regionalDexes).filter((sc) => !sc.all);
+    if (scopes.length < 2) return [];
+    return scopes.map((sc) => {
+      let c = 0;
+      let t = 0;
+      for (const { entry } of scopeEntries(dex, entries, { scope: sc.id, regionalDexes })) {
+        if (isUnavailable(dex, entry) || caps[entry.id]?.x) continue;
+        t++;
+        if (caps[entry.id]?.c) c++;
+      }
+      return { id: sc.id, caught: c, total: t, label: sc.national ? 'Nacional' : sc.label };
+    });
   }, [doc.captures, dex, entries, gameDef, regionalDexes]);
 
   const tags = dex.game
@@ -71,15 +75,16 @@ function DexPreview ({ dex, entries, onEdit, regionalDexes }: {
           ? <Progress caught={caught} caughtLabel="capturados" pending={pending} pendingLabel="vistos sin capturar" total={total} />
           : <Progress caught={caught} pending={pending} total={total} />}
       </div>
-      {regionalProgress && (
+      {scopeProgress.length > 0 && (
         <p className="dex-preview-scopes">
-          <Link className="link" to={`/dex/${dex.id}?pokedex=${regionalProgress.label.toLowerCase()}`}>
-            Pokédex de {regionalProgress.label}: <b>{regionalProgress.caught}</b>/{regionalProgress.total}
-          </Link>
-          {' · '}
-          <Link className="link" to={`/dex/${dex.id}?pokedex=nacional`}>
-            Nacional: <b>{caught}</b>/{total}
-          </Link>
+          {scopeProgress.map((p, i) => (
+            <span key={p.id}>
+              {i > 0 && ' · '}
+              <Link className="link" to={`/dex/${dex.id}?pokedex=${p.id}`}>
+                {p.label}: <b>{p.caught}</b>/{p.total}
+              </Link>
+            </span>
+          ))}
         </p>
       )}
     </div>

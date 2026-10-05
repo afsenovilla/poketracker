@@ -6,7 +6,7 @@ import { Box } from './Box';
 import { PokemonSlot } from './PokemonSlot';
 import { Progress } from '../Progress';
 import { formaGroup, groupBoxes, isUnown, normalize, pad, slotNumber } from '../../lib/data';
-import { gameDexOf } from '../../lib/gamedex';
+import { gameDexOf, scopeTitle } from '../../lib/gamedex';
 import type { DexScope } from '../../lib/gamedex';
 import { useStore } from '../../lib/store';
 import type { DexConfig, Slot, SlotState } from '../../lib/types';
@@ -86,18 +86,26 @@ export const Dex = memo(function Dex ({
   const sections = useMemo(() => {
     if (!gameDex) return [];
     const groups: { key: string; title: string; slots: Slot[] }[] = [];
-    if (scope === 'regional' && gameDef) {
-      groups.push({ key: 'regional', title: `Pokédex de ${gameDef.regional.label}`, slots });
-    } else {
-      for (const s of slots) {
-        const key = `g${s.entry.gen}`;
-        let g = groups.find((x) => x.key === key);
-        if (!g) {
-          g = { key, title: `Generación ${s.entry.gen}`, slots: [] };
-          groups.push(g);
-        }
-        g.slots.push(s);
+    const current = gameDef?.scopes.find((x) => x.id === scope);
+    const add = (key: string, title: string, s: Slot) => {
+      let g = groups.find((x) => x.key === key);
+      if (!g) {
+        g = { key, title, slots: [] };
+        groups.push(g);
       }
+      g.slots.push(s);
+    };
+    if (!slots.length) return [];
+    if (current?.all) {
+      // «Todas»: una sección por Pokédex, sin repetir las que ya salen en otra anterior
+      slots.forEach((s, i) => {
+        const sec = gameDef?.scopes.find((x) => x.id === s.section);
+        add(s.section || 'x', sec ? `${scopeTitle(sec)}${i > 0 && groups[0]?.key !== s.section ? ' · solo las nuevas' : ''}` : 'Otros', s);
+      });
+    } else if (current && !current.national) {
+      groups.push({ key: current.id, title: scopeTitle(current), slots });
+    } else {
+      slots.forEach((s) => add(`g${s.entry.gen}`, `Generación ${s.entry.gen}`, s));
     }
     return groups.map((g) => {
       const counted = g.slots.filter((s) => !s.unavailable && !captures[s.entry.id]?.x);
@@ -150,7 +158,10 @@ export const Dex = memo(function Dex ({
           {gameDex ? (
             <h2>
               {gameDef && dex.title !== gameDef.name ? `${gameDef.name} · ` : ''}
-              {scope === 'regional' && gameDef ? `Pokédex de ${gameDef.regional.label}` : 'Pokédex nacional'}
+              {(() => {
+                const cur = gameDef?.scopes.find((x) => x.id === scope);
+                return cur ? scopeTitle(cur) : 'Pokédex';
+              })()}
               {' · '}{slots.length} Pokémon
             </h2>
           ) : (

@@ -8,7 +8,10 @@ import { NotFound } from '../NotFound';
 import { EMPTY_FILTERS, isFiltering, SearchBar } from './SearchBar';
 import { GAMES } from '../../lib/games';
 import { availabilityByGame, BOX_COLUMNS, buildSlots, scopeEntries, useGameLocations, useLocations, usePokedex } from '../../lib/data';
-import { AVAILABILITY_KEYS, availabilityLabels, GAME_COLORS, gameAvailabilityMap, gameDexOf, sourcesBackground, tradeSources } from '../../lib/gamedex';
+import {
+  AVAILABILITY_KEYS, availabilityLabels, availableScopes, GAME_COLORS, gameAvailabilityMap, gameDexOf, HOME_SOURCE, scopeFromName,
+  sourcesBackground, tradeSources,
+} from '../../lib/gamedex';
 import type { TradeHint } from './PokemonSlot';
 import type { DexScope } from '../../lib/gamedex';
 import type { ScopeSummary, TradeLegendItem } from './Dex';
@@ -17,23 +20,16 @@ import type { Filters } from './SearchBar';
 
 const SHOW_SCROLL_THRESHOLD = 400;
 
-/** Pokédex elegida en cada dex de juego (regional o nacional), recordada en este navegador */
+/** Pokédex elegida en cada dex de juego, recordada en este navegador */
 const scopeKey = (dexId: string) => `pt:scope:${dexId}`;
 
 function readScope (dexId?: string): DexScope | null {
   if (!dexId) return null;
   try {
-    const v = localStorage.getItem(scopeKey(dexId));
-    return v === 'regional' || v === 'national' ? v : null;
+    return localStorage.getItem(scopeKey(dexId));
   } catch {
     return null;
   }
-}
-
-/** ?pokedex=nacional / ?pokedex=kanto (o cualquier otro nombre de regional) en el enlace */
-function scopeFromParam (value: string | null): DexScope | null {
-  if (!value) return null;
-  return value === 'nacional' || value === 'national' ? 'national' : 'regional';
 }
 
 export function Tracker () {
@@ -59,46 +55,48 @@ export function Tracker () {
   }));
   const locations = useLocations();
   const gameDex = Boolean(dex?.game);
-  const gameLoc = (dex && gameDexOf(dex)?.locations) || null;
-  const gameLocations = useGameLocations(gameLoc?.file);
+  const gameDef = dex ? gameDexOf(dex) : undefined;
+  const gameLoc = gameDef?.locations || null;
+  const gameLocations = useGameLocations(gameLoc);
   const [selected, setSelected] = useState<string | null>(null);
   const [showScroll, setShowScroll] = useState(false);
 
-  // Dex de juego: Pokédex regional (por defecto) o nacional
-  const [scope, setScopeState] = useState<DexScope>(() => scopeFromParam(params.get('pokedex')) || readScope(dexId) || 'regional');
+  // Dex de juego: Pokédex elegida (la del enlace, la última que se vio o la primera)
+  const [scopeChoice, setScopeChoice] = useState<string | null>(() => params.get('pokedex') || readScope(dexId));
+  const scopeDefs = useMemo(() => (gameDef && data ? availableScopes(gameDef, data.regionalDexes) : []), [gameDef, data]);
+  const activeScope: DexScope = useMemo(() => {
+    if (!gameDef || !scopeDefs.length) return '';
+    const wanted = scopeChoice && (scopeDefs.some((s) => s.id === scopeChoice) ? scopeChoice : scopeFromName(gameDef, scopeChoice));
+    return wanted && scopeDefs.some((s) => s.id === wanted) ? wanted : scopeDefs[0].id;
+  }, [gameDef, scopeDefs, scopeChoice]);
   const setScope = useCallback((next: DexScope) => {
-    setScopeState(next);
-    // en la regional no hay generaciones posteriores: quita ese filtro si ya no aplica
-    if (next === 'regional') setFilters((f) => (f.gen > 1 ? { ...f, gen: 0 } : f));
+    setScopeChoice(next);
+    // si la nueva Pokédex no tiene esa generación, se quita el filtro
+    setFilters((f) => (f.gen ? { ...f, gen: 0 } : f));
     try { if (dexId) localStorage.setItem(scopeKey(dexId), next); } catch { /* sin almacenamiento */ }
   }, [dexId]);
 
   const slots = useMemo(
-    () => (dex && data ? buildSlots(dex, data.entries, { scope, regionalDexes: data.regionalDexes }) : []),
-    [dex, data, scope],
+    () => (dex && data ? buildSlots(dex, data.entries, { scope: activeScope, regionalDexes: data.regionalDexes }) : []),
+    [dex, data, activeScope],
   );
 
   // Progreso de cada Pokédex del juego, para el selector
   const scopes = useMemo<ScopeSummary[]>(() => {
-    const def = dex && gameDexOf(dex);
-    if (!dex || !data || !def) return [];
+    if (!dex || !data || !gameDef) return [];
     const caps = doc.captures[dex.id] || {};
-    const summary = (s: DexScope, label: string): ScopeSummary => {
+    return scopeDefs.map((s) => {
       let caught = 0;
       let total = 0;
-      for (const { entry } of scopeEntries(dex, data.entries, { scope: s, regionalDexes: data.regionalDexes })) {
+      for (const { entry } of scopeEntries(dex, data.entries, { scope: s.id, regionalDexes: data.regionalDexes })) {
         const st = caps[entry.id];
         if (st?.x || (dex.shiny && entry.noShiny)) continue;
         total++;
         if (st?.c) caught++;
       }
-      return { scope: s, label, caught, total };
-    };
-    const list = [summary('national', 'Nacional')];
-    // sin los datos de la regional (pokedex.json antiguo) solo se ofrece la nacional
-    if (data.regionalDexes?.[def.regional.dex]) list.unshift(summary('regional', def.regional.label));
-    return list;
-  }, [dex, data, doc.captures]);
+      return { scope: s.id, label: s.label, caught, total };
+    });
+  }, [dex, data, gameDef, scopeDefs, doc.captures]);
   // Dónde se consigue: en las dex de HOME, por juego; en las de juego, en esta versión / en la otra / fuera
   const availability = useMemo(() => (gameDex
     ? gameAvailabilityMap(gameLocations, gameLoc?.version, slots.map((s) => s.entry.id))
@@ -109,25 +107,25 @@ export function Tracker () {
     const used = new Set<string>();
     if (!gameDex || !gameLocations || !gameLoc) return { tradeHints: map, tradeLegend: [] as TradeLegendItem[] };
     const names: Record<string, string> = { ...gameLocations.other, ...gameLocations.versions };
+    const inGame = Object.values(gameLocations.versions).join(' ni ');
     for (const key of ['version', 'outside']) {
       for (const id of availability.get(key) || []) {
         const sources = tradeSources(gameLocations, gameLoc.version, id);
         sources.forEach((g) => used.add(g));
         const list = sources.map((g) => names[g] || g).join(', ');
-        map.set(id, {
-          background: sourcesBackground(sources),
-          title: key === 'version'
-            ? `solo en ${list}: hay que intercambiarlo`
-            : sources[0] === 'event' ? 'solo de evento' : `no sale en ${Object.values(gameLocations.versions).join(' ni ')}: ${list}`,
-        });
+        let title: string;
+        if (key === 'version') title = `solo en ${list}: hay que intercambiarlo`;
+        else if (sources[0] === 'event') title = 'solo de evento';
+        else if (sources[0] === HOME_SOURCE) title = `no sale en ${inGame}: hay que traerlo de otro juego por Pokémon HOME`;
+        else title = `no sale en ${inGame}: ${list}`;
+        map.set(id, { background: sourcesBackground(sources), title });
       }
     }
     const legend: TradeLegendItem[] = Object.keys(GAME_COLORS)
       .filter((g) => used.has(g))
-      .map((g) => ({ color: GAME_COLORS[g], label: names[g] || g }));
+      .map((g) => ({ color: GAME_COLORS[g], label: g === HOME_SOURCE ? 'Otro juego (por HOME)' : names[g] || g }));
     return { tradeHints: map, tradeLegend: legend };
   }, [gameDex, gameLocations, gameLoc, availability]);
-  const activeScope: DexScope = scopes.some((s) => s.scope === scope) ? scope : 'national';
   const gens = useMemo(() => [...new Set(slots.map((s) => s.entry.gen))].sort((a, b) => a - b), [slots]);
 
   // Solo se ofrecen los juegos que tienen algún Pokémon asignado en esta dex
@@ -179,13 +177,17 @@ export function Tracker () {
   // Selecciona una casilla y la trae a la vista. En una dex de juego, si no está
   // en la Pokédex regional (Pichu desde la ficha de Pikachu), pasa a la nacional.
   const goTo = useCallback((id: string) => {
-    if (gameDex && !slots.some((s) => s.entry.id === id)) setScope('national');
+    // si no está en la Pokédex que se ve (Pichu desde la ficha de Pikachu), se pasa a la que tenga todas
+    if (gameDex && !slots.some((s) => s.entry.id === id)) {
+      const wide = scopeDefs.find((s) => s.national) || scopeDefs.find((s) => s.all);
+      if (wide) setScope(wide.id);
+    }
     setSelected(id);
     requestAnimationFrame(() => {
       const el = document.querySelector(`.dex .pokemon[data-entry="${id}"]`);
       el?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     });
-  }, [gameDex, slots, setScope]);
+  }, [gameDex, slots, setScope, scopeDefs]);
 
   // Navegación con las flechas del teclado por la casilla seleccionada
   useEffect(() => {

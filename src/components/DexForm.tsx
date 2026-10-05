@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
 import { buildSlots, countEntries, groupBoxes, scopeEntries } from '../lib/data';
-import { GAME_DEX_BY_ID, GAME_DEXES } from '../lib/gamedex';
+import { availableScopes, GAME_DEX_BY_ID, GAME_DEXES, scopeTitle } from '../lib/gamedex';
 import type { DexConfig, Entry, Layout } from '../lib/types';
 import { useUI } from '../lib/ui';
 
@@ -70,10 +70,15 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete, regio
     )).length,
     [shiny, regional, gender, unown, otherForms, vivillon, alcremie, layout, game, entries],
   );
-  const regionalTotal = useMemo(
-    () => (gameDef && regionalDexes?.[gameDef.regional.dex]
-      ? scopeEntries({ regional: false, game }, entries, { scope: 'regional', regionalDexes }).length
-      : 0),
+  // tamaño de cada Pokédex del juego («Kanto 151 · Nacional 386»)
+  const scopeTotals = useMemo(
+    () => (gameDef
+      ? availableScopes(gameDef, regionalDexes).filter((sc) => !sc.all).map((sc) => ({
+        id: sc.id,
+        label: sc.national ? 'la nacional' : `la ${scopeTitle(sc)}`,
+        total: scopeEntries({ regional: false, game }, entries, { scope: sc.id, regionalDexes }).length,
+      }))
+      : []),
     [gameDef, game, entries, regionalDexes],
   );
   const defaultTitle = gameDef ? gameDef.name : 'Living Dex';
@@ -203,8 +208,9 @@ export function DexForm ({ entries, initial, onCancel, onSubmit, onDelete, regio
 
             {gameDef ? (
               <p className="dex-form-summary">
-                {regionalTotal > 0 && <><b>{regionalTotal}</b> en la Pokédex de {gameDef.regional.label} y </>}
-                <b>{total}</b> en la nacional
+                {scopeTotals.length > 1
+                  ? <>{scopeTotals.map((t, i) => <span key={t.id}>{i > 0 && (i === scopeTotals.length - 1 ? ' y ' : ', ')}<b>{t.total}</b> en {t.label}</span>)}{gameDef.scopes.some((sc) => sc.all) && <> (<b>{total}</b> en total)</>}</>
+                  : <><b>{total}</b> en la {scopeTitle(gameDef.scopes[0])}</>}
               </p>
             ) : (
               <p className="dex-form-summary"><b>{total}</b> Pokémon en <b>{boxes}</b> cajas de HOME</p>

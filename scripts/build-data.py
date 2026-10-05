@@ -54,7 +54,10 @@ REGIONAL = ('alola', 'galar', 'hisui', 'paldea')
 
 # Pokédex regionales que usan las dex de juego (src/lib/gamedex.ts): se guarda
 # la lista de especies en su orden, por identificador de PokéAPI (pokedexes.csv)
-GAME_POKEDEXES = ('kanto',)
+GAME_POKEDEXES = (
+    'kanto', 'letsgo-kanto', 'original-sinnoh', 'galar', 'isle-of-armor', 'crown-tundra',
+    'hisui', 'paldea', 'kitakami', 'blueberry', 'lumiose-city', 'hyperspace',
+)
 
 # Traducciones que faltan en PokéAPI
 MANUAL_FORM_ES = {

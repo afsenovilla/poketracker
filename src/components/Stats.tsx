@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 import { GameMark } from './GameMark';
 import { availabilityByGame, formaGroup, includeEntry, isUnavailable, isUnown, scopeEntries, useGameLocations, useLocations } from '../lib/data';
-import { AVAILABILITY_KEYS, availabilityLabels, gameAvailability, gameDexOf } from '../lib/gamedex';
+import { AVAILABILITY_KEYS, availabilityLabels, availableScopes, gameAvailability, gameDexOf, scopeTitle, widestScope } from '../lib/gamedex';
 import { GAME_BY_ID, GAMES, shortName } from '../lib/games';
 import { GO_ENERGY_PER_HOUR, GO_MAX_ENERGY, goEnergyFromCoins, goEnergyFromTime, goEnergyNow } from '../lib/doc';
 import { useStore } from '../lib/store';
@@ -94,7 +94,8 @@ function GameDexStats ({ captures, dex, entries, regionalDexes }: {
 }) {
   const def = gameDexOf(dex);
   const base = `/dex/${dex.id}`;
-  const gameLocations = useGameLocations(def?.locations?.file);
+  const gameLocations = useGameLocations(def?.locations);
+  const widest = def ? widestScope(def) : '';
 
   // Lo que falta de la nacional, según dónde se consigue
   const byAvailability = useMemo(() => {
@@ -110,12 +111,12 @@ function GameDexStats ({ captures, dex, entries, regionalDexes }: {
         label: labels[k],
         home: 0,
         pending: n,
-        link: `${base}?pokedex=nacional&faltan=${k}`,
+        link: `${base}?pokedex=${widest}&faltan=${k}`,
         tip: `${n} de los que te faltan: ${labels[k].toLowerCase()}`,
       };
     }).filter((r) => r.pending > 0);
     return { rows, missing: missing.length };
-  }, [gameLocations, def, dex, entries, captures, base]);
+  }, [gameLocations, def, dex, entries, captures, base, widest]);
 
   const rows = useMemo(() => {
     const counts = (list: Entry[]) => {
@@ -147,17 +148,20 @@ function GameDexStats ({ captures, dex, entries, regionalDexes }: {
           : `${name}: ${home} capturados${pending ? `, ${pending} vistos sin capturar` : ''}, faltan ${total - home - pending} de ${total}`,
       };
     };
-    const national = scopeEntries(dex, entries).map((x) => x.entry);
     const list: (Row | null)[] = [];
-    if (def && regionalDexes?.[def.regional.dex]) {
-      const regional = scopeEntries(dex, entries, { scope: 'regional', regionalDexes }).map((x) => x.entry);
-      const slug = def.regional.label.toLowerCase();
-      list.push(row('regional', def.regional.label, `Pokédex de ${def.regional.label}`, regional, `${base}?pokedex=${slug}`));
+    // una fila por Pokédex del juego («Todas» va como «Total»)
+    for (const sc of def ? availableScopes(def, regionalDexes) : []) {
+      const items = scopeEntries(dex, entries, { scope: sc.id, regionalDexes }).map((x) => x.entry);
+      list.push(row(sc.id, sc.all ? 'Total' : sc.label, scopeTitle(sc), items, `${base}?pokedex=${sc.id}`));
     }
-    list.push(row('national', 'Nacional', 'Pokédex nacional', national, `${base}?pokedex=nacional`));
-    const gens = [...new Set(national.map((e) => e.gen))].sort((a, b) => a - b);
-    for (const g of gens) {
-      list.push(row(`g${g}`, `Gen. ${ROMAN[g - 1]}`, `Generación ${g}`, national.filter((e) => e.gen === g), `${base}?pokedex=nacional&gen=${g}`));
+    // y, si tiene nacional, por generaciones
+    const national = def?.scopes.find((sc) => sc.national);
+    if (national) {
+      const all = scopeEntries(dex, entries, { scope: national.id, regionalDexes }).map((x) => x.entry);
+      const gens = [...new Set(all.map((e) => e.gen))].sort((a, b) => a - b);
+      for (const g of gens) {
+        list.push(row(`g${g}`, `Gen. ${ROMAN[g - 1]}`, `Generación ${g}`, all.filter((e) => e.gen === g), `${base}?pokedex=${national.id}&gen=${g}`));
+      }
     }
     return list.filter((r): r is Row => r !== null);
   }, [captures, dex, entries, def, regionalDexes, base]);
@@ -174,7 +178,7 @@ function GameDexStats ({ captures, dex, entries, regionalDexes }: {
         <section className="stats-card stacked">
           <h3>Dónde conseguir lo que te falta</h3>
           <p className="stats-sub">
-            Te faltan <b>{byAvailability.missing}</b> de la nacional. Cuenta también los que se consiguen evolucionando, criando o con regalos.
+            Te faltan <b>{byAvailability.missing}</b> en total. Cuenta también los que se consiguen evolucionando, criando o con regalos.
           </p>
           <Legend missing />
           {byAvailability.rows.length === 0

@@ -36,18 +36,18 @@ Está basado en el frontend de [PokédexTracker](https://github.com/pokedextrack
 - **Notas:** cada ficha tiene un desplegable de notas libres (por dex: la normal y la shiny llevan las suyas). Se guardan solas y en la caja sale un lápiz en los Pokémon con nota. Ojo: se ven también en modo lectura, porque van en el mismo `progreso.json`.
 - **Filtro «Se consigue en»:** en la dex, junto a «Solo los que me faltan», elige un juego y verás solo los que se pueden conseguir ahí (también evolucionando o criando), con el número en el propio desplegable.
 - **Estadísticas:** debajo de tus dex, en el inicio: progreso por generación, de qué juegos vienen los que tienes y cuántos de los que te faltan se consiguen en cada juego. Cada fila lleva a la dex con ese filtro puesto.
-- **Pokédex de un juego:** al crear una dex, en «Qué quieres seguir» puedes elegir la Pokédex de Rojo Fuego o de Verde Hoja en vez de la living dex de HOME. No es una living dex: marcas lo que has visto o capturado en esa partida aunque ya no lo tengas, y se ve como una lista por número (la regional entera y la nacional por generaciones), sin cajas:
-  - Arriba eliges **Kanto** (las 151, con su número regional) o **Nacional** (las 386 hasta la 3.ª generación), cada una con su progreso. La web recuerda cuál estabas viendo.
-  - Solo especies, sin formas.
-  - Cada Pokémon puede estar **visto** o **capturado**. Un clic lo marca capturado; en la ficha eliges «Visto». Si desmarcas uno capturado, vuelve a quedar como visto si lo era.
-  - «Solo los que me faltan» y «Vistos sin capturar» funcionan igual que en las dex de HOME.
-  - En el inicio se ve el progreso de las dos Pokédex, y en las estadísticas, el de cada generación.
-  - Los juegos están en `src/lib/gamedex.ts`. Si la Pokédex regional de un juego nuevo no sigue el orden nacional, añade su identificador de PokéAPI a `GAME_POKEDEXES` en `scripts/build-data.py`.
-  - **Dónde conseguirlo** en tu versión: lugares (con surf, Caña Vieja/Buena, Supercaña o Golpe Roca), regalos, Casino, fósiles, intercambios del juego, encuentros fijos, «Evolución de X» (avisa si es por intercambio o con qué objeto) y «Crianza con Y».
-  - Las casillas de lo que no se consigue en tu versión llevan un **borde interior del color del juego** del que hay que traerlo: con los mismos colores que usa WikiDex (Rojo Fuego naranja, Verde Hoja verde, Rubí rojo, Zafiro azul, Esmeralda verde vivo, Colosseum ocre y XD morado); los de evento, en gris. Si sale en varios juegos (Rubí, Zafiro y Esmeralda), el marco se reparte en tramos, uno por juego. Debajo del selector de Pokédex hay una leyenda, y el borde desaparece cuando lo capturas. Los colores están en `GAME_COLORS` (`src/lib/gamedex.ts`).
-  - La ficha dice dónde sale en la otra versión o en qué otros juegos de la 3.ª generación (Rubí, Zafiro, Esmeralda, Colosseum, XD), o si fue de evento.
-  - Filtro «Se consigue» (en tu versión / solo en la otra / fuera de RF/VH) y, en las estadísticas, cuántos de los que te faltan hay en cada caso.
-  - En RF/VH no se puede conseguir a Espeon ni a Umbreon (no hay reloj), y tampoco el Diente Marino, la Escama Marina ni los Pokécubos: la web ya lo tiene en cuenta.
+- **Pokédex de un juego:** al crear una dex, en «Qué quieres seguir» puedes elegir la Pokédex de un juego en vez de la living dex de HOME. No es una living dex: marcas lo que has **visto** o **capturado** en esa partida aunque ya no lo tengas, y se ve como una lista por número, sin cajas.
+  - Juegos: Rojo Fuego, Verde Hoja, Let's Go Pikachu/Eevee, Espada, Escudo, Diamante Brillante, Perla Reluciente, Leyendas: Arceus, Escarlata, Púrpura y Leyendas: Z-A.
+  - Arriba eliges la Pokédex, cada una con su progreso: la regional y la nacional (RF/VH, DBPR), la de cada DLC (Isla de la Armadura, Nieves de la Corona, Noroteo, Instituto Arándano, Dimensional) o «Todas», que las junta sin repetir especies. La web recuerda la última que viste.
+  - Solo especies, sin formas: la ficha junta los lugares de todas las formas de la especie (el Growlithe de Hisui cuenta para Growlithe en Leyendas: Arceus).
+  - Un clic marca un Pokémon como capturado; en la ficha también puedes ponerlo como «visto». Si desmarcas uno capturado, vuelve a quedar como visto si lo era.
+  - «Solo los que me faltan», «Vistos sin capturar» y el filtro «Se consigue» (en tu versión / solo en la otra / fuera del juego) funcionan como en las dex de HOME.
+  - **Dónde conseguirlo** en tu versión: en RF/VH, con `locations-frlg.json` (rutas con surf, cañas o Golpe Roca, regalos, Casino, fósiles, intercambios del juego, encuentros fijos, «Evolución de X» con intercambio u objeto y «Crianza con Y»); en los de Switch, con los mismos lugares que las dex de HOME (`locations.json`).
+  - Las casillas de lo que no se consigue en tu versión llevan un **borde interior del color del juego** del que hay que traerlo, con los colores de WikiDex (Rojo Fuego naranja, Verde Hoja verde, Rubí rojo, Zafiro azul, Esmeralda verde vivo, Colosseum ocre, XD morado, Espada celeste, Escudo fucsia, Escarlata granate, Púrpura morado…). Lo que hay que traer de otro juego por HOME va en el verde de HOME, y lo de evento en gris. Si sale en varios juegos (Rubí, Zafiro y Esmeralda), el marco se reparte en tramos. Debajo del selector de Pokédex hay una leyenda, y el borde desaparece al capturarlo. Los colores están en `GAME_COLORS` (`src/lib/gamedex.ts`).
+  - Las exclusivas de Escarlata y Púrpura salen de una lista de Serebii (`SV_EXCLUSIVE` en `src/lib/gamedex.ts`), porque las tablas salvajes de PKHeX no distinguen la versión.
+  - En RF/VH no se puede conseguir a Espeon ni a Umbreon (no hay reloj), ni el Diente Marino, la Escama Marina o los Pokécubos: la web lo tiene en cuenta y dice en qué otros juegos de la 3.ª generación salen.
+  - En el inicio se ve el progreso de cada Pokédex del juego, y en las estadísticas, cada Pokédex (y cada generación si tiene nacional) y cuántos de los que te faltan se consiguen en tu versión, en la otra o fuera.
+  - Los juegos están en `src/lib/gamedex.ts`. Si uno usa una Pokédex regional nueva, añade su identificador de PokéAPI a `GAME_POKEDEXES` en `scripts/build-data.py`.
 - Modo noche y copia de seguridad (exportar/importar JSON).
 
 Con las formas regionales al final, la dex tiene 1082 casillas en 37 cajas: 35 de especies y 2 de formas.
@@ -101,7 +101,7 @@ Sin iniciar sesión, la web lee `data/progreso.json` del repositorio público y 
 `public/data/pokedex.json` se genera con `scripts/build-data.py` a partir de:
 
 - los CSV de [PokéAPI](https://github.com/PokeAPI/pokeapi/tree/master/data/v2/csv): nombres en español, formas, tipos y entradas de la Pokédex;
-- la numeración de las Pokédex regionales de los juegos (`regionalDexes`, ahora mismo la de Kanto), para las dex de juego;
+- la numeración de las Pokédex regionales de los juegos (`regionalDexes`), para las Pokédex de juego;
 - el listado de [PokeAPI/sprites](https://github.com/PokeAPI/sprites), para los renders de HOME de la ficha, que se cargan desde `raw.githubusercontent.com`.
 
 En las cajas se usan los **iconos de caja** (estilo HOME) del sprite sheet de PokédexTracker: `public/pokesprite-v12.png` y `src/styles/pokesprite.scss`, que cubren las 1025 especies y las formas regionales, en normal y variocolor. `build-data.py` lee ese SCSS y guarda en cada entrada las clases que le tocan (`icon` e `iconShiny`).
@@ -165,7 +165,7 @@ src/
     types.ts      modelos (Entry, DexConfig, ProgressDoc…)
     data.ts       carga de la Pokédex y de las ubicaciones, orden de las cajas y URLs de los sprites
     games.ts      juegos para el desplegable «en otro juego»
-    gamedex.ts    juegos con dex propia (Rojo Fuego / Verde Hoja): Pokédex regional, nacional, cajas
+    gamedex.ts    Pokédex de cada juego, sus versiones, colores y lugares
     doc.ts        operaciones puras sobre el progreso
     store.tsx     estado global y sincronización con GitHub (con reintento ante conflictos)
     github.ts     API de contenidos de GitHub
@@ -190,7 +190,7 @@ Formato del fichero de progreso:
 
 `c` = en HOME, `g` = juego de origen (donde está si no tiene `c`), `x` = excluido y `t` = fecha de la última modificación.
 
-En una dex de juego, la configuración lleva `"game": "lg"` (o `"fr"`), `c` significa «capturado» y `v` significa «visto».
+En una Pokédex de juego, la configuración lleva `"game"` con el id del juego (`"lg"`, `"sl"`…), `c` significa «capturado» y `v` significa «visto».
 
 ## Créditos
 

@@ -109,6 +109,8 @@ export interface Slot {
   entry: Entry;
   /** número en la Pokédex que se está viendo (dex de juego); si no, el nacional */
   number?: number;
+  /** dex de juego con «Todas»: Pokédex a la que pertenece la casilla */
+  section?: string;
   index: number;
   box: number;
   row: number;

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { GAME_DEX_BY_ID } from './gamedex';
-import type { DexScope, GameLocationsData } from './gamedex';
+import { availableScopes, GAME_DEX_BY_ID, gameSpecies, homeGameLocations } from './gamedex';
+import type { DexScope, GameLocationsData, GameLocationsSource } from './gamedex';
 import type { DexConfig, Entry, PokedexData, Slot } from './types';
 
 const SPRITES = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/';
@@ -33,8 +33,13 @@ export interface LocationsData {
 let locCache: Promise<LocationsData> | null = null;
 
 export function useLocations () {
+  return useLocationsIf(true);
+}
+
+function useLocationsIf (enabled: boolean) {
   const [data, setData] = useState<LocationsData | null>(null);
   useEffect(() => {
+    if (!enabled) return undefined;
     let alive = true;
     if (!locCache) {
       locCache = fetch(`${import.meta.env.BASE_URL}data/locations.json`, FRESH).then((r) => {
@@ -45,17 +50,22 @@ export function useLocations () {
     }
     locCache.then((d) => alive && setData(d)).catch(() => {});
     return () => { alive = false; };
-  }, []);
+  }, [enabled]);
   return data;
 }
 
 const gameLocCache = new Map<string, Promise<GameLocationsData>>();
 
-/** Lugares de los juegos clásicos (Rojo Fuego / Verde Hoja…); `file` = null si la dex no los tiene */
-export function useGameLocations (file: string | null | undefined) {
-  const [data, setData] = useState<GameLocationsData | null>(null);
+/** Lugares de una Pokédex de juego: los de RF/VH o los de los juegos de HOME */
+export function useGameLocations (source: GameLocationsSource | null | undefined) {
+  const file = source && 'file' in source ? source.file : null;
+  const home = source && 'home' in source ? source.home : null;
+  const [fileData, setFileData] = useState<GameLocationsData | null>(null);
+  // los de HOME salen de locations.json (se carga solo si hace falta)
+  const homeLoc = useLocationsIf(Boolean(home));
+  const { data: pokedex } = usePokedex();
   useEffect(() => {
-    setData(null);
+    setFileData(null);
     if (!file) return undefined;
     let alive = true;
     if (!gameLocCache.has(file)) {
@@ -66,10 +76,22 @@ export function useGameLocations (file: string | null | undefined) {
       p.catch(() => gameLocCache.delete(file));
       gameLocCache.set(file, p);
     }
-    gameLocCache.get(file)!.then((d) => alive && setData(d)).catch(() => {});
+    gameLocCache.get(file)!.then((d) => alive && setFileData(d)).catch(() => {});
     return () => { alive = false; };
   }, [file]);
-  return data;
+  const homeData = useMemo(
+    () => (home && homeLoc && pokedex ? homeGameLocationsCached(homeLoc, home, pokedex.entries) : null),
+    [home, homeLoc, pokedex],
+  );
+  return file ? fileData : homeData;
+}
+
+const homeAdapted = new WeakMap<LocationsData, Map<string, GameLocationsData>>();
+function homeGameLocationsCached (loc: LocationsData, game: string, entries: Entry[]) {
+  let m = homeAdapted.get(loc);
+  if (!m) homeAdapted.set(loc, (m = new Map()));
+  if (!m.has(game)) m.set(game, homeGameLocations(loc, game, entries));
+  return m.get(game)!;
 }
 
 /** juego -> ids de las entradas que se pueden conseguir ahí (incluye evolución y crianza) */
@@ -101,6 +123,8 @@ export function loadPokedex () {
       for (const e of d.entries) {
         if (ids.has(e.id)) e.noShiny = true;
       }
+      loadedRegionalDexes = d.regionalDexes || {};
+      gameSpeciesCache.clear();
       return d;
     });
     cache.catch(() => { cache = null; });
@@ -162,14 +186,27 @@ export function formaGroup (e: Pick<Entry, 'category' | 'species'>): FormaGroup 
 
 type IncludeOptions = Pick<DexConfig, 'regional' | 'unown' | 'otherForms' | 'vivillon' | 'alcremie' | 'game'>;
 
+/** Pokédex regionales de pokedex.json (se guardan al cargarlo) y especies de cada juego */
+let loadedRegionalDexes: Record<string, number[]> = {};
+const gameSpeciesCache = new Map<string, Set<number>>();
+
+function speciesOfGame (game: string) {
+  let set = gameSpeciesCache.get(game);
+  if (!set) {
+    const def = GAME_DEX_BY_ID[game];
+    set = def ? gameSpecies(def, loadedRegionalDexes) : new Set();
+    gameSpeciesCache.set(game, set);
+  }
+  return set;
+}
+
 /**
- * ¿Entra esta casilla en la dex? En una dex de juego, solo las especies de su
- * Pokédex nacional (la regional es un subconjunto: ver `scopeEntries`).
+ * ¿Entra esta casilla en la dex? En una dex de juego, las especies de todas sus
+ * Pokédex juntas (cada Pokédex es un subconjunto: ver `scopeEntries`).
  */
 export function includeEntry (dex: IncludeOptions, e: Entry) {
   if (dex.game) {
-    const def = GAME_DEX_BY_ID[dex.game];
-    return e.category === 'base' && (!def || e.species <= def.nationalMax);
+    return e.category === 'base' && speciesOfGame(dex.game).has(e.species);
   }
   switch (e.category) {
     case 'base': return true;
@@ -203,25 +240,50 @@ const groupOf = (e: Entry) => {
 };
 
 export interface ScopeOptions {
-  /** en una dex de juego: su Pokédex regional o la nacional (por defecto) */
+  /** en una dex de juego: id de la Pokédex (por defecto, todas las especies en orden nacional) */
   scope?: DexScope;
   regionalDexes?: PokedexData['regionalDexes'];
 }
 
+export interface ScopedEntry {
+  entry: Entry;
+  /** número en la Pokédex que se está viendo */
+  number: number;
+  /** con «Todas»: id de la Pokédex de la sección */
+  section?: string;
+}
+
 /**
  * Entradas de una dex de juego en el orden de la Pokédex elegida, con su número
- * en esa Pokédex. En la nacional, el número es el de la especie.
+ * en esa Pokédex. En la nacional (o sin Pokédex), el número es el de la especie.
+ * Con «Todas», una Pokédex detrás de otra sin repetir especies.
  */
-export function scopeEntries (dex: IncludeOptions, entries: Entry[], { scope = 'national', regionalDexes }: ScopeOptions = {}) {
+export function scopeEntries (dex: IncludeOptions, entries: Entry[], { scope, regionalDexes }: ScopeOptions = {}): ScopedEntry[] {
   const def = dex.game ? GAME_DEX_BY_ID[dex.game] : undefined;
-  const order = def && scope === 'regional' ? regionalDexes?.[def.regional.dex] : undefined;
-  if (!order) return entries.filter((e) => includeEntry(dex, e)).map((entry) => ({ entry, number: entry.species }));
-  const bySpecies = new Map(entries.filter((e) => includeEntry(dex, e)).map((e) => [e.species, e]));
-  const list: { entry: Entry; number: number }[] = [];
-  order.forEach((sid, i) => {
-    const entry = bySpecies.get(sid);
-    if (entry) list.push({ entry, number: i + 1 });
-  });
+  const included = entries.filter((e) => includeEntry(dex, e));
+  const all = () => included.map((entry) => ({ entry, number: entry.species }));
+  if (!def) return all();
+  const scopes = availableScopes(def, regionalDexes);
+  const s = scopes.find((x) => x.id === scope);
+  if (!s) return all();
+  const bySpecies = new Map(included.map((e) => [e.species, e]));
+  const fromPokedex = (pokedex: string, section?: string, skip?: Set<number>) => {
+    const list: ScopedEntry[] = [];
+    (regionalDexes?.[pokedex] || []).forEach((sid, i) => {
+      const entry = bySpecies.get(sid);
+      if (entry && !skip?.has(sid)) list.push({ entry, number: i + 1, section });
+      skip?.add(sid);
+    });
+    return list;
+  };
+  if (s.national) return included.filter((e) => e.species <= s.national!).map((entry) => ({ entry, number: entry.species }));
+  if (s.pokedex) return fromPokedex(s.pokedex);
+  // «Todas»: cada Pokédex regional, sin las especies que ya salen en una anterior
+  const seen = new Set<number>();
+  const list: ScopedEntry[] = [];
+  for (const x of scopes) {
+    if (x.pokedex) list.push(...fromPokedex(x.pokedex, x.id, seen));
+  }
   return list;
 }
 
@@ -231,9 +293,10 @@ export const slotNumber = (slot: Pick<Slot, 'entry' | 'number'>) => slot.number 
 /** Devuelve las casillas de la dex en el orden de las cajas de HOME (o del PC del juego). */
 export function buildSlots (dex: DexConfig, entries: Entry[], options: ScopeOptions = {}): Slot[] {
   if (dex.game) {
-    return scopeEntries(dex, entries, options).map(({ entry, number }, index) => ({
+    return scopeEntries(dex, entries, options).map(({ entry, number, section }, index) => ({
       entry,
       number,
+      section,
       unavailable: Boolean(dex.shiny && entry.noShiny),
       index,
       box: Math.floor(index / BOX_SIZE) + 1,

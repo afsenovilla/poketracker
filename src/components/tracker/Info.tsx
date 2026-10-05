@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, slotNumber, TYPE_COLORS, useGameLocations, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
-import { GAME_COLORS, gameDexOf, otherSources, pairedVersion, placesIn } from '../../lib/gamedex';
+import { GAME_COLORS, gameDexOf, otherSources, pairedVersion, placesIn, widestScope } from '../../lib/gamedex';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -138,7 +138,7 @@ function PlaceList ({ color, dex, onSelect, open, places, title }: {
 /** Dónde conseguirlo en una dex de juego: en esta versión, en la otra o en otros juegos */
 function GameWhere ({ dex, entryId, onSelect }: { dex: DexConfig; entryId: string; onSelect?: (id: string) => void }) {
   const def = gameDexOf(dex);
-  const data = useGameLocations(def?.locations?.file);
+  const data = useGameLocations(def?.locations);
   if (!def?.locations) {
     return <p className="info-muted">Los lugares de {def?.name ?? 'este juego'} aún no están en la web: míralos en WikiDex.</p>;
   }
@@ -274,7 +274,7 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
                 {' · '}
               </>
             )}
-            <Link to={`/dex/${dex.id}?gen=${entry.gen}${gameDex ? '&pokedex=nacional' : ''}`}>Generación {entry.gen}</Link>
+            <Link to={`/dex/${dex.id}?gen=${entry.gen}${gameDef ? `&pokedex=${widestScope(gameDef)}` : ''}`}>Generación {entry.gen}</Link>
             {gameDex && slot.number !== undefined && slot.number !== entry.species && <> · Nacional #{pad(entry.species, digits)}</>}
           </p>
 
