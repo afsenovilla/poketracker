@@ -112,8 +112,8 @@ export function Tracker () {
     for (const key of ['version', 'outside']) {
       for (const id of availability.get(key) || []) {
         const sources = tradeSources(gameLocations, gameLoc.version, id);
-        sources.forEach((g) => used.add(g === 'xd' ? 'colo' : g));
-        const list = sources.map((g) => (g === 'colo' ? 'Colosseum / XD' : names[g] || g)).join(', ');
+        sources.forEach((g) => used.add(g));
+        const list = sources.map((g) => names[g] || g).join(', ');
         map.set(id, {
           background: sourcesBackground(sources),
           title: key === 'version'
@@ -124,7 +124,7 @@ export function Tracker () {
     }
     const legend: TradeLegendItem[] = Object.keys(GAME_COLORS)
       .filter((g) => used.has(g))
-      .map((g) => ({ color: GAME_COLORS[g], label: g === 'colo' ? 'Colosseum / XD' : names[g] || g }));
+      .map((g) => ({ color: GAME_COLORS[g], label: names[g] || g }));
     return { tradeHints: map, tradeLegend: legend };
   }, [gameDex, gameLocations, gameLoc, availability]);
   const activeScope: DexScope = scopes.some((s) => s.scope === scope) ? scope : 'national';

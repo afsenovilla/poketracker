@@ -2411,6 +2411,15 @@ $stats-track: #eeeeee;
   }
 }
 
+.info .info-where-game .game-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+
 .info .info-where-note {
   margin: 0 0 8px;
   font-size: 13px;

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CATEGORY_LABEL, formaGroup, homeUrl, includeEntry, labelIndex, pad, slotNumber, TYPE_COLORS, useGameLocations, useLocations, usePokedex, wikidexUrl } from '../../lib/data';
-import { gameDexOf, otherSources, pairedVersion, placesIn } from '../../lib/gamedex';
+import { GAME_COLORS, gameDexOf, otherSources, pairedVersion, placesIn } from '../../lib/gamedex';
 import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
@@ -94,7 +94,9 @@ function WhereToCatch ({ dex, entryId, evo, evoId, onSelect }: {
 }
 
 /** Lista plegable de lugares, con enlaces en «Evolución de X» / «Crianza con Y» */
-function PlaceList ({ dex, onSelect, open, places, title }: {
+function PlaceList ({ color, dex, onSelect, open, places, title }: {
+  /** color del juego (marca a la izquierda del nombre) */
+  color?: string;
   dex: DexConfig;
   onSelect?: (id: string) => void;
   open: boolean;
@@ -106,14 +108,14 @@ function PlaceList ({ dex, onSelect, open, places, title }: {
   if (!places.length) {
     return (
       <div className="info-where-game static">
-        <span className="game-name">{title}</span>
+        <span className="game-name">{color && <i className="game-dot" style={{ backgroundColor: color }} />}{title}</span>
       </div>
     );
   }
   return (
     <details className="info-where-game" open={open}>
       <summary>
-        <span className="game-name">{title}</span>
+        <span className="game-name">{color && <i className="game-dot" style={{ backgroundColor: color }} />}{title}</span>
         <span className="count">{places.length}</span>
       </summary>
       <ul>
@@ -151,15 +153,15 @@ function GameWhere ({ dex, entryId, onSelect }: { dex: DexConfig; entryId: strin
 
   return (
     <div className="info-where">
-      {here.length > 0 && <PlaceList dex={dex} onSelect={onSelect} open places={here} title={data.versions[version]} />}
+      {here.length > 0 && <PlaceList color={GAME_COLORS[version]} dex={dex} onSelect={onSelect} open places={here} title={data.versions[version]} />}
       {here.length === 0 && there.length > 0 && (
         <>
           <p className="info-where-note">No sale en {data.versions[version]}: tienes que conseguirlo en {data.versions[other!]} e intercambiarlo.</p>
-          <PlaceList dex={dex} onSelect={onSelect} open places={there} title={data.versions[other!]} />
+          <PlaceList color={GAME_COLORS[other!]} dex={dex} onSelect={onSelect} open places={there} title={data.versions[other!]} />
         </>
       )}
       {here.length > 0 && there.length > 0 && there.join('|') !== here.join('|') && (
-        <PlaceList dex={dex} onSelect={onSelect} open={false} places={there} title={data.versions[other!]} />
+        <PlaceList color={GAME_COLORS[other!]} dex={dex} onSelect={onSelect} open={false} places={there} title={data.versions[other!]} />
       )}
       {here.length === 0 && there.length === 0 && (
         <>
@@ -168,7 +170,7 @@ function GameWhere ({ dex, entryId, onSelect }: { dex: DexConfig; entryId: strin
             {onlyEvents ? ' Solo se ha distribuido en eventos.' : ' Hay que traerlo de otro juego:'}
           </p>
           {!onlyEvents && elsewhere.map(([g, places]) => (
-            <PlaceList dex={dex} key={g} onSelect={onSelect} open={elsewhere.length === 1} places={places} title={data.other[g] || g} />
+            <PlaceList color={GAME_COLORS[g]} dex={dex} key={g} onSelect={onSelect} open={elsewhere.length === 1} places={places} title={data.other[g] || g} />
           ))}
         </>
       )}

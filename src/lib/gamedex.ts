@@ -107,18 +107,17 @@ export function gameAvailabilityMap (data: GameLocationsData | null, version: st
 }
 
 /**
- * Color de cada juego para el borde de las casillas que no se consiguen en tu
- * versión. Rubí es carmesí para no confundirse con el rojo anaranjado de Rojo
- * Fuego, y Esmeralda verde azulado para no confundirse con Verde Hoja.
+ * Color de cada juego (los mismos que usa WikiDex), para el borde de las
+ * casillas que no se consiguen en tu versión y para los nombres de la ficha.
  */
 export const GAME_COLORS: Record<string, string> = {
-  fr: '#e8552a',
-  lg: '#5aa832',
-  r: '#b0123f',
-  s: '#2457c5',
-  e: '#0f9d6e',
-  colo: '#7b4fb3',
-  xd: '#7b4fb3',
+  fr: '#FF7200',
+  lg: '#4B9C0A',
+  r: '#B80000',
+  s: '#0D00B8',
+  e: '#11B800',
+  colo: '#DE983C',
+  xd: '#AA6DE3',
   event: '#9e9e9e',
 };
 
@@ -131,8 +130,7 @@ export function tradeSources (data: GameLocationsData, version: string, entryId:
   const rse = games.filter((g) => g === 'r' || g === 's' || g === 'e');
   if (rse.length) return rse;
   const gc = games.filter((g) => g === 'colo' || g === 'xd');
-  // Colosseum y XD comparten color: con uno basta
-  if (gc.length) return [gc[0]];
+  if (gc.length) return gc;
   return ['event'];
 }
 
