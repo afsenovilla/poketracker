@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLongArrowAltUp, faStar } from '@fortawesome/free-solid-svg-icons';
 import { memo, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 
 import { Box } from './Box';
 import { PokemonSlot } from './PokemonSlot';
@@ -198,7 +199,14 @@ export const Dex = memo(function Dex ({
             </p>
           )}
         </header>
-        <p className="mobile-hint">{readOnly ? 'Modo lectura · toca un Pokémon para ver su ficha' : 'Toca para marcar · mantén pulsado para ver la ficha'}</p>
+        {readOnly ? (
+          <div className="readonly-banner">
+            <b>Modo lectura:</b> no se pueden marcar Pokémon; al tocarlos solo se abre su ficha.{' '}
+            <Link to="/ajustes">Entra con tu cuenta</Link> para hacer cambios.
+          </div>
+        ) : (
+          <p className="mobile-hint">Toca para marcar · mantén pulsado para ver la ficha</p>
+        )}
         <div className="percentage">
           {gameDex
             ? <Progress caught={caught} caughtLabel="capturados" pending={pending} pendingLabel="vistos sin capturar" total={total} />

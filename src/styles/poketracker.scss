@@ -2464,3 +2464,48 @@ $stats-track: #eeeeee;
 .night-mode .dex .pokedex-section .pokedex-section-range {
   color: $gray-dark;
 }
+
+// Aviso de modo lectura en la dex (también en escritorio)
+.dex .readonly-banner {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 2px solid $brand-primary;
+  background-color: rgba($brand-primary, .15);
+  font-size: 13px;
+  line-height: 1.4;
+
+  a {
+    font-weight: 700;
+    text-decoration: underline;
+  }
+}
+
+.night-mode .dex .readonly-banner {
+  background-color: rgba($brand-primary, .08);
+}
+
+// Botón de cerrar la ficha: solo en el móvil, donde la ficha ocupa toda la pantalla
+.info .info-close {
+  display: none;
+}
+
+@media (max-width: 750px) {
+  .info .info-header {
+    position: relative;
+  }
+
+  .info .info-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-left: 10px;
+    border: 2px solid rgba(255, 255, 255, .6);
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+}

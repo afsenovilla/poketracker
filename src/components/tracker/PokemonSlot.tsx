@@ -8,7 +8,7 @@ import { GameMark } from '../GameMark';
 import { isUnown, pad, slotNumber, spriteUrl } from '../../lib/data';
 import { GAME_BY_ID } from '../../lib/games';
 import { useStore } from '../../lib/store';
-import { useUI } from '../../lib/ui';
+import { markLongPress, useUI } from '../../lib/ui';
 import type { Slot, SlotState } from '../../lib/types';
 
 /**
@@ -78,6 +78,7 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameD
     start.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     timer.current = window.setTimeout(() => {
       longPressed.current = true;
+      markLongPress();
       navigator.vibrate?.(15);
       openInfo();
     }, LONG_PRESS_MS);
@@ -88,7 +89,12 @@ export const PokemonSlot = memo(function PokemonSlot ({ dexId, digits = 4, gameD
       window.clearTimeout(timer.current);
     }
   };
-  const onTouchEnd = () => window.clearTimeout(timer.current);
+  const onTouchEnd = (e: TouchEvent) => {
+    window.clearTimeout(timer.current);
+    // tras una pulsación larga, el navegador «hace clic» al soltar el dedo justo
+    // donde ahora está la ficha (podía marcar «Excluir» sin querer): se anula
+    if (longPressed.current) e.preventDefault();
+  };
   const onContextMenu = (e: MouseEvent) => {
     e.preventDefault();
     if (!longPressed.current) openInfo();

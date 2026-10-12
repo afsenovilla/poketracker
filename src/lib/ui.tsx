@@ -25,7 +25,12 @@ export function UIProvider ({ children }: { children: ReactNode }) {
   const prefersDark = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches;
   const [nightMode, setNightMode] = usePersisted('pt:night', Boolean(prefersDark));
   const wide = typeof window !== 'undefined' && window.innerWidth > 750;
-  const [showInfo, setShowInfo] = usePersisted('pt:info', wide);
+  // En escritorio se recuerda si la ficha estaba abierta. En el móvil la ficha
+  // ocupa toda la pantalla, así que siempre empieza cerrada y no se guarda.
+  const [showInfoWide, setShowInfoWide] = usePersisted('pt:info', true);
+  const [showInfoNarrow, setShowInfoNarrow] = useState(false);
+  const showInfo = wide ? showInfoWide : showInfoNarrow;
+  const setShowInfo = wide ? setShowInfoWide : setShowInfoNarrow;
   const value = useMemo(() => ({ nightMode, setNightMode, showInfo, setShowInfo }), [nightMode, showInfo]);
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }
@@ -35,3 +40,12 @@ export function useUI () {
   if (!ctx) throw new Error('useUI fuera de UIProvider');
   return ctx;
 }
+
+/**
+ * Momento de la última pulsación larga (móvil). La ficha ignora los toques
+ * justo después, por si el navegador entrega el «clic» al soltar el dedo
+ * encima de la ficha que se acaba de abrir.
+ */
+let lastLongPress = 0;
+export const markLongPress = () => { lastLongPress = Date.now(); };
+export const justLongPressed = (ms = 600) => Date.now() - lastLongPress < ms;

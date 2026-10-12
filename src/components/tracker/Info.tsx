@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExternalLinkAlt, faCaretLeft, faCaretRight } from '@fortawesome/free-solid-svg-icons';
+import { faExternalLinkAlt, faCaretLeft, faCaretRight, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -10,7 +10,7 @@ import { GameMark } from '../GameMark';
 import { Notes } from './Notes';
 import { GAME_BY_ID, GAMES } from '../../lib/games';
 import { useStore } from '../../lib/store';
-import { useUI } from '../../lib/ui';
+import { justLongPressed, useUI } from '../../lib/ui';
 import type { DexConfig, SlotPatch, Slot, SlotState } from '../../lib/types';
 
 interface Props {
@@ -232,7 +232,13 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
   const digits = gameDex ? gameDef?.digits ?? 3 : 4;
 
   return (
-    <div className={classNames('info', { collapsed: !showInfo })}>
+    <div
+      className={classNames('info', { collapsed: !showInfo })}
+      onClickCapture={(e) => {
+        // clic fantasma tras abrir la ficha con una pulsación larga: se ignora
+        if (justLongPressed()) { e.preventDefault(); e.stopPropagation(); }
+      }}
+    >
       <div className="info-collapse" onClick={() => setShowInfo(!showInfo)} role="button" title={showInfo ? 'Ocultar ficha' : 'Mostrar ficha'}>
         <FontAwesomeIcon icon={showInfo ? faCaretRight : faCaretLeft} />
       </div>
@@ -249,6 +255,9 @@ export function Info ({ dex, flavor, onSelectEntry, slot, state }: Props) {
             {entry.form && entry.category !== 'base' && <p className="info-form">{entry.form}</p>}
           </div>
           <h2>#{pad(slotNumber(slot), digits)}</h2>
+          <button aria-label="Cerrar la ficha" className="info-close" onClick={() => setShowInfo(false)} type="button">
+            <FontAwesomeIcon icon={faTimes} />
+          </button>
         </div>
 
         <div className="info-body">
